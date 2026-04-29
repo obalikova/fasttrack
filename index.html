@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FastTrack Pro">
+    <title>FastTrack Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2d5a7b;
+            --success: #4ecdc4;
+            --warning: #f7b731;
+            --danger: #ff6b5b;
+            --bg: #f8fafb;
+            --card: #ffffff;
+            --text: #2c3e50;
+            --text-light: #7f8c8d;
+            --border: #e8eef5;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 0;
+            padding-bottom: 80px;
+        }
+
+        .tabs {
+            display: flex;
+            position: sticky;
+            top: 0;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 14px;
+            text-align: center;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-light);
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .page {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .header-card {
+            background: linear-gradient(135deg, var(--primary) 0%, #3d7a9e 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(45, 90, 123, 0.15);
+        }
+
+        .header-stat {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.85;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+
+        button {
+            padding: 11px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:active {
+            opacity: 0.8;
+        }
+
+        input[type="number"], input[type="date"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .date-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .date-nav button {
+            flex: 0 0 40px;
+            padding: 8px;
+        }
+
+        .date-display {
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .weight-item {
+            background: var(--bg);
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .weight-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .weight-change {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .weight-change.down {
+            background: rgba(78, 205, 196, 0.1);
+            color: var(--success);
+        }
+
+        .weight-change.up {
+            background: rgba(255, 107, 91, 0.1);
+            color: var(--danger);
+        }
+
+        .meal-entry {
+            padding: 12px;
+            background: var(--bg);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .meal-description {
+            font-size: 14px;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .quality-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .quality-good {
+            background: rgba(78, 205, 196, 0.1);
+            color: var(--success);
+        }
+
+        .quality-neutral {
+            background: rgba(247, 183, 49, 0.1);
+            color: var(--warning);
+        }
+
+        .quality-bad {
+            background: rgba(255, 107, 91, 0.1);
+            color: var(--danger);
+        }
+
+        .analysis-box {
+            background: linear-gradient(135deg, rgba(45, 90, 123, 0.05), rgba(78, 205, 196, 0.05));
+            border-left: 4px solid var(--primary);
+            padding: 14px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .analysis-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: flex-end;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card);
+            width: 100%;
+            border-radius: 16px 16px 0 0;
+            padding: 20px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+        }
+
+        .setting-row {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+
+        .setting-row label {
+            font-size: 13px;
+            display: block;
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab(0)">⏰ Fasting</button>
+        <button class="tab" onclick="switchTab(1)">📊 Analýza</button>
+        <button class="tab" onclick="switchTab(2)">🍽️ Jídlo</button>
+        <button class="tab" onclick="switchTab(3)">⚙️ Nastavení</button>
+    </div>
+
+    <!-- TAB 0: FASTING -->
+    <div class="page tab-content active" id="tab0">
+        <div class="header-card">
+            <div class="header-stat">
+                <div class="stat-label">Aktuální séria</div>
+                <div class="stat-value" id="streakValue">0</div>
+                <div class="stat-label">dní ✨</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Jídelní okno</div>
+            <div style="text-align: center; font-size: 48px; font-weight: 700; color: var(--primary); margin: 20px 0;">
+                <span id="timerDisplay">0:00</span>
+            </div>
+            <div style="text-align: center; color: var(--text-light); font-size: 13px; margin-bottom: 16px;">
+                <span id="timerStatus">Připraven k zahájení</span>
+            </div>
+
+            <div style="width: 140px; height: 140px; margin: 0 auto 20px;">
+                <svg viewBox="0 0 160 160">
+                    <circle cx="80" cy="80" r="75" fill="none" stroke="var(--border)" stroke-width="8"/>
+                    <circle cx="80" cy="80" r="75" fill="none" stroke="var(--primary)" stroke-width="8" 
+                            stroke-dasharray="471.24" stroke-dashoffset="471.24" id="progressRing"
+                            style="transition: stroke-dashoffset 0.5s ease; transform: rotate(-90deg); transform-origin: 80px 80px;"/>
+                </svg>
+            </div>
+
+            <div class="controls">
+                <button class="btn-primary" id="startBtn" onclick="startFasting()">Začít</button>
+                <button class="btn-secondary" id="endBtn" onclick="endFasting()" style="display: none; flex: 1;">Skončit</button>
+                <button class="btn-secondary" onclick="resetFasting()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 1: ANALYSIS -->
+    <div class="page tab-content" id="tab1">
+        <div class="card">
+            <div class="card-title">Analýza váhy</div>
+            
+            <div class="date-nav">
+                <button class="btn-secondary" onclick="prevDay()">⬅️</button>
+                <div class="date-display" id="dateDisplay">Dnes</div>
+                <button class="btn-secondary" onclick="nextDay()">➡️</button>
+            </div>
+
+            <div id="analysisContent"></div>
+        </div>
+    </div>
+
+    <!-- TAB 2: FOOD -->
+    <div class="page tab-content" id="tab2">
+        <div class="card">
+            <div class="card-title">Zaznamenat den</div>
+            
+            <label style="font-size: 13px;">Datum</label>
+            <input type="date" id="mealDate">
+
+            <label style="font-size: 13px;">Co jsem jedla?</label>
+            <textarea id="foodNote" placeholder="Detail: popis jídla, ingredience, množství..."></textarea>
+
+            <label style="font-size: 13px;">Kvalita stravy</label>
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <button class="quality-badge quality-good" data-quality="good" onclick="selectQuality(this)" style="flex: 1; border: none; padding: 10px; cursor: pointer;">✓ Dobrá</button>
+                <button class="quality-badge quality-neutral" data-quality="neutral" onclick="selectQuality(this)" style="flex: 1; border: none; padding: 10px; cursor: pointer;">~ Normální</button>
+                <button class="quality-badge quality-bad" data-quality="bad" onclick="selectQuality(this)" style="flex: 1; border: none; padding: 10px; cursor: pointer;">✗ Špatná</button>
+            </div>
+
+            <label style="font-size: 13px;">Tekutiny (litry)</label>
+            <input type="number" id="waterIntake" placeholder="Např: 1.5" step="0.1" min="0">
+
+            <button class="btn-primary" onclick="saveMealDay()">Uložit den</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Historie</div>
+            <div id="mealsList"></div>
+        </div>
+    </div>
+
+    <!-- TAB 3: SETTINGS -->
+    <div class="page tab-content" id="tab3">
+        <div class="card">
+            <div class="card-title">Váha</div>
+            
+            <label style="font-size: 13px;">Přidat měření</label>
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <input type="number" id="weightInput" placeholder="Váha (kg)" step="0.1">
+                <button class="btn-primary" onclick="addWeight()" style="flex: 0 0 60px;">Přidat</button>
+            </div>
+
+            <div id="weightList"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Nastavení Fasting</div>
+            <div class="setting-row">
+                <label>Pust (hodin)</label>
+                <input type="number" id="fastLength" value="16" min="2" max="22">
+            </div>
+            <div class="setting-row">
+                <label>Jídelní okno (hodin)</label>
+                <input type="number" id="windowLength" value="8" min="2" max="22">
+            </div>
+            <p style="font-size: 12px; color: var(--text-light); margin-top: 12px;">💡 Při změně se vypočítá automaticky</p>
+        </div>
+    </div>
+
+    <script>
+        let appState = {
+            startTime: null,
+            streak: 0,
+            weights: [],
+            meals: [],
+            currentDate: new Date()
+        };
+
+        let timerInterval = null;
+
+        function init() {
+            loadState();
+            renderAll();
+            setMealDate();
+            if (appState.startTime) {
+                startTimer();
+                document.getElementById('startBtn').style.display = 'none';
+                document.getElementById('endBtn').style.display = 'block';
+            }
+        }
+
+        function switchTab(index) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab' + index).classList.add('active');
+            document.querySelectorAll('.tab')[index].classList.add('active');
+            
+            if (index === 1) {
+                setTimeout(() => renderAnalysis(), 100);
+            }
+        }
+
+        // DATE NAVIGATION
+        function prevDay() {
+            appState.currentDate.setDate(appState.currentDate.getDate() - 1);
+            renderAnalysis();
+        }
+
+        function nextDay() {
+            appState.currentDate.setDate(appState.currentDate.getDate() + 1);
+            renderAnalysis();
+        }
+
+        function getDateString(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function renderAnalysis() {
+            const dateStr = getDateString(appState.currentDate);
+            const dateObj = new Date(appState.currentDate);
+            const prevDateStr = getDateString(new Date(dateObj.getTime() - 86400000));
+            
+            // Update date display
+            const today = getDateString(new Date());
+            let dateDisplay = '';
+            if (dateStr === today) {
+                dateDisplay = '📅 Dnes';
+            } else if (dateStr === getDateString(new Date(Date.now() - 86400000))) {
+                dateDisplay = '📅 Včera';
+            } else {
+                dateDisplay = dateObj.toLocaleDateString('cs-CZ');
+            }
+            document.getElementById('dateDisplay').textContent = dateDisplay;
+
+            const todayMeal = appState.meals.find(m => m.date === dateStr);
+            const prevMeal = appState.meals.find(m => m.date === prevDateStr);
+            const todayWeight = appState.weights.find(w => w.date === dateStr);
+            const prevWeight = appState.weights.find(w => w.date === prevDateStr);
+
+            let html = '';
+
+            // Weight info
+            if (todayWeight) {
+                const change = prevWeight ? (todayWeight.value - prevWeight.value).toFixed(1) : 0;
+                const changeSymbol = change > 0 ? '↑' : change < 0 ? '↓' : '→';
+                const changeClass = change > 0 ? 'up' : change < 0 ? 'down' : '';
+                
+                html += `
+                    <div class="weight-item">
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-light); margin-bottom: 4px;">${dateStr}</div>
+                            <div class="weight-value">${todayWeight.value.toFixed(1)} kg</div>
+                        </div>
+                        ${change !== 0 ? `<span class="weight-change ${changeClass}">${changeSymbol} ${Math.abs(change)} kg</span>` : '<span class="weight-change">Stejně</span>'}
+                    </div>
+                `;
+            } else {
+                html += '<div class="empty-state">Žádné měření na tento den</div>';
+            }
+
+            // Analysis
+            if (prevMeal && todayWeight && prevWeight) {
+                const weightChange = (todayWeight.value - prevWeight.value).toFixed(1);
+                html += generateAnalysis(prevMeal, weightChange, todayWeight, prevWeight);
+            } else if (prevMeal) {
+                html += `
+                    <div class="analysis-box">
+                        <div class="analysis-title">Jídlo včera:</div>
+                        <div><strong>${prevMeal.note}</strong></div>
+                        <div style="font-size: 12px; color: var(--text-light); margin-top: 8px;">
+                            Kvalita: <span class="quality-badge quality-${prevMeal.quality}">${prevMeal.quality === 'good' ? '✓ Dobrá' : prevMeal.quality === 'neutral' ? '~ Normální' : '✗ Špatná'}</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-light); margin-top: 4px;">Voda: ${prevMeal.water || '—'} l</div>
+                        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.1); font-size: 12px; color: var(--text-light); font-style: italic;">
+                            Přidej měření váhy pro detailní analýzu
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += '<div class="empty-state">Žádná data na tento den</div>';
+            }
+
+            document.getElementById('analysisContent').innerHTML = html;
+        }
+
+        function generateAnalysis(meal, weightChange, todayWeight, prevWeight) {
+            let analysis = '<div class="analysis-box">';
+            analysis += '<div class="analysis-title">📊 Vědecká analýza:</div>';
+            
+            const text = meal.note.toLowerCase();
+            const water = meal.water || 0;
+            const quality = meal.quality;
+
+            let explanation = '';
+            let recommendation = '';
+
+            // Analyze food
+            const hasHighCarbs = text.includes('halušk') || text.includes('těstovin') || text.includes('chlebom') || text.includes('brambor') || text.includes('rýž') || text.includes('cukr') || text.includes('sladidl');
+            const hasHighFat = text.includes('smetana') || text.includes('máslo') || text.includes('tuk') || text.includes('smažen');
+            const hasProtein = text.includes('maso') || text.includes('kuř') || text.includes('ryb') || text.includes('vejc') || text.includes('tvaroh') || text.includes('jogurt');
+            const hasVegetables = text.includes('chřest') || text.includes('žampion') || text.includes('zelen') || text.includes('brokolice') || text.includes('mrkev');
+            const hasLowWater = water < 1.5;
+
+            // Weight analysis
+            if (weightChange > 0.5) {
+                explanation += `<div style="margin-bottom: 10px;"><strong>Váha nahoru (+${weightChange} kg)</strong></div>`;
+                
+                if (hasHighCarbs && hasHighFat) {
+                    explanation += `Vysoký obsah sacharidů + tuků vyvolal glykemickou odezvu → zvýšená hladina inzulínu → tělo ukládá více jako tuk. `;
+                } else if (hasHighCarbs) {
+                    explanation += `Vysoký obsah sacharidů (glykemický index) → rychlý nárůst cukru v krvi → inzulín ukládá energii jako tuk. `;
+                } else if (hasHighFat) {
+                    explanation += `Vysoký obsah tuku zpomaluje trávení a metabolismus. `;
+                }
+
+                if (hasLowWater) {
+                    explanation += `Málo vody (${water}l) = dehydratace → tělo si drží vodu → váha nahoru. `;
+                }
+
+                recommendation = `<strong>Na příště:</strong> Snížit sacharidy (halušky jen na půlku), zvýšit protein + zeleninu, pít minimálně 2L vody.`;
+            } else if (weightChange < -0.3) {
+                explanation += `<div style="margin-bottom: 10px;"><strong>Váha dolů (${weightChange} kg)</strong></div>`;
+                
+                if (hasVegetables && hasProtein) {
+                    explanation += `Dobrá kombinace proteinu + zeleninky = nižší kalorická zátěž, lepší sycení. `;
+                }
+                if (water >= 2) {
+                    explanation += `Dostatečná hydratace ${water}l pomohla detoxikaci. `;
+                }
+
+                recommendation = `<strong>Pokračovat!</strong> Tento přístup je vědecky podložen - protein + zelenina + dostatá voda = optimální pokles.`;
+            } else {
+                explanation += `<div style="margin-bottom: 10px;"><strong>Váha stabilní</strong></div>`;
+                explanation += `Rovnováha mezi příjmem a výdejem. `;
+                recommendation = `Analýza: Jídlo bylo v pořádku, ale pro větší pokles zvýšit pohyb nebo snížit tuky.`;
+            }
+
+            analysis += `<div style="line-height: 1.6; margin: 10px 0;">${explanation}</div>`;
+            analysis += `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1); font-size: 13px;">${recommendation}</div>`;
+            analysis += '</div>';
+
+            return analysis;
+        }
+
+        // FASTING
+        function startFasting() {
+            appState.startTime = new Date();
+            saveState();
+            startTimer();
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('endBtn').style.display = 'block';
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 100);
+        }
+
+        function updateTimer() {
+            const windowLen = parseInt(document.getElementById('windowLength').value);
+            const now = new Date();
+            const elapsed = (now - appState.startTime) / 1000;
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = Math.floor(elapsed % 60);
+            
+            document.getElementById('timerDisplay').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            const totalSeconds = windowLen * 3600;
+            const progress = Math.min(elapsed / totalSeconds, 1);
+            const circumference = 471.24;
+            document.getElementById('progressRing').style.strokeDashoffset = 
+                circumference * (1 - progress);
+            
+            document.getElementById('timerStatus').textContent = 
+                `${minutes} minut z ${windowLen * 60} minut`;
+        }
+
+        function endFasting() {
+            clearInterval(timerInterval);
+            appState.streak++;
+            appState.startTime = null;
+            saveState();
+            document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('endBtn').style.display = 'none';
+            document.getElementById('timerDisplay').textContent = '0:00';
+            document.getElementById('timerStatus').textContent = '🎉 Skvělá práce!';
+            document.getElementById('streakValue').textContent = appState.streak;
+        }
+
+        function resetFasting() {
+            clearInterval(timerInterval);
+            appState.startTime = null;
+            saveState();
+            document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('endBtn').style.display = 'none';
+            document.getElementById('timerDisplay').textContent = '0:00';
+            document.getElementById('timerStatus').textContent = 'Připraven k zahájení';
+            document.getElementById('progressRing').style.strokeDashoffset = '471.24';
+        }
+
+        // MEALS
+        function setMealDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('mealDate').value = today;
+        }
+
+        function selectQuality(btn) {
+            document.querySelectorAll('[data-quality]').forEach(b => b.style.opacity = '0.5');
+            btn.style.opacity = '1';
+            btn.dataset.selected = btn.dataset.quality;
+        }
+
+        function saveMealDay() {
+            const date = document.getElementById('mealDate').value;
+            const note = document.getElementById('foodNote').value.trim();
+            const quality = document.querySelector('[data-quality][data-selected]')?.dataset.quality || 'neutral';
+            const water = document.getElementById('waterIntake').value || 0;
+
+            if (!note) return alert('Zadej, co jsi jedla');
+
+            const existing = appState.meals.findIndex(m => m.date === date);
+            if (existing >= 0) {
+                appState.meals[existing] = { date, note, quality, water: parseFloat(water) };
+            } else {
+                appState.meals.push({ date, note, quality, water: parseFloat(water) });
+            }
+
+            document.getElementById('foodNote').value = '';
+            document.getElementById('waterIntake').value = '';
+            document.querySelectorAll('[data-quality]').forEach(b => b.style.opacity = '1');
+            setMealDate();
+            saveState();
+            renderMeals();
+        }
+
+        function renderMeals() {
+            const list = document.getElementById('mealsList');
+            const sorted = [...appState.meals].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            if (sorted.length === 0) {
+                list.innerHTML = '<div class="empty-state">Zatím žádné záznamy</div>';
+                return;
+            }
+
+            list.innerHTML = sorted.slice(0, 10).map(m => `
+                <div class="meal-entry">
+                    <div style="font-size: 12px; color: var(--text-light); margin-bottom: 4px;">${m.date}</div>
+                    <div class="meal-description">${m.note}</div>
+                    <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <span class="quality-badge quality-${m.quality}">
+                            ${m.quality === 'good' ? '✓ Dobrá' : m.quality === 'neutral' ? '~ Normální' : '✗ Špatná'}
+                        </span>
+                        <span style="font-size: 12px; color: var(--text-light);">💧 ${m.water} l</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // WEIGHT
+        function addWeight() {
+            const weight = parseFloat(document.getElementById('weightInput').value);
+            if (!weight || weight <= 0) return alert('Zadej validní váhu');
+            
+            const today = getDateString(new Date());
+            const existing = appState.weights.findIndex(w => w.date === today);
+            
+            if (existing >= 0) {
+                appState.weights[existing].value = weight;
+            } else {
+                appState.weights.push({ date: today, value: weight });
+            }
+            
+            document.getElementById('weightInput').value = '';
+            saveState();
+            renderWeights();
+        }
+
+        function renderWeights() {
+            const list = document.getElementById('weightList');
+            const sorted = [...appState.weights].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            if (sorted.length === 0) {
+                list.innerHTML = '<div class="empty-state">Zatím žádná měření</div>';
+                return;
+            }
+
+            list.innerHTML = sorted.slice(0, 10).map((w, i) => {
+                const next = sorted[i + 1];
+                const diff = next ? (w.value - next.value).toFixed(1) : 0;
+                const diffClass = diff > 0 ? 'down' : diff < 0 ? 'up' : '';
+                
+                return `
+                    <div class="weight-item">
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-light); margin-bottom: 4px;">${w.date}</div>
+                            <div class="weight-value">${w.value.toFixed(1)} kg</div>
+                        </div>
+                        ${diff !== 0 ? `<span class="weight-change ${diffClass}">${diff > 0 ? '-' : '+'}${Math.abs(diff)}</span>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // AUTO-CALCULATE
+        document.addEventListener('DOMContentLoaded', function() {
+            const windowInput = document.getElementById('windowLength');
+            const fastInput = document.getElementById('fastLength');
+
+            windowInput.addEventListener('change', function() {
+                const window = parseInt(this.value);
+                if (window >= 2 && window <= 22) {
+                    const fast = 24 - window;
+                    fastInput.value = fast;
+                    saveState();
+                }
+            });
+
+            fastInput.addEventListener('change', function() {
+                const fast = parseInt(this.value);
+                if (fast >= 2 && fast <= 22) {
+                    const window = 24 - fast;
+                    windowInput.value = window;
+                    saveState();
+                }
+            });
+        });
+
+        // STORAGE
+        function saveState() {
+            localStorage.setItem('fastingProState', JSON.stringify(appState));
+            localStorage.setItem('fastLength', document.getElementById('fastLength').value);
+            localStorage.setItem('windowLength', document.getElementById('windowLength').value);
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('fastingProState');
+            if (saved) {
+                appState = JSON.parse(saved);
+                appState.currentDate = new Date();
+            }
+            document.getElementById('fastLength').value = localStorage.getItem('fastLength') || 16;
+            document.getElementById('windowLength').value = localStorage.getItem('windowLength') || 8;
+        }
+
+        function renderAll() {
+            document.getElementById('streakValue').textContent = appState.streak;
+            renderWeights();
+            renderMeals();
+        }
+
+        init();
+    </script>
+</body>
+</html>
