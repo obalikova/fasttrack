@@ -104,13 +104,17 @@
             <div style="text-align: center; font-size: 48px; font-weight: 700; color: var(--primary); margin: 20px 0;">
                 <span id="timerDisplay">0:00</span>
             </div>
-            <div style="text-align: center; color: var(--light); font-size: 13px; margin-bottom: 16px;">
-                <span id="timerStatus">Připraven k zahájení</span>
+            <div id="closeTimeBox" style="display:none; text-align: center; background: #fff3cd; border-radius: 10px; padding: 8px; margin-bottom: 12px;">
+                <div style="font-size: 12px; color: #7f8c8d;">Zavři okno v:</div>
+                <div id="closeTime" style="font-size: 22px; font-weight: 700; color: #e67e22;">--:--</div>
+            </div>
+            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                <button class="btn-primary" onclick="otevrítOkno()" style="background: #2d5a7b;">🍽️ Otevřít okno</button>
+                <button class="btn-primary" onclick="pokracovatOkno()" style="background: #4ecdc4;">▶️ Pokračovat</button>
             </div>
             <div style="display: flex; gap: 8px;">
-                <button class="btn-primary" id="startBtn" onclick="startFasting()">Začít</button>
-                <button class="btn-primary" id="endBtn" onclick="endFasting()" style="display:none; background:#4ecdc4;">Skončit</button>
-                <button class="btn-primary" style="flex:0.5; background:#f7b731;" onclick="resetFasting()">Reset</button>
+                <button class="btn-primary" onclick="zavritOkno()" style="background: #27ae60;">✅ Zavřít okno</button>
+                <button class="btn-primary" onclick="resetFasting()" style="background: #f7b731; flex: 0.5;">Reset</button>
             </div>
         </div>
     </div>
@@ -402,38 +406,91 @@
             }
         }
 
-        function startFasting() {
-            appState.startTime = new Date();
-            save();
+        // Celkový naakumulovaný čas v sekundách
+        let totalElapsedSeconds = 0;
+        let windowStartTime = null;
+
+        function otevrítOkno() {
+            if (windowStartTime) return; // už běží
+            windowStartTime = new Date();
             requestNotificationPermission();
+
+            // Zobraz čas zavření
+            const windowLen = parseInt(document.getElementById('windowLength').value) || 5;
+            const closeTime = new Date(windowStartTime.getTime() + (windowLen * 3600 - totalElapsedSeconds) * 1000);
+            const h = closeTime.getHours().toString().padStart(2, '0');
+            const m = closeTime.getMinutes().toString().padStart(2, '0');
+            document.getElementById('closeTime').textContent = `${h}:${m}`;
+            document.getElementById('closeTimeBox').style.display = 'block';
+
             startTimer();
-            document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('endBtn').style.display = 'block';
+            document.getElementById('timerStatus').textContent = 'Okno je otevřené 🟢';
         }
+
+        function pokracovatOkno() {
+            if (windowStartTime) return; // už běží
+            windowStartTime = new Date();
+            startTimer();
+            document.getElementById('timerStatus').textContent = 'Okno je otevřené 🟢';
+        }
+
+        function zavritOkno() {
+            if (!windowStartTime) return;
+            // Přičti čas od posledního otevření
+            const now = new Date();
+            totalElapsedSeconds += (now - windowStartTime) / 1000;
+            windowStartTime = null;
+            clearInterval(timerInterval);
+
+            // Zobraz celkový čas
+            const totalHours = totalElapsedSeconds / 3600;
+            const h = Math.floor(totalElapsedSeconds / 3600);
+            const m = Math.floor((totalElapsedSeconds % 3600) / 60);
+            document.getElementById('timerDisplay').textContent = `${h}:${m.toString().padStart(2,'0')}`;
+            document.getElementById('timerStatus').textContent = `Okno zavřeno ⏱️ Celkem: ${totalHours.toFixed(1)}h`;
+
+            // Ulož okno do logbooku
+            const today = getDateString(new Date());
+            const logIdx = appState.logbook.findIndex(e => e.date === today);
+            const windowRounded = parseFloat(totalHours.toFixed(1));
+            if (logIdx >= 0) {
+                appState.logbook[logIdx].window = windowRounded;
+                appState.logbook[logIdx].fastingCompleted = true;
+            } else {
+                appState.logbook.push({ date: today, weight: 0, diff: 0, window: windowRounded, fastingCompleted: true, meal: '', water: 0 });
+            }
+            save();
+            renderLogbook();
+
+            // Notifikace pokud překročilo nastavené okno
+            const windowLen = parseInt(document.getElementById('windowLength').value) || 5;
+            if (totalHours > windowLen) {
+                sendNotification('⏰ Okno překročeno!', `Tvoje okno bylo ${totalHours.toFixed(1)}h místo ${windowLen}h`);
+            }
+        }
+
+        function startFasting() { otevrítOkno(); }
+
+        function endFasting() { zavritOkno(); }
 
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
             let notified = false;
             timerInterval = setInterval(() => {
-                if (!appState.startTime) return;
+                if (!windowStartTime) return;
                 const windowLen = parseInt(document.getElementById('windowLength').value) || 5;
-                const elapsed = (new Date() - new Date(appState.startTime)) / 1000;
-                const m = Math.floor(elapsed / 60);
-                const s = Math.floor(elapsed % 60);
-                document.getElementById('timerDisplay').textContent = `${m}:${s.toString().padStart(2,'0')}`;
-                const total = windowLen * 3600;
-                const circ = 471.24;
-                if (document.getElementById('progressRing')) {
-                    document.getElementById('progressRing').style.strokeDashoffset = circ * (1 - Math.min(elapsed / total, 1));
-                }
-                document.getElementById('timerStatus').textContent = `${m} minut z ${windowLen * 60} minut`;
+                const currentElapsed = totalElapsedSeconds + (new Date() - windowStartTime) / 1000;
+                const h = Math.floor(currentElapsed / 3600);
+                const m = Math.floor((currentElapsed % 3600) / 60);
+                const s = Math.floor(currentElapsed % 60);
+                document.getElementById('timerDisplay').textContent = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
                 
-                // Notifikace když doběhne okno
-                if (!notified && elapsed >= total) {
+                const total = windowLen * 3600;
+                if (!notified && currentElapsed >= total) {
                     notified = true;
                     sendNotification('⏰ Zavři okno!', `Uběhlo ${windowLen} hodin - čas přestat jíst!`);
                 }
-            }, 100);
+            }, 1000);
         }
 
         function endFasting() {
@@ -474,12 +531,13 @@
 
         function resetFasting() {
             clearInterval(timerInterval);
+            totalElapsedSeconds = 0;
+            windowStartTime = null;
             appState.startTime = null;
             save();
-            document.getElementById('startBtn').style.display = 'block';
-            document.getElementById('endBtn').style.display = 'none';
             document.getElementById('timerDisplay').textContent = '0:00';
             document.getElementById('timerStatus').textContent = 'Připraven k zahájení';
+            document.getElementById('closeTimeBox').style.display = 'none';
         }
 
         function toggleLast7Days() {
