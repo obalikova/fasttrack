@@ -33,7 +33,9 @@
         .btn-primary { background: var(--primary); color: white; width: 100%; margin-bottom: 12px; }
         .btn-small { padding: 4px 8px; font-size: 12px; background: var(--border); border: none; border-radius: 4px; cursor: pointer; }
         .btn-delete { background: var(--danger); color: white; }
-        input, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; margin-bottom: 12px; font-family: inherit; color: #2c3e50; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; margin-bottom: 12px; font-family: inherit; color: #1a1a1a; -webkit-text-fill-color: #1a1a1a; }
+        input::placeholder, textarea::placeholder { color: #b0b8c1; -webkit-text-fill-color: #b0b8c1; }
+        input:disabled, textarea:disabled { color: #1a1a1a; -webkit-text-fill-color: #1a1a1a; opacity: 1; background: #f8fafb; }
         textarea { min-height: 80px; resize: vertical; }
         label { font-size: 13px; display: block; margin-bottom: 6px; font-weight: 500; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -81,9 +83,9 @@
     <!-- TAB 0: FASTING -->
     <div id="tab0" class="page active">
         <button class="header-card" onclick="toggleLast7Days()" style="border: none; cursor: pointer; background: var(--primary); color: white; width: 100%;">
-            <div class="stat-label" style="color: white; display: none;">Poslední 7 dní</div>
+            <div class="stat-label" style="color: white;">Série poklesu váhy</div>
             <div class="stat-value" id="streakValue" style="color: white;">0</div>
-            <div class="stat-label" style="color: white;">dní</div>
+            <div class="stat-label" style="color: white;">dní v řadě 🏆</div>
         </button>
         <div id="last7DaysTable" style="display: none; margin-top: 16px;">
             <div class="card">
@@ -137,7 +139,13 @@
                 <textarea id="lunch" placeholder="Např. kuřecí prsa s bramborem..." style="flex: 1; min-height: 40px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;"></textarea>
                 <button onclick="clearMealField('lunch')" style="background: #ff6b5b; color: white; border: none; border-radius: 6px; padding: 8px 12px; font-weight: 600; cursor: pointer;">✕</button>
             </div>
-            
+
+            <label>🍎 Svačina</label>
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <textarea id="snack" placeholder="Např. jablko, ořechy..." style="flex: 1; min-height: 40px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;"></textarea>
+                <button onclick="clearMealField('snack')" style="background: #ff6b5b; color: white; border: none; border-radius: 6px; padding: 8px 12px; font-weight: 600; cursor: pointer;">✕</button>
+            </div>
+
             <label>☑️ Večeře</label>
             <div style="display: flex; gap: 8px; margin-bottom: 12px;">
                 <textarea id="dinner" placeholder="Např. losος se zeleninou..." style="flex: 1; min-height: 40px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;"></textarea>
@@ -160,10 +168,6 @@
             <input type="number" id="waterInput" placeholder="1.5" step="0.1" min="0">
             <button class="btn-primary" id="mealEditBtn" onclick="toggleMealEdit()">Uložit</button>
         </div>
-        <div class="card">
-            <div class="card-title">Historie jídel</div>
-            <div id="mealsList"></div>
-        </div>
     </div>
 
     <!-- TAB 3: VÁHA -->
@@ -181,6 +185,10 @@
             <button class="btn-primary" id="windowEditBtn" onclick="toggleWindowEdit()">Uložit okno</button>
         </div>
         <div class="card">
+            <div class="card-title">📊 Statistiky</div>
+            <div id="statsContent"></div>
+        </div>
+        <div class="card">
             <div class="card-title">Logbook</div>
             <div id="logbookTable"></div>
         </div>
@@ -191,15 +199,21 @@
         <div class="card">
             <div class="card-title">Fasting nastavení</div>
             <label>Půst (hodin)</label>
-            <input type="number" id="fastLength" value="16" min="2" max="22" onchange="updateWindow()">
+            <input type="number" id="fastLength" value="19" min="2" max="22" onchange="updateWindow()">
             <label>Jídelní okno (hodin)</label>
-            <input type="number" id="windowLength" value="8" min="2" max="22" onchange="updateFast()">
+            <input type="number" id="windowLength" value="5" min="2" max="22" onchange="updateFast()">
             <p style="font-size:12px; color:var(--light); margin-top:12px;">💡 Při změně se vypočítá automaticky</p>
         </div>
         <div class="card">
             <div class="card-title">Cílová váha</div>
             <label>To Go (kg)</label>
             <input type="number" id="goalWeight" placeholder="60.0" step="0.1" onchange="saveGoalWeight()">
+        </div>
+        <div class="card">
+            <div class="card-title">📦 Záloha dat</div>
+            <p style="font-size:12px;color:var(--light);margin-bottom:12px;">Export zkopíruje data do schránky. Import načte data ze schránky.</p>
+            <button class="btn-primary" onclick="exportData()" style="margin-bottom:10px;">⬆️ Exportovat (kopírovat)</button>
+            <button class="btn-primary" onclick="importData()" style="background:#4ecdc4;">⬇️ Importovat (vložit ze schránky)</button>
         </div>
     </div>
 
@@ -213,7 +227,7 @@
             selectedQuality: null,
             goalWeight: 0
         };
-        let currentDate = new Date();
+        let currentDate = new Date(); // vždy dnešek při startu
         let isEditMode = {}; // { meals: bool, weight: bool, window: bool }
         let timerInterval = null;
 
@@ -226,6 +240,30 @@
             document.getElementById('currentDate').textContent = currentDate.toLocaleDateString('cs-CZ', options);
             updateMealFields();
             updateWeightFields();
+        }
+
+        function calculateStreak() {
+            // Série poklesu váhy - kolik dní v řadě váha klesala
+            const entries = [...appState.logbook]
+                .filter(e => e.weight > 0)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            let streak = 0;
+            for (const entry of entries) {
+                if (entry.diff < -0.05) streak++;
+                else break;
+            }
+            return streak;
+        }
+
+        function calculateCalendarDays() {
+            // Počet dní od prvního záznamu kalendářně
+            const entries = appState.logbook.filter(e => e.weight > 0);
+            if (entries.length === 0) return 0;
+            const sorted = entries.sort((a, b) => new Date(a.date) - new Date(b.date));
+            const firstDate = new Date(sorted[0].date);
+            const today = new Date();
+            return Math.floor((today - firstDate) / (1000 * 60 * 60 * 24)) + 1;
         }
 
         function isNewDay() {
@@ -249,6 +287,7 @@
                 const parts = meal.note.split('\n');
                 document.getElementById('breakfast').value = extractMealPart(parts, 'Snídaně');
                 document.getElementById('lunch').value = extractMealPart(parts, 'Oběd');
+                document.getElementById('snack').value = extractMealPart(parts, 'Svačina');
                 document.getElementById('dinner').value = extractMealPart(parts, 'Večeře');
                 document.getElementById('sweets').value = extractMealPart(parts, 'Sladkosti');
                 document.getElementById('alcohol').value = extractMealPart(parts, 'Alkohol');
@@ -256,6 +295,7 @@
             } else {
                 document.getElementById('breakfast').value = '';
                 document.getElementById('lunch').value = '';
+                document.getElementById('snack').value = '';
                 document.getElementById('dinner').value = '';
                 document.getElementById('sweets').value = '';
                 document.getElementById('alcohol').value = '';
@@ -278,6 +318,7 @@
         function setMealEditable(editable) {
             document.getElementById('breakfast').disabled = !editable;
             document.getElementById('lunch').disabled = !editable;
+            document.getElementById('snack').disabled = !editable;
             document.getElementById('dinner').disabled = !editable;
             document.getElementById('sweets').disabled = !editable;
             document.getElementById('alcohol').disabled = !editable;
@@ -294,19 +335,13 @@
         function updateWeightFields() {
             const dateStr = getDateString(currentDate);
             const logEntry = appState.logbook.find(e => e.date === dateStr);
-            const editable = !logEntry; // editovatelný když NEMÁ uložená data
+            const editable = !logEntry;
 
-            if (logEntry) {
-                // Starý den - zobraz uložená data
-                document.getElementById('weightInput').value = logEntry.weight || '';
-                document.getElementById('editWindowInput').value = logEntry.window !== undefined && logEntry.window !== null && logEntry.window !== '' ? logEntry.window : '';
-            } else {
-                // Nový den - váha z předešlého dne, okno PRÁZDNÉ
-                const sorted = [...appState.logbook].sort((a, b) => new Date(b.date) - new Date(a.date));
-                const lastEntry = sorted.length > 0 ? sorted[0] : null;
-                document.getElementById('weightInput').value = lastEntry ? lastEntry.weight : '';
-                document.getElementById('editWindowInput').value = ''; // VŽDY prázdné!
-            }
+            // Váha - prázdná pro nový den
+            document.getElementById('weightInput').value = logEntry ? (logEntry.weight || '') : '';
+
+            // Okno - prázdné pro nový den
+            document.getElementById('editWindowInput').value = logEntry ? (logEntry.window || '') : '';
 
             document.getElementById('weightInput').disabled = !editable;
             document.getElementById('editWindowInput').disabled = !editable;
@@ -330,6 +365,18 @@
             document.querySelectorAll('.tab')[idx].classList.add('active');
             if (idx === 1) renderAnalysis();
             if (idx === 3) renderLogbook();
+            // Tab Jídlo (idx=2) - automaticky nastaví včerejšek
+            if (idx === 2) {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                currentDate = yesterday;
+                updateCurrentDate();
+            }
+            // Tab Váha, Fasting, Analýza - nastaví dnešek
+            if (idx === 0 || idx === 1 || idx === 3 || idx === 4) {
+                currentDate = new Date();
+                updateCurrentDate();
+            }
         }
 
         function changeDate(days) {
@@ -341,9 +388,24 @@
             renderLogbook();
         }
 
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        function sendNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, { body, icon: '🍽️' });
+            } else {
+                alert(`${title}\n${body}`);
+            }
+        }
+
         function startFasting() {
             appState.startTime = new Date();
             save();
+            requestNotificationPermission();
             startTimer();
             document.getElementById('startBtn').style.display = 'none';
             document.getElementById('endBtn').style.display = 'block';
@@ -351,9 +413,10 @@
 
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
+            let notified = false;
             timerInterval = setInterval(() => {
                 if (!appState.startTime) return;
-                const windowLen = parseInt(document.getElementById('windowLength').value) || 8;
+                const windowLen = parseInt(document.getElementById('windowLength').value) || 5;
                 const elapsed = (new Date() - new Date(appState.startTime)) / 1000;
                 const m = Math.floor(elapsed / 60);
                 const s = Math.floor(elapsed % 60);
@@ -364,6 +427,12 @@
                     document.getElementById('progressRing').style.strokeDashoffset = circ * (1 - Math.min(elapsed / total, 1));
                 }
                 document.getElementById('timerStatus').textContent = `${m} minut z ${windowLen * 60} minut`;
+                
+                // Notifikace když doběhne okno
+                if (!notified && elapsed >= total) {
+                    notified = true;
+                    sendNotification('⏰ Zavři okno!', `Uběhlo ${windowLen} hodin - čas přestat jíst!`);
+                }
             }, 100);
         }
 
@@ -388,9 +457,9 @@
                 const yesterdayWeight = appState.weights.find(w => w.date === yesterday);
                 const diff = yesterdayWeight ? (todayWeight.value - yesterdayWeight.value) : 0;
                 const meal = appState.meals.find(m => m.date === today);
-                const entry = { date: today, weight: todayWeight.value, diff, window: actualWindow, meal: meal ? meal.note.substring(0,50) : '', water: meal ? meal.water : 0 };
+                const entry = { date: today, weight: todayWeight.value, diff, window: actualWindow, fastingCompleted: true, meal: meal ? meal.note.substring(0,50) : '', water: meal ? meal.water : 0 };
                 const idx = appState.logbook.findIndex(e => e.date === today);
-                if (idx >= 0) appState.logbook[idx] = entry;
+                if (idx >= 0) appState.logbook[idx] = { ...appState.logbook[idx], ...entry };
                 else appState.logbook.push(entry);
             }
             appState.startTime = null;
@@ -399,7 +468,7 @@
             document.getElementById('endBtn').style.display = 'none';
             document.getElementById('timerDisplay').textContent = '0:00';
             document.getElementById('timerStatus').textContent = '🎉 Skvělá práce!';
-            document.getElementById('streakValue').textContent = appState.streak;
+            document.getElementById('streakValue').textContent = calculateStreak();
             renderLogbook();
         }
 
@@ -464,18 +533,10 @@
         }
 
         function toggleMealEdit() {
-            console.log('toggleMealEdit volána');
-            const isNew = isNewDay();
             const btn = document.getElementById('mealEditBtn');
-            console.log('isNewDay():', isNew, 'btn.textContent:', btn.textContent);
-            
             if (btn.textContent === 'Uložit') {
-                // Klikl na ULOŽIT - ulož data
-                console.log('Klikl na ULOŽIT - volám saveMeal()');
                 saveMeal();
             } else {
-                // Klikl na EDITOVAT - odemkni
-                console.log('Klikl na EDITOVAT - odemykám pole');
                 isEditMode.meals = true;
                 setMealEditable(true);
                 updateMealButtonState();
@@ -507,29 +568,25 @@
         function saveMeal() {
             console.log('saveMeal volána!');
             const date = getDateString(currentDate);
-            console.log('Datum:', date);
             const breakfast = document.getElementById('breakfast').value.trim();
             const lunch = document.getElementById('lunch').value.trim();
+            const snack = document.getElementById('snack').value.trim();
             const dinner = document.getElementById('dinner').value.trim();
             const sweets = document.getElementById('sweets').value.trim();
             const alcohol = document.getElementById('alcohol').value.trim();
             const water = parseFloat(document.getElementById('waterInput').value) || 0;
-            
-            console.log('Oběd:', lunch, 'Večeře:', dinner);
-            
-            // Filtruj placeholder text - ignoruj "Např. ..."
+
             const isPlaceholder = (text) => text.startsWith('Např.');
-            
-            // Zkombinuj všechno dohromady
+
             let note = '';
             if (breakfast && !isPlaceholder(breakfast)) note += `Snídaně: ${breakfast}\n`;
             if (lunch && !isPlaceholder(lunch)) note += `Oběd: ${lunch}\n`;
+            if (snack && !isPlaceholder(snack)) note += `Svačina: ${snack}\n`;
             if (dinner && !isPlaceholder(dinner)) note += `Večeře: ${dinner}\n`;
             if (sweets && !isPlaceholder(sweets)) note += `Sladkosti: ${sweets}\n`;
             if (alcohol && !isPlaceholder(alcohol)) note += `Alkohol: ${alcohol}`;
-            
+
             note = note.trim();
-            console.log('Note:', note);
             
             const idx = appState.meals.findIndex(m => m.date === date);
             if (idx >= 0) appState.meals[idx] = { date, note, water };
@@ -547,59 +604,265 @@
             document.getElementById(fieldId).value = '';
         }
 
-        function renderMeals() {
-            const list = document.getElementById('mealsList');
-            const sorted = [...appState.meals].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            if (sorted.length === 0) {
-                list.innerHTML = '<div class="empty">Zatím žádné</div>';
-                return;
-            }
-
-            list.innerHTML = sorted.slice(0, 10).map((m, idx) => `
-                <div class="meal-item">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div style="flex: 1;">
-                            <div class="meal-date">${m.date}</div>
-                            <div class="meal-desc">${m.note}</div>
-                            <div style="margin-top: 8px; display: flex; gap: 8px;">
-                                <span class="quality-badge quality-${m.quality}">
-                                    ${m.quality === 'good' ? '✓ Dobrá' : m.quality === 'neutral' ? '~ Normální' : '✗ Špatná'}
-                                </span>
-                                <span style="font-size: 12px; color: var(--light);">💧 ${m.water} l</span>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 6px; margin-left: 12px;">
-                            <button onclick="editMeal('${m.date}')" style="padding: 4px 8px; font-size: 12px; background: var(--border); border: none; border-radius: 4px; cursor: pointer;">Edit</button>
-                            <button onclick="if(confirm('Smazat jídlo?')) { appState.meals = appState.meals.filter(x => x.date !== \`${m.date}\`); save(); renderMeals(); renderLogbook(); }" style="padding: 4px 8px; font-size: 12px; background: #ff6b5b; color: white; border: none; border-radius: 4px; cursor: pointer;">Smaž</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function editMeal(date) {
-            const meal = appState.meals.find(m => m.date === date);
-            if (!meal) {
-                alert('Jídlo nenalezeno');
-                return;
-            }
-            document.getElementById('foodNote').value = meal.note;
-            document.getElementById('waterInput').value = meal.water;
-            appState.selectedQuality = meal.quality;
+        function renderStats() {
+            const div = document.getElementById('statsContent');
+            if (!div) return;
             
-            document.querySelectorAll('#tab2 .quality-badge').forEach(b => b.classList.remove('selected'));
-            const selected = Array.from(document.querySelectorAll('#tab2 .quality-badge')).find(b => {
-                return (meal.quality === 'good' && b.textContent.includes('Dobrá')) ||
-                       (meal.quality === 'neutral' && b.textContent.includes('Normální')) ||
-                       (meal.quality === 'bad' && b.textContent.includes('Špatná'));
-            });
-            if (selected) selected.classList.add('selected');
+            const entries = appState.logbook.filter(e => e.weight > 0);
+            if (entries.length === 0) {
+                div.innerHTML = '<div style="color:var(--light);font-size:13px;">Zatím žádná data</div>';
+                return;
+            }
 
-            switchTab(2);
-            document.getElementById('foodNote').focus();
+            const sorted = [...entries].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const latest = sorted[sorted.length - 1];
+            const first = sorted[0];
+            const weights = sorted.map(e => e.weight);
+            const minW = Math.min(...weights);
+            const maxW = Math.max(...weights);
+            const totalChange = latest.weight - first.weight;
+            const daysDown = entries.filter(e => e.diff < -0.05).length;
+            const daysUp = entries.filter(e => e.diff > 0.05).length;
+            const daysNeutral = entries.filter(e => Math.abs(e.diff) <= 0.05).length;
+            const toGoal = appState.goalWeight > 0 ? (latest.weight - appState.goalWeight).toFixed(2) : null;
+
+            // Nejlepší streak
+            let bestStreak = 0, currentStreak = 0;
+            sorted.forEach(e => {
+                if (e.diff < -0.05) { currentStreak++; bestStreak = Math.max(bestStreak, currentStreak); }
+                else currentStreak = 0;
+            });
+
+            const statBox = (label, value, color) => `
+                <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center;">
+                    <div style="font-size:11px;color:var(--light);margin-bottom:4px;">${label}</div>
+                    <div style="font-size:16px;font-weight:700;color:${color || 'var(--primary)'};">${value}</div>
+                </div>`;
+
+            div.innerHTML = `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                    ${statBox('Začátek', first.weight.toFixed(2) + ' kg', 'var(--primary)')}
+                    ${statBox('Nyní', latest.weight.toFixed(2) + ' kg', 'var(--primary)')}
+                    ${statBox('Minimum', minW.toFixed(2) + ' kg', '#4ecdc4')}
+                    ${statBox('Maximum', maxW.toFixed(2) + ' kg', '#ff6b5b')}
+                    ${statBox('Celková změna', (totalChange > 0 ? '+' : '') + totalChange.toFixed(2) + ' kg', totalChange < 0 ? '#4ecdc4' : '#ff6b5b')}
+                    ${toGoal ? statBox('Do cíle', toGoal + ' kg', parseFloat(toGoal) < 3 ? '#f39c12' : '#ff6b5b') : ''}
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+                    ${statBox('Dny poklesu', daysDown + 'x', '#4ecdc4')}
+                    ${statBox('Dny nárůstu', daysUp + 'x', '#ff6b5b')}
+                    ${statBox('Dní od začátku', calculateCalendarDays() + ' dní', '#2d5a7b')}
+                </div>`;
         }
 
+
+        function renderFoodAnalysis(meal) {
+            const note = meal.note.toLowerCase();
+            const lines = meal.note.split('\n').filter(l => l.trim());
+
+            const hasAlkohol = note.includes('alkohol');
+            const hasSladkosti = note.includes('sladkosti');
+            const hasZelenina = note.match(/zelenin|salát|paprik|brokolik|špenát|mrkev|cuketa|rajč|okur|hermelín/);
+            const hasBilkoviny = note.match(/kuřec|maso|steak|vejc|ryb|tunak|cottage|jogurt|sýr|řízek|hermelín/);
+            const hasSacharidy = note.match(/chleb|knedl|rýž|těstovin|brambor|rohlík/);
+            const hasSmažene = note.match(/smažen/);
+            const hasTucne = note.match(/škvarky|tatarka|majonéz|bůčk/);
+            const lowWater = !meal.water || meal.water < 1.5;
+            const goodWater = meal.water >= 2;
+
+            let score = 0;
+            if (hasBilkoviny) score += 2;
+            if (hasZelenina) score += 2;
+            if (!hasAlkohol) score += 1;
+            if (!hasSladkosti) score += 1;
+            if (goodWater) score += 1;
+            if (hasAlkohol) score -= 3;
+            if (hasSladkosti) score -= 2;
+            if (hasTucne) score -= 1;
+
+            const rating = score >= 5 ? { icon: '✅', label: 'Dobrý den', color: '#4ecdc4' }
+                         : score >= 2 ? { icon: '⚠️', label: 'Průměrný den', color: '#f39c12' }
+                         : { icon: '❌', label: 'Těžký den', color: '#ff6b5b' };
+
+            let html = `<div style="font-size:15px;font-weight:700;color:var(--primary);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--primary);">🍽️ Analýza jídla</div>`;
+
+            html += `<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px;">
+                <div style="font-size:20px;font-weight:700;color:${rating.color};margin-bottom:8px;">${rating.icon} ${rating.label}</div>
+                <div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:6px;">Co jsi jedla:</div>`;
+            lines.forEach(line => {
+                html += `<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--border);">${line}</div>`;
+            });
+            if (meal.water) html += `<div style="font-size:12px;padding:3px 0;color:#3498db;">💧 Voda: ${meal.water} l</div>`;
+            html += `</div>`;
+
+            html += `<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px;">
+                <div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:8px;">🔬 Rozbor:</div>`;
+            if (hasBilkoviny) html += `<div style="font-size:12px;padding:4px 0;">✅ <b>Proteiny</b> - dobré pro svaly a sytost</div>`;
+            if (hasZelenina) html += `<div style="font-size:12px;padding:4px 0;">✅ <b>Zelenina</b> - vitamíny a vláknina</div>`;
+            if (goodWater) html += `<div style="font-size:12px;padding:4px 0;">✅ <b>Hydratace</b> - ${meal.water}l - výborně!</div>`;
+            if (hasSacharidy) html += `<div style="font-size:12px;padding:4px 0;">⚠️ <b>Sacharidy</b> - energie ale glykogen zadržuje vodu</div>`;
+            if (hasSmažene && !hasTucne) html += `<div style="font-size:12px;padding:4px 0;">⚠️ <b>Smažené jídlo</b> - příležitostně v pořádku, více tuku než grilované</div>`;
+            if (hasTucne) html += `<div style="font-size:12px;padding:4px 0;">⚠️ <b>Tučné jídlo</b> - vyšší kalorická hustota, pomalejší trávení</div>`;
+            if (hasSladkosti) html += `<div style="font-size:12px;padding:4px 0;">❌ <b>Sladkosti</b> - rychlý cukr → inzulin → ukládání tuku</div>`;
+            if (hasAlkohol) html += `<div style="font-size:12px;padding:4px 0;">❌ <b>Alkohol</b> - prázdné kalorie, zadržuje vodu, zpomaluje spalování</div>`;
+            if (lowWater) html += `<div style="font-size:12px;padding:4px 0;">⚠️ <b>Málo vody</b> - zkus pít více</div>`;
+            html += `</div>`;
+
+            html += `<div style="background:var(--bg);padding:12px;border-radius:8px;">
+                <div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:8px;">💡 Zítra:</div>`;
+            if (hasAlkohol) {
+                html += `<div style="font-size:12px;padding:3px 0;">→ Pij 2-3l vody - vyplaví alkohol</div>`;
+                html += `<div style="font-size:12px;padding:3px 0;">→ Lehčí jídlo - zelenina, lehké proteiny</div>`;
+                html += `<div style="font-size:12px;padding:3px 0;">→ Zkrať jídelní okno</div>`;
+            } else if (hasSladkosti) {
+                html += `<div style="font-size:12px;padding:3px 0;">→ Vynech sladkosti, nahraď ovocem</div>`;
+                html += `<div style="font-size:12px;padding:3px 0;">→ Pij aspoň 2l vody</div>`;
+            } else if (hasTucne) {
+                html += `<div style="font-size:12px;padding:3px 0;">→ Lehčí jídlo zítra - salát, grilované maso</div>`;
+            } else {
+                html += `<div style="font-size:12px;padding:3px 0;">→ Pokračuj stejně - dobrý přístup! 💪</div>`;
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        function renderAnalysis() {
+            const div = document.getElementById('analysisContent');
+            if (!div) return;
+            if (!appState.logbook || appState.logbook.length < 2) {
+                div.innerHTML = '<div class="empty-state">Potřebuji aspoň 2 dny dat pro analýzu</div>';
+                return;
+            }
+
+            const sorted = [...appState.logbook].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const todayStr = getDateString(currentDate);
+            const todayEntry = appState.logbook.find(e => e.date === todayStr);
+
+            if (!todayEntry || todayEntry.weight === 0) {
+                const dateStr2 = getDateString(currentDate);
+                const mealOnly = appState.meals.find(m => m.date === dateStr2);
+                if (mealOnly && mealOnly.note) {
+                    div.innerHTML = renderFoodAnalysis(mealOnly);
+                } else {
+                    div.innerHTML = '<div class="empty-state">Pro tento den nejsou data</div>';
+                }
+                return;
+            }
+
+            const todayDate = new Date(todayEntry.date);
+            const yesterdayDate = new Date(todayDate);
+            yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+            const yesterdayStr = getDateString(yesterdayDate);
+            const yesterdayMeal = appState.meals.find(m => m.date === yesterdayStr);
+            const yesterdayEntry = appState.logbook.find(e => e.date === yesterdayStr);
+
+            let html = `<div style="font-size:15px;font-weight:700;color:var(--primary);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--primary);">📅 Včera → Dnes</div>`;
+
+            const diffColor = todayEntry.diff < 0 ? '#4ecdc4' : todayEntry.diff > 0 ? '#ff6b5b' : '#7f8c8d';
+            const diffIcon = todayEntry.diff < 0 ? '▼' : todayEntry.diff > 0 ? '▲' : '→';
+
+            html += `<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;">
+                <div><div style="font-size:11px;color:var(--light);">Dnešní váha</div>
+                <div style="font-size:20px;font-weight:700;color:var(--primary);">${todayEntry.weight.toFixed(2)} kg</div></div>
+                <div style="text-align:center;"><div style="font-size:11px;color:var(--light);">Změna</div>
+                <div style="font-size:20px;font-weight:700;color:${diffColor};">${diffIcon} ${Math.abs(todayEntry.diff).toFixed(2)} kg</div></div>
+                <div style="text-align:right;"><div style="font-size:11px;color:var(--light);">Včerejší okno</div>
+                <div style="font-size:20px;font-weight:700;color:var(--primary);">${yesterdayEntry && yesterdayEntry.window ? yesterdayEntry.window + 'h' : '-'}</div></div>
+            </div>`;
+
+            if (yesterdayMeal && yesterdayMeal.note) {
+                const lines = yesterdayMeal.note.split('\n').filter(l => l.trim());
+                html += `<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px;">
+                    <div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:8px;">🍽️ Včerejší jídlo:</div>`;
+                lines.forEach(line => {
+                    html += `<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--border);">${line}</div>`;
+                });
+                if (yesterdayMeal.water) html += `<div style="font-size:12px;padding:3px 0;color:#3498db;">💧 Voda: ${yesterdayMeal.water} l</div>`;
+                html += `</div>`;
+            }
+
+            html += `<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:8px;">🔬 Analýza příčin:</div>`;
+
+            if (yesterdayMeal) {
+                const note = yesterdayMeal.note.toLowerCase();
+                const hasAlkohol = note.includes('alkohol');
+                const hasSladkosti = note.includes('sladkosti');
+                const lowWater = !yesterdayMeal.water || yesterdayMeal.water < 1.5;
+                const highWater = yesterdayMeal.water >= 2;
+                const longWindow = yesterdayEntry && yesterdayEntry.window > 6;
+                const shortWindow = yesterdayEntry && yesterdayEntry.window > 0 && yesterdayEntry.window <= 5;
+
+                if (todayEntry.diff > 0.1) {
+                    html += `<div style="font-size:12px;color:#ff6b5b;margin-bottom:6px;font-weight:600;">Váha vzrostla o ${todayEntry.diff.toFixed(2)} kg - možné příčiny:</div>`;
+                    if (hasAlkohol) html += `<div style="font-size:12px;padding:4px 0;">🍺 <b>Alkohol</b> - způsobuje zadržování vody (dočasný nárůst 0.5-2kg)</div>`;
+                    if (hasSladkosti) html += `<div style="font-size:12px;padding:4px 0;">🍬 <b>Sladkosti</b> - cukr způsobuje zadržování glykogenu a vody</div>`;
+                    if (lowWater) html += `<div style="font-size:12px;padding:4px 0;">💧 <b>Málo vody</b> - dehydratace způsobuje zadržování tekutin</div>`;
+                    if (longWindow) html += `<div style="font-size:12px;padding:4px 0;">⏰ <b>Dlouhé okno ${yesterdayEntry.window}h</b> - delší příjem potravy může zvýšit váhu</div>`;
+                    if (!hasAlkohol && !hasSladkosti && !lowWater) html += `<div style="font-size:12px;padding:4px 0;">📊 Přirozená denní variace váhy (±0.5kg je normální)</div>`;
+                    html += `<div style="font-size:12px;color:var(--primary);margin-top:8px;font-weight:600;">💡 Co dělat dnes:</div>`;
+                    if (hasAlkohol) {
+                        html += `<div style="font-size:12px;padding:3px 0;">→ Pij 2.5-3l vody - vyplaví alkohol a přebytečnou vodu</div>`;
+                        html += `<div style="font-size:12px;padding:3px 0;">→ Lehké jídlo (zelenina, bílkoviny bez tuku)</div>`;
+                        html += `<div style="font-size:12px;padding:3px 0;">→ Zkrať okno na 4-5h</div>`;
+                    }
+                    if (hasSladkosti && !hasAlkohol) {
+                        html += `<div style="font-size:12px;padding:3px 0;">→ Vynech sladkosti dnes, nahraď ovocem</div>`;
+                        html += `<div style="font-size:12px;padding:3px 0;">→ Pij 2l vody</div>`;
+                    }
+                    if (lowWater) html += `<div style="font-size:12px;padding:3px 0;">→ Pij alespoň 2l vody dnes</div>`;
+                } else if (todayEntry.diff < -0.1) {
+                    html += `<div style="font-size:12px;color:#4ecdc4;margin-bottom:6px;font-weight:600;">Váha klesla o ${Math.abs(todayEntry.diff).toFixed(2)} kg - co fungovalo:</div>`;
+                    if (!hasAlkohol) html += `<div style="font-size:12px;padding:4px 0;">✅ <b>Bez alkoholu</b> - tělo nezadržovalo vodu</div>`;
+                    if (!hasSladkosti) html += `<div style="font-size:12px;padding:4px 0;">✅ <b>Bez sladkostí</b> - nízká hladina inzulinu</div>`;
+                    if (highWater) html += `<div style="font-size:12px;padding:4px 0;">✅ <b>Dostatek vody</b> - podpořilo metabolismus</div>`;
+                    if (shortWindow) html += `<div style="font-size:12px;padding:4px 0;">✅ <b>Krátké okno ${yesterdayEntry.window}h</b> - delší půst = lepší výsledky</div>`;
+                    html += `<div style="font-size:12px;padding:4px 0;margin-top:4px;">💡 Pokračuj stejně!</div>`;
+                } else {
+                    html += `<div style="font-size:12px;padding:4px 0;">→ Váha stabilní - přirozená denní variace</div>`;
+                    html += `<div style="font-size:12px;padding:4px 0;">→ Pokračuj v nastaveném režimu</div>`;
+                }
+            } else {
+                html += `<div style="font-size:12px;color:var(--light);">Zadej včerejší jídlo pro analýzu příčin</div>`;
+            }
+            html += `</div>`;
+
+            html += `<div style="font-size:15px;font-weight:700;color:var(--primary);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--primary);">📊 Celková analýza</div>`;
+
+            html += `<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px;">
+                <div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:8px;">📈 Trend váhy</div>
+                <div id="analysisChart" style="height:180px;margin:4px 0;"></div>
+            </div>`;
+
+            const patterns = analyzePatterns(sorted);
+            html += `<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px;">
+                <div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:8px;">🔍 Zjištěné vzory</div>`;
+            if (patterns.length === 0) {
+                html += `<div style="font-size:12px;color:var(--light);">Potřebuji více dat (min. 5 dní) pro spolehlivé vzory</div>`;
+            } else {
+                patterns.forEach(p => {
+                    html += `<div style="font-size:12px;padding:6px 8px;background:white;border-radius:6px;margin-bottom:6px;border-left:3px solid ${p.color};">${p.text}</div>`;
+                });
+            }
+            html += `</div>`;
+
+            const avgChange = sorted.reduce((s, e) => s + (e.diff || 0), 0) / sorted.length;
+            const analysisDaysDown = sorted.filter(e => e.diff < -0.05).length;
+            const analysisDaysUp = sorted.filter(e => e.diff > 0.05).length;
+            const sortedWithWeight = sorted.filter(e => e.weight > 0);
+            const latestWeight = sortedWithWeight[0];
+            const firstWeight = sortedWithWeight[sortedWithWeight.length - 1];
+            const totalWeightChange = latestWeight && firstWeight ? (latestWeight.weight - firstWeight.weight) : 0;
+            html += `<div style="background:var(--bg);padding:12px;border-radius:8px;">
+                <div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:8px;">📋 Statistiky</div>
+                <div style="font-size:12px;padding:3px 0;">Průměrná denní změna: <b style="color:${avgChange < 0 ? '#4ecdc4' : '#ff6b5b'}">${avgChange.toFixed(2)} kg</b></div>
+                <div style="font-size:12px;padding:3px 0;">Dny s poklesem: <b style="color:#4ecdc4">${analysisDaysDown}</b> | Dny s nárůstem: <b style="color:#ff6b5b">${analysisDaysUp}</b></div>
+                <div style="font-size:12px;padding:3px 0;">Celková změna: <b style="color:${totalWeightChange < 0 ? '#4ecdc4' : '#ff6b5b'}">${totalWeightChange.toFixed(2)} kg</b> od začátku</div>
+            </div>`;
+
+            div.innerHTML = html;
+            drawTrendChart(sorted);
+        }
 
         function addWeight() {
             const w = parseFloat(document.getElementById('weightInput').value);
@@ -639,17 +902,19 @@
         }
 
         function recalculateAllDiffs() {
-            // Seřaď logbook chronologicky
             const sorted = [...appState.logbook].sort((a, b) => new Date(a.date) - new Date(b.date));
             
             sorted.forEach((entry, idx) => {
-                if (idx === 0) {
-                    // První den - žádný diff
+                if (!entry.weight || entry.weight === 0) {
+                    entry.diff = 0;
+                    return;
+                }
+                // Najdi předchozí den S váhou
+                const prevWithWeight = sorted.slice(0, idx).reverse().find(e => e.weight > 0);
+                if (!prevWithWeight) {
                     entry.diff = 0;
                 } else {
-                    // Vezmi váhu z předchozího dne
-                    const prevEntry = sorted[idx - 1];
-                    entry.diff = entry.weight - prevEntry.weight;
+                    entry.diff = parseFloat((entry.weight - prevWithWeight.weight).toFixed(2));
                 }
             });
         }
@@ -673,6 +938,10 @@
             }
         }
 
+        function renderMeals() {
+            // Historie jídel se nezobrazuje - data se ukládají pro analýzu
+        }
+
         function renderLogbook() {
             const div = document.getElementById('logbookTable');
             if (!div) return;
@@ -686,8 +955,8 @@
             const daysOfWeek = ['Ne', 'Po', 'Út', 'St', 'Čt', 'Pá', 'So'];
 
             // Průměry
-            const last7 = sorted.slice(0, 7);
-            const last30 = sorted.slice(0, 30);
+            const last7 = sorted.slice(0, 7).filter(e => e.weight > 0);
+            const last30 = sorted.slice(0, 30).filter(e => e.weight > 0);
             const avg7 = last7.length > 0 ? (last7.reduce((s, e) => s + e.weight, 0) / last7.length).toFixed(2) : '-';
             const avg30 = last30.length > 0 ? (last30.reduce((s, e) => s + e.weight, 0) / last30.length).toFixed(2) : '-';
 
@@ -718,14 +987,15 @@
                 const diffText = isDown ? `▼ ${Math.abs(entry.diff).toFixed(2)}` : isUp ? `▲ ${entry.diff.toFixed(2)}` : '→ 0';
 
                 // To Go box
-                const toGo = appState.goalWeight > 0 ? (entry.weight - appState.goalWeight) : null;
+                const weightForToGo = entry.weight > 0 ? entry.weight : (sorted.find(e => e.weight > 0 && new Date(e.date) <= new Date(entry.date)) || {}).weight;
+                const toGo = (appState.goalWeight > 0 && weightForToGo > 0) ? (weightForToGo - appState.goalWeight) : null;
                 const toGoBg = toGo !== null ? (toGo <= 0 ? '#e8f8f5' : toGo < 3 ? '#fff9e6' : '#fef0ee') : '#f8fafb';
                 const toGoColor = toGo !== null ? (toGo <= 0 ? '#27ae60' : toGo < 3 ? '#f39c12' : '#e74c3c') : '#7f8c8d';
                 const toGoText = toGo !== null ? `${toGo.toFixed(2)} kg` : '-';
 
                 // 7denní průměr pro tento den
                 const idx = sorted.indexOf(entry);
-                const slice7 = sorted.slice(idx, idx + 7);
+                const slice7 = sorted.slice(idx, idx + 7).filter(e => e.weight > 0);
                 const avg7day = slice7.length > 0 ? (slice7.reduce((s, e) => s + e.weight, 0) / slice7.length).toFixed(2) : '-';
 
                 html += `
@@ -739,8 +1009,8 @@
 
                         <!-- Váha + změna -->
                         <div style="flex: 1; background: ${weightBg}; border-radius: 10px; padding: 8px 12px; text-align: center;">
-                            <div style="font-size: 18px; font-weight: 700; color: ${weightColor};">${entry.weight.toFixed(2)}</div>
-                            <div style="font-size: 12px; font-weight: 600; color: ${weightColor};">${diffText}</div>
+                            <div style="font-size: 18px; font-weight: 700; color: ${weightColor};">${entry.weight > 0 ? entry.weight.toFixed(2) : '-'}</div>
+                            <div style="font-size: 12px; font-weight: 600; color: ${weightColor};">${entry.weight > 0 ? diffText : ''}</div>
                         </div>
 
                         <!-- 7denní průměr -->
@@ -766,229 +1036,77 @@
             });
 
             div.innerHTML = html;
+            renderStats();
         }
+        function analyzePatterns(logbook) {
+            const patterns = [];
+            if (logbook.length < 3) return patterns;
 
-        function renderAnalysis() {
-            const div = document.getElementById('analysisContent');
-            if (!appState.logbook || appState.logbook.length < 2) {
-                div.innerHTML = '<div class="empty-state">Potřebuji aspoň 2 dny dat pro analýzu</div>';
-                return;
-            }
-
-            const sorted = [...appState.logbook].sort((a, b) => new Date(b.date) - new Date(a.date));
-            const today = sorted[0];
-            const yesterday = sorted[1];
-            const yesterdayMeal = appState.meals.find(m => m.date === yesterday.date);
-
-            // ═══════════════════════════════════
-            // ČÁST 1: VČEREJŠÍ DEN
-            // ═══════════════════════════════════
-            let html = `<div style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--primary);">📅 Včerejší den</div>`;
-
-            // Váha dnes vs včera
-            const diffColor = today.diff < 0 ? '#4ecdc4' : today.diff > 0 ? '#ff6b5b' : '#7f8c8d';
-            const diffIcon = today.diff < 0 ? '▼' : today.diff > 0 ? '▲' : '→';
-            html += `<div style="background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-size: 12px; color: var(--light);">Dnešní váha</div>
-                        <div style="font-size: 22px; font-weight: 700; color: var(--primary);">${today.weight.toFixed(2)} kg</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 12px; color: var(--light);">Změna</div>
-                        <div style="font-size: 22px; font-weight: 700; color: ${diffColor};">${diffIcon} ${Math.abs(today.diff).toFixed(2)} kg</div>
-                    </div>
-                </div>
-            </div>`;
-
-            // Včerejší jídlo
-            if (yesterdayMeal && yesterdayMeal.note) {
-                const lines = yesterdayMeal.note.split('\n').filter(l => l.trim());
-                html += `<div style="background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                    <div style="font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 8px;">🍽️ Co jsi jedla včera:</div>`;
-                lines.forEach(line => {
-                    html += `<div style="font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border);">${line}</div>`;
+            // Alkohol vzor
+            const alcoholDays = logbook.filter(e => {
+                const meal = appState.meals.find(m => {
+                    const next = new Date(e.date);
+                    next.setDate(next.getDate() - 1);
+                    return m.date === getDateString(next);
                 });
-                if (yesterdayMeal.water) {
-                    html += `<div style="font-size: 13px; padding: 4px 0; color: #3498db;">💧 Voda: ${yesterdayMeal.water} l</div>`;
-                }
-                html += `</div>`;
-
-                // Komentář k dnešní váze
-                html += `<div style="background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 20px;">
-                    <div style="font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 8px;">💡 Co mohlo ovlivnit váhu:</div>`;
-                
-                const hasSladkosti = yesterdayMeal.note.toLowerCase().includes('sladkosti');
-                const hasAlkohol = yesterdayMeal.note.toLowerCase().includes('alkohol');
-                const hasVecere = yesterdayMeal.note.toLowerCase().includes('večeře');
-                const lowWater = !yesterdayMeal.water || yesterdayMeal.water < 1.5;
-
-                if (today.diff > 0.1) {
-                    if (hasSladkosti) html += `<div style="font-size: 13px; padding: 4px 0;">❌ Sladkosti mohly přispět k nárůstu váhy</div>`;
-                    if (hasAlkohol) html += `<div style="font-size: 13px; padding: 4px 0;">❌ Alkohol zadržuje vodu a zvyšuje váhu</div>`;
-                    if (lowWater) html += `<div style="font-size: 13px; padding: 4px 0;">💧 Málo vody - tělo zadržuje tekutiny</div>`;
-                    if (!hasSladkosti && !hasAlkohol) html += `<div style="font-size: 13px; padding: 4px 0;">⚠️ Váha mírně vzrostla - sleduj dál</div>`;
-                } else if (today.diff < -0.1) {
-                    if (!hasSladkosti) html += `<div style="font-size: 13px; padding: 4px 0;">✅ Bez sladkostí - váha klesla</div>`;
-                    if (!hasAlkohol) html += `<div style="font-size: 13px; padding: 4px 0;">✅ Bez alkoholu - dobře!</div>`;
-                    if (!lowWater) html += `<div style="font-size: 13px; padding: 4px 0;">✅ Dostatek vody pomohl</div>`;
-                    if (hasVecere) html += `<div style="font-size: 13px; padding: 4px 0;">⚠️ Zkus lehčí večeři pro lepší výsledky</div>`;
-                } else {
-                    html += `<div style="font-size: 13px; padding: 4px 0;">→ Váha stabilní - pokračuj stejně</div>`;
-                }
-                html += `</div>`;
-            } else {
-                html += `<div style="background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 20px; color: var(--light); font-size: 13px;">Včerejší jídlo není zaznamenáno</div>`;
+                return meal && meal.note.toLowerCase().includes('alkohol');
+            });
+            if (alcoholDays.filter(e => e.weight > 0).length >= 2) {
+                const validAlc = alcoholDays.filter(e => e.weight > 0);
+                const avgAlcEffect = validAlc.reduce((s, e) => s + (e.diff || 0), 0) / validAlc.length;
+                patterns.push({ text: `🍺 Alkohol: průměrný vliv na váhu ${avgAlcEffect > 0 ? '+' : ''}${avgAlcEffect.toFixed(2)} kg (${validAlc.length}x)`, color: avgAlcEffect > 0 ? '#ff6b5b' : '#4ecdc4' });
             }
 
-            // ═══════════════════════════════════
-            // ČÁST 2: CELKOVÁ ANALÝZA
-            // ═══════════════════════════════════
-            html += `<div style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--primary);">📊 Celková analýza</div>`;
-
-            // Trend váhy
-            html += `<div style="background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                <div style="font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 8px;">📈 Trend váhy (posledních 7 dní)</div>
-                <div id="analysisChart" style="height: 180px; margin: 12px 0;"></div>
-            </div>`;
-
-            // Vzory z jídla
-            const foodAnalysis = analyzeFoodPatterns(sorted);
-            html += `<div style="background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                <div style="font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 8px;">🔍 Co ti funguje / nepassuje</div>`;
-            
-            if (foodAnalysis.length === 0) {
-                html += '<div style="color: var(--light); font-size: 13px;">Zatím málo dat - přidávej jídlo každý den pro lepší analýzu</div>';
-            } else {
-                const good = foodAnalysis.filter(f => f.score > 0.3);
-                const bad = foodAnalysis.filter(f => f.score < -0.3);
-                const neutral = foodAnalysis.filter(f => f.score >= -0.3 && f.score <= 0.3);
-                
-                if (good.length > 0) {
-                    html += `<div style="font-size: 12px; color: var(--light); margin-top: 8px; margin-bottom: 4px;">✅ Vyhovuje (váha klesá):</div>`;
-                    good.forEach(item => {
-                        html += `<div style="font-size: 13px; padding: 4px 8px; background: #e8f8f5; border-radius: 4px; margin-bottom: 4px;">${item.food} (${item.positiveDays}x pokles)</div>`;
-                    });
-                }
-                if (bad.length > 0) {
-                    html += `<div style="font-size: 12px; color: var(--light); margin-top: 8px; margin-bottom: 4px;">❌ Nepassuje (váha roste):</div>`;
-                    bad.forEach(item => {
-                        html += `<div style="font-size: 13px; padding: 4px 8px; background: #fef0ee; border-radius: 4px; margin-bottom: 4px;">${item.food} (${item.negativeDays}x nárůst)</div>`;
-                    });
-                }
-                if (neutral.length > 0) {
-                    html += `<div style="font-size: 12px; color: var(--light); margin-top: 8px; margin-bottom: 4px;">⚠️ Neutrální:</div>`;
-                    neutral.forEach(item => {
-                        html += `<div style="font-size: 13px; padding: 4px 8px; background: var(--bg); border-radius: 4px; margin-bottom: 4px;">${item.food}</div>`;
-                    });
-                }
-            }
-            html += `</div>`;
-
-            // Doporučení
-            const recommendations = generateRecommendations(sorted, foodAnalysis);
-            html += `<div style="background: var(--bg); padding: 12px; border-radius: 8px;">
-                <div style="font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 8px;">💪 Doporučení</div>`;
-            if (recommendations.length === 0) {
-                html += '<div style="color: var(--light); font-size: 13px;">Pokračuj - daří se ti! 👍</div>';
-            } else {
-                recommendations.forEach(rec => {
-                    html += `<div style="padding: 8px; background: white; border-radius: 6px; margin-bottom: 8px; font-size: 13px; border-left: 3px solid var(--primary);">${rec}</div>`;
+            // Sladkosti vzor
+            const sweetDays = logbook.filter(e => {
+                const meal = appState.meals.find(m => {
+                    const next = new Date(e.date);
+                    next.setDate(next.getDate() - 1);
+                    return m.date === getDateString(next);
                 });
-            }
-            html += `</div>`;
-
-            div.innerHTML = html;
-            drawTrendChart(sorted);
-        }
-
-        function analyzeFoodPatterns(logbook) {
-            const foodStats = {};
-            
-            // Pro každý den v logbooku vezmi jídlo z PŘEDCHOZÍHO dne
-            logbook.forEach(entry => {
-                if (!entry.weight) return;
-                
-                // Najdi jídlo z předchozího dne
-                const entryDate = new Date(entry.date);
-                const prevDate = new Date(entryDate);
-                prevDate.setDate(prevDate.getDate() - 1);
-                const prevDateStr = getDateString(prevDate);
-                
-                const meal = appState.meals.find(m => m.date === prevDateStr);
-                if (!meal || !meal.note) return;
-                
-                // Extrahuj všechna jídla z plného textu
-                const foods = extractFoods(meal.note);
-                foods.forEach(food => {
-                    if (!foodStats[food]) foodStats[food] = { positiveDays: 0, negativeDays: 0, neutralDays: 0 };
-                    if (entry.diff < -0.05) {
-                        foodStats[food].positiveDays++; // váha klesla = dobré
-                    } else if (entry.diff > 0.05) {
-                        foodStats[food].negativeDays++; // váha rostla = špatné
-                    } else {
-                        foodStats[food].neutralDays++;
-                    }
-                });
+                return meal && meal.note.toLowerCase().includes('sladkosti');
             });
-            
-            return Object.entries(foodStats)
-                .map(([food, stats]) => {
-                    const total = stats.positiveDays + stats.negativeDays + stats.neutralDays;
-                    const score = total > 0 ? (stats.positiveDays - stats.negativeDays) / total : 0;
-                    return { food, ...stats, score, total };
-                })
-                .filter(item => item.total >= 1)
-                .sort((a, b) => b.score - a.score);
-        }
+            if (sweetDays.filter(e => e.weight > 0).length >= 3) {
+                const validSweet = sweetDays.filter(e => e.weight > 0);
+                const avgSweetEffect = validSweet.reduce((s, e) => s + (e.diff || 0), 0) / validSweet.length;
+                patterns.push({ text: `🍬 Sladkosti: průměrný vliv ${avgSweetEffect > 0 ? '+' : ''}${avgSweetEffect.toFixed(2)} kg (${validSweet.length}x)`, color: avgSweetEffect > 0 ? '#ff6b5b' : '#4ecdc4' });
+            }
 
-        function extractFoods(noteText) {
-            const foods = [];
-            const lines = noteText.split('\n');
-            lines.forEach(line => {
-                // Formát "Oběd: kuřecí stehno s rýží"
-                const match = line.match(/^[^:]+:\s*(.+)$/);
-                if (match) {
-                    const content = match[1].trim().toLowerCase();
-                    // Rozděl na jednotlivé položky (čárka nebo "a")
-                    const items = content.split(/,|\sa\s/).map(s => s.trim()).filter(s => s.length > 2);
-                    items.forEach(item => {
-                        // Vezmi první 3 slova jako klíčové slovo
-                        const keyword = item.split(/\s+/).slice(0, 3).join(' ');
-                        if (keyword) foods.push(keyword);
-                    });
+            // Délka okna vzor
+            const windowDays = logbook.filter(e => e.window && e.window > 0);
+            if (windowDays.length >= 2) {
+                const shortWindow = windowDays.filter(e => e.window <= 5);
+                const longWindow = windowDays.filter(e => e.window > 5);
+                if (shortWindow.length >= 1 && longWindow.length >= 1) {
+                    const avgShort = shortWindow.reduce((s, e) => s + (e.diff || 0), 0) / shortWindow.length;
+                    const avgLong = longWindow.reduce((s, e) => s + (e.diff || 0), 0) / longWindow.length;
+                    patterns.push({ text: `⏰ Krátké okno (≤5h): ${avgShort.toFixed(2)} kg | Dlouhé okno (>5h): ${avgLong.toFixed(2)} kg`, color: avgShort < avgLong ? '#4ecdc4' : '#7f8c8d' });
                 }
-            });
-            return [...new Set(foods)]; // bez duplikátů
-        }
+            }
 
-        function generateRecommendations(logbook, foodAnalysis) {
-            const recs = [];
-            const bestFoods = foodAnalysis.filter(f => f.score > 0.5);
-            if (bestFoods.length > 0) {
-                recs.push(`✅ Pokračuj s: ${bestFoods.slice(0, 2).map(f => f.food).join(', ')}`);
-            }
-            const worstFoods = foodAnalysis.filter(f => f.score < -0.5);
-            if (worstFoods.length > 0) {
-                recs.push(`❌ Omez: ${worstFoods.slice(0, 2).map(f => f.food).join(', ')}`);
-            }
-            const waterEntries = logbook.slice(0, 7).map(e => {
-                const meal = appState.meals.find(m => m.date === e.date);
-                return meal ? (meal.water || 0) : (e.water || 0);
+            // Den v týdnu vzor
+            const days = ['Ne','Po','Út','St','Čt','Pá','So'];
+            const dayStats = {};
+            logbook.forEach(e => {
+                if (!e.weight || !e.diff) return;
+                const day = days[new Date(e.date).getDay()];
+                if (!dayStats[day]) dayStats[day] = { total: 0, sum: 0 };
+                dayStats[day].total++;
+                dayStats[day].sum += e.diff;
             });
-            const avgWater = waterEntries.reduce((s, w) => s + w, 0) / Math.min(7, logbook.length);
-            if (avgWater < 1.5) {
-                recs.push(`💧 Piješ málo vody (${avgWater.toFixed(1)}L/den) - pij více`);
+            const dayEntries = Object.entries(dayStats).filter(([d, s]) => s.total >= 1);
+            if (dayEntries.length >= 3) {
+                const sortedDays = [...dayEntries].sort((a, b) => (a[1].sum/a[1].total) - (b[1].sum/b[1].total));
+                const bestDay = sortedDays[0];
+                const worstDay = sortedDays[sortedDays.length - 1];
+                patterns.push({ text: `📅 Nejlepší den: ${bestDay[0]} (prům. ${(bestDay[1].sum/bestDay[1].total).toFixed(2)} kg) | Nejhorší: ${worstDay[0]}`, color: '#4ecdc4' });
             }
-            const avgWindow = logbook.slice(0, 7).reduce((s, e) => s + (e.window || 8), 0) / Math.min(7, logbook.length);
-            if (avgWindow > 10) {
-                recs.push(`⏰ Okno je dlouhé (${avgWindow.toFixed(1)}h) - zkus ho zkrátit`);
-            }
-            return recs;
+
+            return patterns;
         }
 
         function drawTrendChart(logbook) {
-            const sorted = logbook.slice(0, 7).reverse();
+            const sorted = logbook.filter(e => e.weight > 0).slice(0, 7).reverse();
             const weights = sorted.map(e => e.weight);
             const dates = sorted.map(e => new Date(e.date).getDate());
             const canvas = document.getElementById('analysisChart');
@@ -1056,6 +1174,47 @@
             localStorage.setItem('windowLength', document.getElementById('windowLength').value);
         }
 
+
+        function showToast(msg, color) {
+            const toast = document.createElement('div');
+            toast.textContent = msg;
+            toast.style.cssText = `position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:${color || '#2d5a7b'};color:white;padding:12px 24px;border-radius:20px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3);`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function exportData() {
+            const data = JSON.stringify(appState);
+            navigator.clipboard.writeText(data).then(() => {
+                showToast('✅ Data zkopírována do schránky!', '#27ae60');
+            }).catch(() => {
+                prompt('Zkopíruj tata data:', data);
+            });
+        }
+
+        function importData() {
+            navigator.clipboard.readText().then(text => {
+                if (!text) return showToast('❌ Schránka je prázdná!', '#ff6b5b');
+                try {
+                    const data = JSON.parse(text);
+                    appState = data;
+                    if (!appState.meals) appState.meals = [];
+                    if (!appState.weights) appState.weights = [];
+                    if (!appState.logbook) appState.logbook = [];
+                    recalculateAllDiffs();
+                    save();
+                    renderLogbook();
+                    renderMeals();
+                    updateCurrentDate();
+                    showToast('✅ Data importována!', '#27ae60');
+                } catch(e) {
+                    showToast('❌ Neplatná data!', '#ff6b5b');
+                }
+            }).catch(() => {
+                showToast('❌ Nelze číst schránku. Zkus znovu.', '#ff6b5b');
+            });
+        }
+
         function saveGoalWeight() {
             const goal = parseFloat(document.getElementById('goalWeight').value);
             if (goal && goal > 0) {
@@ -1076,13 +1235,102 @@
             if (!appState.logbook) appState.logbook = [];
             if (!appState.goalWeight) appState.goalWeight = 0;
             
-            // RESET: Pro dnešní den - pokud okno není nastaveno z Fastingu (číslo > 0), vymažeme
-            const today = getDateString(new Date());
-            const todayEntry = appState.logbook.find(e => e.date === today);
-            if (todayEntry && (todayEntry.window === 8 || todayEntry.window === 0)) {
-                todayEntry.window = '';
+            // Záloha skutečných dat - obnoví se pokud localStorage je prázdný
+            if (appState.logbook.length === 0 && appState.meals.length === 0) {
+                const backup = {"startTime":null,"streak":1,"weights":[{"date":"2026-04-30","value":65.2},{"date":"2026-05-01","value":65.7}],"meals":[{"date":"2026-04-28","note":"Oběd: rýže se smetanovou omáčkou s chřestem a žampióny kešu ořechy\nVečeře: smažené filé s bramborovou kaší okurkový salát\nSladkosti: čokoláda a oplatka","water":0},{"date":"2026-04-29","note":"Oběd: mini chlebíčky cirka 6 ks mini koláčky svatební tvarohové cirka 6 ks\nVečeře: 200 g cottage ovoce jablka hrušky jahody ve velikosti jednoho celého jablka vše dohromady\nSladkosti: asi 100 g rozinek a oříšků v čokoládě","water":0},{"date":"2026-04-30","note":"Oběd: Smažené filé s bramborovou kaší okurkový salát\nVečeře: Jeden špekáček kousek kuřecího masa dva rohlíky\nAlkohol: 3 půllitry piva","water":2}],"logbook":[{"date":"2026-04-28","weight":66.1,"diff":0,"window":7,"meal":"","water":0},{"date":"2026-04-29","weight":65.2,"diff":-0.9,"window":6,"meal":"mini chlebíčky","water":0},{"date":"2026-04-30","weight":65.2,"diff":0,"window":12,"meal":"Oběd: Smažené filé","water":2},{"date":"2026-05-01","weight":65.7,"diff":0.5,"window":6,"meal":"","water":0}],"selectedQuality":null,"goalWeight":58};
+                appState = backup;
                 save();
             }
+
+            // Vždy doplň jídlo 1.5. pokud chybí
+            if (!appState.meals.find(m => m.date === '2026-05-01')) {
+                appState.meals.push({
+                    date: '2026-05-01',
+                    note: 'Oběd: 2 rohlíky s bůčkovou pomazánkou\nVečeře: Škvarky, chleba, lupínky, hovězí steak a zebra, kesu\nAlkohol: Pivo, víno',
+                    water: 1
+                });
+                save();
+            }
+            // Vždy doplň jídlo 3.5. pokud chybí
+            if (!appState.meals.find(m => m.date === '2026-05-03')) {
+                appState.meals.push({
+                    date: '2026-05-03',
+                    note: 'Oběd: dvě vejce natvrdo, hermelín, rajčátka a okurek\nVečeře: smažený řízek, bramborová kaše\nSladkosti: hrst želé bonbonů Roshen, hrst rozinek a oříšků v čokoládě',
+                    water: 1.5
+                });
+                save();
+            }
+
+            // Vždy doplň logbook 4.5. pokud chybí
+            if (!appState.logbook.find(e => e.date === '2026-05-04')) {
+                appState.logbook.push({
+                    date: '2026-05-04',
+                    weight: 65.8,
+                    diff: 0.1,
+                    window: 0,
+                    meal: '',
+                    water: 0
+                });
+                recalculateAllDiffs();
+                save();
+            }
+
+            // Vždy doplň logbook 3.5. pokud chybí
+            if (!appState.logbook.find(e => e.date === '2026-05-03')) {
+                appState.logbook.push({
+                    date: '2026-05-03',
+                    weight: 0,
+                    diff: 0,
+                    window: 7,
+                    meal: '',
+                    water: 1.5
+                });
+                save();
+            }
+
+            // Vždy doplň jídlo 2.5. pokud chybí
+            if (!appState.meals.find(m => m.date === '2026-05-02')) {
+                appState.meals.push({
+                    date: '2026-05-02',
+                    note: 'Oběd: knedlíky s vajíčkem na sádle\nSvačina: kapanková polévka a chipsy\nVečeře: hovězí steak grilovaná zelenina brambory se slaninou v alobalu tatarka\nAlkohol: víno pivo',
+                    water: 1
+                });
+                save();
+            }
+            if (!appState.meals.find(m => m.date === '2026-04-28')) {
+                appState.meals.push({
+                    date: '2026-04-28',
+                    note: 'Oběd: rýže se smetanovou omáčkou s chřestem a žampióny kešu ořechy\nVečeře: smažené filé s bramborovou kaší okurkový salát\nSladkosti: čokoláda a oplatka',
+                    water: 0
+                });
+                save();
+            }
+
+            // Vždy doplň logbook 2.5. pokud chybí
+            if (!appState.logbook.find(e => e.date === '2026-05-02')) {
+                appState.logbook.push({
+                    date: '2026-05-02',
+                    weight: 0,
+                    diff: 0,
+                    window: 9,
+                    meal: '',
+                    water: 1
+                });
+                save();
+            }
+            const today = getDateString(new Date());
+            const windowFixes = {'2026-04-28': 7, '2026-04-29': 6, '2026-04-30': 12, '2026-05-01': 9, '2026-05-02': 9, '2026-05-03': 7};
+            Object.entries(windowFixes).forEach(([date, win]) => {
+                const entry = appState.logbook.find(e => e.date === date);
+                if (entry) entry.window = win;
+            });
+            save();
+            // Pro dnešní den - vymažeme okno pokud nebylo zadané fastigem
+            const todayLogEntry = appState.logbook.find(e => e.date === today);
+            if (todayLogEntry && !todayLogEntry.fastingCompleted) {
+                todayLogEntry.window = '';
+            }
+            save();
             
             // Přidej data z 29.4. pokud nejsou
             if (!appState.logbook.find(e => e.date === '2026-04-29')) {
@@ -1116,23 +1364,47 @@
                 });
             }
             
-            document.getElementById('fastLength').value = localStorage.getItem('fastLength') || 16;
-            document.getElementById('windowLength').value = localStorage.getItem('windowLength') || 8;
+            document.getElementById('fastLength').value = localStorage.getItem('fastLength') || 19;
+            document.getElementById('windowLength').value = localStorage.getItem('windowLength') || 5;
             document.getElementById('goalWeight').value = appState.goalWeight || '';
+            
+            // Přepočítej všechny diffy
+            recalculateAllDiffs();
+            save();
         }
 
         function init() {
-            load();
-            updateCurrentDate();
-            document.getElementById('streakValue').textContent = appState.streak;
-            renderMeals();
-            renderLogbook();
-            renderAnalysis();
-            if (appState.startTime) {
-                startTimer();
-                document.getElementById('startBtn').style.display = 'none';
-                document.getElementById('endBtn').style.display = 'block';
+            try {
+                load();
+                updateCurrentDate();
+                document.getElementById('streakValue').textContent = calculateStreak();
+                renderMeals();
+                renderLogbook();
+                renderAnalysis();
+                if (appState.startTime) {
+                    startTimer();
+                    document.getElementById('startBtn').style.display = 'none';
+                    document.getElementById('endBtn').style.display = 'block';
+                }
+            } catch(e) {
+                console.error('Init error:', e);
             }
+
+            // Swipe gesta
+            let touchStartX = 0;
+            let touchStartY = 0;
+            document.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].clientX;
+                touchStartY = e.changedTouches[0].clientY;
+            }, { passive: true });
+            document.addEventListener('touchend', e => {
+                const dx = touchStartX - e.changedTouches[0].clientX;
+                const dy = Math.abs(touchStartY - e.changedTouches[0].clientY);
+                if (Math.abs(dx) > 60 && dy < 50) {
+                    if (dx > 0) changeDate(1);
+                    else changeDate(-1);
+                }
+            }, { passive: true });
         }
 
         init();
