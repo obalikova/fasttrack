@@ -822,46 +822,6 @@
             const todayStr = getDateString(currentDate);
             const todayEntry = appState.logbook.find(e => e.date === todayStr);
 
-            if (!todayEntry || todayEntry.weight === 0) {
-                const yesterdayDate3 = new Date(currentDate);
-                yesterdayDate3.setDate(yesterdayDate3.getDate() - 1);
-                const yesterdayStr3 = getDateString(yesterdayDate3);
-                const logEntry3 = appState.logbook.find(e => e.date === yesterdayStr3);
-                const mealOnly = appState.meals.find(m => m.date === yesterdayStr3);
-                if (!mealOnly || !mealOnly.note) {
-                    div.innerHTML = '<div class="empty-state">Zadej včerejší jídlo pro analýzu</div>';
-                    return;
-                }
-                // Nastav proměnné stejně jako větev s váhou a pokračuj
-                const yesterdayMeal = mealOnly;
-                const yesterdayEntry = logEntry3;
-                const todayEntry2 = { weight: 0, diff: 0, date: getDateString(currentDate) };
-
-                const lines_nv = mealOnly.note.split('\n').filter(l => l.trim());
-                let html_nv = `<div style="font-size:15px;font-weight:700;color:var(--primary);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--primary);">📅 Včera → Dnes</div>`;
-                html_nv += `<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;">
-                    <div><div style="font-size:11px;color:var(--light);">Dnešní váha</div>
-                    <div style="font-size:20px;font-weight:700;color:var(--light);">—</div></div>
-                    <div style="text-align:right;"><div style="font-size:11px;color:var(--light);">Včerejší okno</div>
-                    <div style="font-size:20px;font-weight:700;color:var(--primary);">${yesterdayEntry && yesterdayEntry.window ? formatWindow(yesterdayEntry.window) : '-'}</div></div>
-                </div>`;
-                html_nv += `<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px;">
-                    <div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:8px;">🍽️ Včerejší jídlo:</div>`;
-                lines_nv.forEach(line => { html_nv += `<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--border);">${line}</div>`; });
-                if (mealOnly.water) html_nv += `<div style="font-size:12px;padding:3px 0;color:#3498db;">💧 Voda: ${mealOnly.water} l</div>`;
-                html_nv += `</div>`;
-                div.innerHTML = html_nv;
-
-                // Analýza pomocí nové databáze - stejný kód jako pro dny s váhou
-                const note_nv = mealOnly.note.toLowerCase();
-                const normalize_nv = (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-                const noteNorm_nv = normalize_nv(mealOnly.note);
-
-                // Zobraz hlavičku a jídlo
-                div.innerHTML = html_nv;
-                // Proměnné pro hlavní analýzu - budou nastaveny níže
-            }
-
             // Nastav proměnné pro analýzu
             let yesterdayMeal, yesterdayEntry, todayEntryForAnalysis;
             if (!todayEntry || todayEntry.weight === 0) {
@@ -890,9 +850,16 @@
             if (todayEntry && todayEntry.weight > 0) {
                 html += `<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;">
                 <div><div style="font-size:11px;color:var(--light);">Dnešní váha</div>
-                <div style="font-size:20px;font-weight:700;color:var(--primary);">${todayEntry && todayEntry.weight ? todayEntry.weight.toFixed(2) : '—'} kg</div></div>
+                <div style="font-size:20px;font-weight:700;color:var(--primary);">${todayEntry.weight.toFixed(2)} kg</div></div>
                 <div style="text-align:center;"><div style="font-size:11px;color:var(--light);">Změna</div>
                 <div style="font-size:20px;font-weight:700;color:${diffColor};">${diffIcon} ${Math.abs(todayEntryForAnalysis.diff).toFixed(2)} kg</div></div>
+                <div style="text-align:right;"><div style="font-size:11px;color:var(--light);">Včerejší okno</div>
+                <div style="font-size:20px;font-weight:700;color:var(--primary);">${yesterdayEntry && yesterdayEntry.window ? formatWindow(yesterdayEntry.window) : '-'}</div></div>
+            </div>`;
+            } else {
+                html += `<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;">
+                <div><div style="font-size:11px;color:var(--light);">Dnešní váha</div>
+                <div style="font-size:20px;font-weight:700;color:var(--light);">—</div></div>
                 <div style="text-align:right;"><div style="font-size:11px;color:var(--light);">Včerejší okno</div>
                 <div style="font-size:20px;font-weight:700;color:var(--primary);">${yesterdayEntry && yesterdayEntry.window ? formatWindow(yesterdayEntry.window) : '-'}</div></div>
             </div>`;
