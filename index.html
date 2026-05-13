@@ -77,7 +77,8 @@
         <button class="tab" onclick="switchTab(1)">📊 Analýza</button>
         <button class="tab" onclick="switchTab(2)">🍽️ Jídlo</button>
         <button class="tab" onclick="switchTab(3)">⚖️ Váha</button>
-        <button class="tab" onclick="switchTab(4)">⚙️ Nastavení</button>
+        <button class="tab" onclick="switchTab(4)">📈 Summary</button>
+        <button class="tab" onclick="switchTab(5)">⚙️ Nastavení</button>
     </div>
 
     <!-- TAB 0: FASTING -->
@@ -156,9 +157,15 @@
                 <button onclick="clearMealField('dinner')" style="background: #ff6b5b; color: white; border: none; border-radius: 6px; padding: 8px 12px; font-weight: 600; cursor: pointer;">✕</button>
             </div>
             
+            <label>🍰 Dezert</label>
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <textarea id="dessert" placeholder="Např. tiramisu, dort, koláč..." style="flex: 1; min-height: 40px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;"></textarea>
+                <button onclick="clearMealField('dessert')" style="background: #ff6b5b; color: white; border: none; border-radius: 6px; padding: 8px 12px; font-weight: 600; cursor: pointer;">✕</button>
+            </div>
+
             <label>🍫 Sladkosti</label>
             <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                <textarea id="sweets" placeholder="Např. čokoláda, zmrzlina..." style="flex: 1; min-height: 40px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;"></textarea>
+                <textarea id="sweets" placeholder="Např. čokoláda, bonbóny..." style="flex: 1; min-height: 40px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;"></textarea>
                 <button onclick="clearMealField('sweets')" style="background: #ff6b5b; color: white; border: none; border-radius: 6px; padding: 8px 12px; font-weight: 600; cursor: pointer;">✕</button>
             </div>
             
@@ -189,6 +196,40 @@
             <button class="btn-primary" id="windowEditBtn" onclick="toggleWindowEdit()">Uložit okno</button>
         </div>
         <div class="card">
+            <div class="card-title">🌙 Faktory dne</div>
+            <div style="margin-bottom:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                    <label style="margin:0;">😴 Špatný spánek</label>
+                    <div style="display:flex;gap:8px;">
+                        <button id="spanekNe" onclick="setFaktor('spanek','ne')" style="padding:4px 14px;border-radius:20px;border:1px solid var(--border);background:#4ecdc4;color:white;font-weight:600;font-size:12px;cursor:pointer;">Ne</button>
+                        <button id="spanekAno" onclick="setFaktor('spanek','ano')" style="padding:4px 14px;border-radius:20px;border:1px solid var(--border);background:white;color:var(--light);font-size:12px;cursor:pointer;">Ano</button>
+                    </div>
+                </div>
+                <input type="text" id="spanekNote" placeholder="Poznámka ke spánku..." style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;">
+            </div>
+            <div style="margin-bottom:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                    <label style="margin:0;">😰 Stres</label>
+                    <div style="display:flex;gap:8px;">
+                        <button id="stresNe" onclick="setFaktor('stres','ne')" style="padding:4px 14px;border-radius:20px;border:1px solid var(--border);background:#4ecdc4;color:white;font-weight:600;font-size:12px;cursor:pointer;">Ne</button>
+                        <button id="stresAno" onclick="setFaktor('stres','ano')" style="padding:4px 14px;border-radius:20px;border:1px solid var(--border);background:white;color:var(--light);font-size:12px;cursor:pointer;">Ano</button>
+                    </div>
+                </div>
+                <input type="text" id="stresNote" placeholder="Poznámka ke stresu..." style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;">
+            </div>
+            <div style="margin-bottom:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                    <label style="margin:0;">🏋️ Cvičení</label>
+                    <div style="display:flex;gap:8px;">
+                        <button id="cviceniNe" onclick="setFaktor('cviceni','ne')" style="padding:4px 14px;border-radius:20px;border:1px solid var(--border);background:#4ecdc4;color:white;font-weight:600;font-size:12px;cursor:pointer;">Ne</button>
+                        <button id="cviceniAno" onclick="setFaktor('cviceni','ano')" style="padding:4px 14px;border-radius:20px;border:1px solid var(--border);background:white;color:var(--light);font-size:12px;cursor:pointer;">Ano</button>
+                    </div>
+                </div>
+                <input type="text" id="cviceniNote" placeholder="Poznámka k cvičení..." style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box;">
+            </div>
+            <button class="btn-primary" onclick="saveFaktory()">Uložit faktory</button>
+        </div>
+        <div class="card">
             <div class="card-title">📊 Statistiky</div>
             <div id="statsContent"></div>
         </div>
@@ -198,8 +239,14 @@
         </div>
     </div>
 
-    <!-- TAB 4: NASTAVENÍ -->
+
+    <!-- TAB 4: SUMMARY -->
     <div id="tab4" class="page">
+        <div id="summaryContent"></div>
+    </div>
+
+    <!-- TAB 5: NASTAVENÍ -->
+    <div id="tab5" class="page">
         <div class="card">
             <div class="card-title">Fasting nastavení</div>
             <label>Půst (hodin)</label>
@@ -211,7 +258,7 @@
         <div class="card">
             <div class="card-title">Cílová váha a tempo</div>
             <label>Cílová váha (kg)</label>
-            <input type="number" id="goalWeight" placeholder="58.0" step="0.1" onchange="saveGoalWeight()">
+            <input type="number" id="goalWeight" placeholder="60.0" step="0.1" onchange="saveGoalWeight()">
             <label style="margin-top:8px;">Týdenní cíl — shodit (kg/týden)</label>
             <input type="number" id="weeklyGoal" placeholder="0.25" step="0.05" min="0.05" max="1.0" onchange="saveWeeklyGoal()">
             <p style="font-size:11px;color:var(--light);margin-top:4px;">💡 Realistické tempo: 0.2–0.4 kg/týden</p>
@@ -297,6 +344,7 @@
                 document.getElementById('lunch').value = extractMealPart(parts, 'Oběd');
                 document.getElementById('snack').value = extractMealPart(parts, 'Svačina');
                 document.getElementById('dinner').value = extractMealPart(parts, 'Večeře');
+                document.getElementById('dessert').value = extractMealPart(parts, 'Dezert');
                 document.getElementById('sweets').value = extractMealPart(parts, 'Sladkosti');
                 document.getElementById('alcohol').value = extractMealPart(parts, 'Alkohol');
                 document.getElementById('waterInput').value = meal.water || '';
@@ -305,6 +353,7 @@
                 document.getElementById('lunch').value = '';
                 document.getElementById('snack').value = '';
                 document.getElementById('dinner').value = '';
+                document.getElementById('dessert').value = '';
                 document.getElementById('sweets').value = '';
                 document.getElementById('alcohol').value = '';
                 document.getElementById('waterInput').value = '';
@@ -332,6 +381,7 @@
             document.getElementById('lunch').disabled = !editable;
             document.getElementById('snack').disabled = !editable;
             document.getElementById('dinner').disabled = !editable;
+            document.getElementById('dessert').disabled = !editable;
             document.getElementById('sweets').disabled = !editable;
             document.getElementById('alcohol').disabled = !editable;
             document.getElementById('waterInput').disabled = !editable;
@@ -376,7 +426,8 @@
             document.getElementById('tab' + idx).classList.add('active');
             document.querySelectorAll('.tab')[idx].classList.add('active');
             if (idx === 1) renderAnalysis();
-            if (idx === 3) renderLogbook();
+            if (idx === 3) { renderLogbook(); loadFaktory(); }
+            if (idx === 4) { renderSummary(); }
             // Datum se NEMĚNÍ při přepínání tabů - zachová vybrané datum
             updateMealFields();
             updateWeightFields();
@@ -660,6 +711,7 @@
             const lunch = document.getElementById('lunch').value.trim();
             const snack = document.getElementById('snack').value.trim();
             const dinner = document.getElementById('dinner').value.trim();
+            const dessert = document.getElementById('dessert').value.trim();
             const sweets = document.getElementById('sweets').value.trim();
             const alcohol = document.getElementById('alcohol').value.trim();
             const water = parseFloat(document.getElementById('waterInput').value) || 0;
@@ -671,6 +723,7 @@
             if (lunch && !isPlaceholder(lunch)) note += `Oběd: ${lunch}\n`;
             if (snack && !isPlaceholder(snack)) note += `Svačina: ${snack}\n`;
             if (dinner && !isPlaceholder(dinner)) note += `Večeře: ${dinner}\n`;
+            if (dessert && !isPlaceholder(dessert)) note += `Dezert: ${dessert}\n`;
             if (sweets && !isPlaceholder(sweets)) note += `Sladkosti: ${sweets}\n`;
             if (alcohol && !isPlaceholder(alcohol)) note += `Alkohol: ${alcohol}`;
 
@@ -749,7 +802,7 @@
 
             const hasAlkohol = note.includes('alkohol');
             const hasSladkosti = note.includes('sladkosti');
-            const hasZelenina = note.match(/zelenin|salát|paprik|brokolik|brokolici|špenát|mrkev|cuketa|rajč|okur|hermelín/);
+            const hasZelenina = note.match(/zelenin|salát|paprik|brokolik|špenát|mrkev|cuketa|rajč|okur|hermelín/);
             const hasBilkoviny = note.match(/kuřec|maso|steak|vejc|ryb|tunak|cottage|jogurt|sýr|řízek|hermelín/);
             const hasSacharidy = note.match(/chleb|knedl|rýž|těstovin|brambor|rohlík/);
             const hasSmažene = note.match(/smažen/);
@@ -897,20 +950,21 @@
                 // ═══ DATABÁZE POTRAVIN ═══
                 const foodDB = {
                     'edamam': { name: 'Edamame', info: 'Rostlinný protein + vláknina + železo. Nízký glykemický index. Výborná volba!', rada: null, typ: 'protein', emoji: '🌱' },
-                    'vejc|vaječn|omelet': { name: 'Vejce/omeleta', info: 'Kompletní protein, vitamín D, cholin — výborná volba kdykoliv během dne.', rada: null, typ: 'protein', emoji: '🥚' },
-                    'jogurt': { name: 'Jogurt', info: 'Probiotika podporují trávení, protein sytí na delší dobu. Jogurt 10% má zdravé tuky které zpomalují vstřebávání cukrů.', rada: 'Ideálně na oběd nebo snídani — ráno nakopne metabolismus.', typ: 'protein', emoji: '🥛' },
+                    'vejc|vaječn|omelet|vajicka|vajíčka|vejce|vajec': { name: 'Vejce/omeleta', info: 'Kompletní protein, vitamín D, cholin — výborná volba kdykoliv během dne.', rada: null, typ: 'protein', emoji: '🥚' },
+                    'jogurt|jogurtu|jogurtem|jogurty': { name: 'Jogurt', info: 'Probiotika podporují trávení, protein sytí na delší dobu. Jogurt 10% má zdravé tuky které zpomalují vstřebávání cukrů.', rada: 'Ideálně na oběd nebo snídani — ráno nakopne metabolismus.', typ: 'protein', emoji: '🥛' },
                     'cottage': { name: 'Cottage', info: 'Vysoký obsah proteinu, nízký tuk — jeden z nejlepších zdrojů bílkovin pro hubnutí.', rada: null, typ: 'protein', emoji: '🧀' },
                     'tvaroh': { name: 'Tvaroh', info: 'Kaseinový protein — tráví se pomalu, sytí na dlouho. Výborný večer.', rada: 'Ideální večerní jídlo — pomalé trávení přes noc.', typ: 'protein', emoji: '🧀' },
-                    'kuřec': { name: 'Kuřecí', info: 'Lean protein — tělo na jeho trávení spotřebuje ~30% kalorií. Podporuje spalování tuků.', rada: null, typ: 'protein', emoji: '🍗' },
-                    'hovězí|steak': { name: 'Hovězí/steak', info: 'Kompletní protein, železo, zinek. Vyšší obsah nasycených tuků — příležitostně OK.', rada: 'Lépe na oběd než večer.', typ: 'protein', emoji: '🥩' },
+                    'kuřec|kuřecí|kurecí|kuřecím|kurecim|kuře|kuřete|kuřetem|kuřata|kuřat': { name: 'Kuřecí', info: 'Lean protein — tělo na jeho trávení spotřebuje ~30% kalorií. Podporuje spalování tuků.', rada: null, typ: 'protein', emoji: '🍗' },
+                    'hovězí|hovezi|hovezim|steak': { name: 'Hovězí/steak', info: 'Kompletní protein + železo + zinek, ale obsahuje nasycené tuky. Červené maso příležitostně OK.', rada: 'Lépe na oběd. Vyber libové kusy — svíčková, roštěná.', typ: 'protein', emoji: '🥩' },
                     'játr': { name: 'Játra', info: 'Výjimečně bohatá na železo, vitamín B12 a A. Vysoká nutriční hodnota.', rada: 'Max. 1-2x týdně — vysoký obsah vitamínu A.', typ: 'protein', emoji: '🥩' },
-                    'ryba |tunak|sardin|losos': { name: 'Ryba/losos/tuňák', info: 'Omega-3 mastné kyseliny snižují zánět a podporují spalování tuků. Lehce stravitelný protein.', rada: null, typ: 'protein', emoji: '🐟' },
+                    'ryba |tunak|sardin': { name: 'Ryba/tuňák', info: 'Omega-3 mastné kyseliny snižují zánět a podporují spalování tuků. Lehce stravitelný protein.', rada: null, typ: 'protein', emoji: '🐟' },
                     'rybiz|rybíz': { name: 'Rybíz', info: 'Nízký glykemický index, vitamín C, antioxidanty. Výborná volba!', rada: null, typ: 'ovoce', emoji: '🫐' },
-                    'šunk': { name: 'Šunka', info: 'Protein ale vyšší obsah sodíku — zadržuje vodu.', rada: 'Omez množství, vyber variantu s nižším obsahem soli.', typ: 'protein', emoji: '🥓' },
+                    'šunk': { name: 'Šunka', info: 'Zpracované maso — vysoký sodík zadržuje vodu. Skrytý tuk a konzervanty.', rada: 'Omez na výjimky — raději čerstvé maso.', typ: 'uzenina', emoji: '🥓' },
                     'salam|klobás|poličan': { name: 'Salám/klobása', info: 'Nasycené tuky + vysoký sodík = zadržování vody a pomalejší metabolismus.', rada: 'Příležitostně — raději na oběd než večer.', typ: 'uzenina', emoji: '🌭' },
                     'slanin|škvarky': { name: 'Slanina/škvarky', info: 'Nasycené tuky a vysoký sodík — zadržování vody, pomalé trávení.', rada: 'Výjimečně — kombinuj s dostatkem vody.', typ: 'uzenina', emoji: '🥓' },
                     'mozzarell': { name: 'Mozzarella', info: 'Lehčí sýr, dobrý zdroj vápníku a proteinu. Nižší obsah tuku než tvrdé sýry.', rada: null, typ: 'protein', emoji: '🧀' },
-                    'sýr|hermelín': { name: 'Sýr/hermelín', info: 'Protein + vápník, ale vyšší obsah tuku a sodíku. Sytí dobře.', rada: 'V menším množství — vysoká kalorická hustota.', typ: 'protein', emoji: '🧀' },
+                    'hermelín|hermelinu|hermelin|hermelínem|brie|camembert': { name: 'Hermelín/brie', info: 'Tučný sýr — 50% tuku. Nasycené tuky + sodík. Sytí dobře ale kaloricky velmi hustý.', rada: 'Max. 50g denně — vysoký obsah tuku a sodíku.', typ: 'tuk', emoji: '🧀' },
+                    'sýr|syru|syrem|eidam|gouda|čedar|ementál': { name: 'Sýr (tvrdý)', info: 'Protein + vápník, střední obsah tuku. Lepší volba než tučné měkké sýry.', rada: 'V menším množství OK.', typ: 'protein', emoji: '🧀' },
                     'edamam': { name: 'Edamame', info: 'Rostlinný protein + vláknina + železo. Nízký glykemický index. Výborná volba!', rada: null, typ: 'protein', emoji: '🌱' },
                     'čočk': { name: 'Čočka', info: 'Rostlinný protein + vláknina + železo. Pomalé uvolňování energie, žádný inzulínový spike.', rada: null, typ: 'protein', emoji: '🫘' },
                     'fazol': { name: 'Fazole', info: 'Rostlinný protein + komplexní sacharidy + vláknina. Nízký glykemický index.', rada: null, typ: 'protein', emoji: '🫘' },
@@ -921,241 +975,574 @@
                     'chleb|rohlík': { name: 'Chleba/rohlík', info: 'Sacharidy + lepek — zadržování vody. Bílý chleba = rychlý cukr.', rada: 'Celozrnný chleba je lepší. Raději dopoledne než večer.', typ: 'sacharid', emoji: '🍞' },
                     'brambor': { name: 'Brambory', info: 'Sacharidy ale dobrý zdroj draslíku. Vařené lepší než smažené.', rada: 'Na oběd — večer raději zeleninu místo brambor.', typ: 'sacharid', emoji: '🥔' },
                     'nok': { name: 'Noky', info: 'Sacharidy z mouky a brambor — dvojitý zdroj glykogenu.', rada: 'Na oběd v malé porci. Večer jsou zbytečnou zátěží pro metabolismus.', typ: 'sacharid', emoji: '🥟' },
-                    'kaše': { name: 'Kaše', info: 'Sacharidy — záleží na druhu. Bramborová kaše = rychlé sacharidy.', rada: 'Na oběd, menší porce.', typ: 'sacharid', emoji: '🥣' },
+                    'kaše|kaši|kaší|kasi': { name: 'Kaše', info: 'Sacharidy — záleží na druhu. Bramborová kaše = rychlé sacharidy.', rada: 'Na oběd, menší porce.', typ: 'sacharid', emoji: '🥣' },
                     // Zelenina
                     'zelenin': { name: 'Zelenina', info: 'Vitamíny, vláknina, minimum kalorií. Zpomaluje vstřebávání ostatních živin.', rada: null, typ: 'zelenina', emoji: '🥦' },
                     'rukol|ledový salát|polníček': { name: 'Listový salát', info: 'Minimum kalorií, vitamíny, vláknina. Zpomaluje vstřebávání ostatních živin.', rada: 'Přidej ke každému jídlu!', typ: 'zelenina', emoji: '🥗' },
-                    'rajč': { name: 'Rajčata', info: 'Vitamín C, lykopen — antioxidant. Nízkokalorická, hydratující.', rada: null, typ: 'zelenina', emoji: '🍅' },
+                    'rajč|cherry|rajčátk': { name: 'Rajčata', info: 'Vitamín C, lykopen — antioxidant. Nízkokalorická, hydratující.', rada: null, typ: 'zelenina', emoji: '🍅' },
                     'okur': { name: 'Okurka', info: '95% voda — hydratuje, nulové kalorie, lehká pro trávení.', rada: null, typ: 'zelenina', emoji: '🥒' },
                     'paprik': { name: 'Paprika', info: 'Vitamín C (více než citron!), antioxidanty, vláknina.', rada: null, typ: 'zelenina', emoji: '🫑' },
-                    'brokolik|brokolici|brokolice|květák|kedlubna': { name: 'Brokolice/květák/kedlubna', info: 'Cruciferous zelenina — podporuje detoxikaci jater, vitamín C, vláknina.', rada: null, typ: 'zelenina', emoji: '🥦' },
-                    'žampion': { name: 'Žampiony', info: 'Nízkokalorické, vitamin D, zinek. Umami chuť sytí bez kalorií.', rada: null, typ: 'zelenina', emoji: '🍄' },
+                    'brokolik|květák|kedlubna': { name: 'Brokolice/květák/kedlubna', info: 'Cruciferous zelenina — podporuje detoxikaci jater, vitamín C, vláknina.', rada: null, typ: 'zelenina', emoji: '🥦' },
+                    'žampion|žampiony|žampionů|žampionem|zampion|zampiony': { name: 'Žampiony', info: 'Nízkokalorické, vitamin D, zinek. Umami chuť sytí bez kalorií.', rada: null, typ: 'zelenina', emoji: '🍄' },
                     'chřest': { name: 'Chřest', info: 'Přirozený diuretikum — pomáhá vyloučit přebytečnou vodu. Prebiotika pro střevní mikrobiom.', rada: null, typ: 'zelenina', emoji: '🌿' },
+                    'hrášek|hrasek|hráškem|hráška|hrásek|hraskovi': { name: 'Hrášek', info: 'Rostlinný protein + vláknina + vitamín C. Nízký glykemický index. Výborná volba!', rada: null, typ: 'zelenina', emoji: '🫛' },
                     'dýn': { name: 'Dýně', info: 'Beta-karoten, vláknina, nízký glykemický index.', rada: null, typ: 'zelenina', emoji: '🎃' },
                     // Ovoce
                     'jahod': { name: 'Jahody', info: 'Nízký glykemický index, vitamín C, antioxidanty. Přirozené cukry s vlákninou = pomalé vstřebávání.', rada: 'OK i večer — nízký glykemický index.', typ: 'ovoce', emoji: '🍓' },
-                    'banán': { name: 'Banán', info: 'Rychlé sacharidy + draslík. Vyšší glykemický index — rychlejší inzulínová odpověď.', rada: 'Ideálně dopoledne nebo před pohybem. Večer raději jiné ovoce.', typ: 'ovoce', emoji: '🍌' },
+                    'banán': { name: 'Banán', info: 'Rychlé sacharidy + draslík. Vyšší glykemický index — rychlejší inzulínová odpověď. Zralý banán = vyšší cukr.', rada: 'Ideálně dopoledne nebo před pohybem. Večer raději jahody nebo borůvky.', typ: 'sacharid', emoji: '🍌' },
                     'jablk': { name: 'Jablko', info: 'Vláknina + přirozený cukr. Pektin zpomaluje vstřebávání.', rada: null, typ: 'ovoce', emoji: '🍎' },
                     'borůvk': { name: 'Borůvky', info: 'Nejlepší ovoce pro hubnutí — nízký glyk. index, antioxidanty, zlepšují citlivost na inzulín.', rada: null, typ: 'ovoce', emoji: '🫐' },
                     'rozink': { name: 'Rozinky', info: 'Koncentrovaný cukr — vysoká kalorická hustota, rychlý glykemický index.', rada: 'Jen malé množství — jsou jako přírodní bonbóny.', typ: 'sladkost', emoji: '🍇' },
                     // Tuky
-                    'kešu|kesu': { name: 'Kešu', info: 'Zdravé tuky (mononenasycené), hořčík, zinek. Ale kaloricky husté — hrst = ~160kcal.', rada: 'Max. hrst denně — jinak přebytečné kalorie.', typ: 'tuk', emoji: '🥜' },
+                    'kešu|kesu|kešů|kasu': { name: 'Kešu', info: 'Zdravé tuky (mononenasycené), hořčík, zinek. Ale kaloricky husté — hrst = ~160kcal.', rada: 'Max. hrst denně — jinak přebytečné kalorie.', typ: 'tuk', emoji: '🥜' },
                     'arašíd': { name: 'Arašídy', info: 'Protein + zdravé tuky. Pozor na solené — sodík zadržuje vodu.', rada: 'Volb nesolenou variantu. Max. hrst.', typ: 'tuk', emoji: '🥜' },
                     'smetana na var|smetana na vaření': { name: 'Smetana na vaření (15%)', info: 'Nižší tuk než smetana na šlehání. V kombinaci se sacharidy blokuje spalování tuků.', rada: 'Kombinuj raději se zeleninou nebo bílkovinou než se sacharidy.', typ: 'tuk', emoji: '🥛' },
                     'smetana na šleh|šlehačk': { name: 'Smetana na šlehání (33%)', info: 'Vysoký obsah nasycených tuků. V kombinaci se sacharidy = nejhorší kombinace pro metabolismus.', rada: 'Kombinuj se zeleninou, NIKOLI s rýží/knedlíky/chlebem.', typ: 'tuk', emoji: '🥛' },
-                    'lžičk.*smetany|smetany|smetanou|smetana': { name: 'Smetana', info: 'Nasycené tuky — v kombinaci se sacharidy blokuje spalování.', rada: 'Kombinuj se zeleninou nebo bílkovinou, ne se sacharidy.', typ: 'tuk', emoji: '🥛' },
+                    'smetana': { name: 'Smetana', info: 'Nasycené tuky — v kombinaci se sacharidy blokuje spalování.', rada: 'Kombinuj se zeleninou nebo bílkovinou, ne se sacharidy.', typ: 'tuk', emoji: '🥛' },
                     'zakysaná smetana|zakysanou': { name: 'Zakysaná smetana', info: 'Probiotika + tuky. Lehčí než šlehačka, ale stále tučná.', rada: 'V malém množství OK.', typ: 'tuk', emoji: '🥛' },
-                    'máslo|ráma': { name: 'Máslo/Rama', info: 'Nasycené tuky — v kombinaci se sacharidy (chleba s máslem) = tuky + rychlý cukr = inzulín blokuje spalování tuků.', rada: 'Chleba s máslem je lepší na oběd než večer. Menší množství másla.', typ: 'tuk', emoji: '🧈' },
+                    'máslo|maslem|máslem|másla|maslom|ráma': { name: 'Máslo/Rama', info: 'Nasycené tuky — v kombinaci se sacharidy (chleba s máslem) = tuky + rychlý cukr = inzulín blokuje spalování tuků.', rada: 'Chleba s máslem je lepší na oběd než večer. Menší množství másla.', typ: 'tuk', emoji: '🧈' },
                     // Sladkosti
                     'čokolád': { name: 'Čokoláda 70%+', info: 'Flavonoidy, antioxidanty, hořčík. Nízký obsah cukru — malý inzulínový spike. Zdravá volba!', rada: 'Max. 2-3 čtverečky. OK i večer v malém množství.', typ: 'cokolada', emoji: '🍫' },
                     'bonbon|žele|jele|karamel|roshen': { name: 'Bonbóny/želé', info: 'Čistý cukr — rychlý inzulínový spike, glykogen váže vodu, blokace spalování tuků.', rada: 'Nahraď ovocem nebo hořkou čokoládou.', typ: 'sladkost', emoji: '🍬' },
                     'tvrdo|natvrdo': { name: 'Vejce natvrdo', info: 'Kompletní protein, vitamín D, cholin — výborná volba kdykoliv.', rada: null, typ: 'protein', emoji: '🥚' },
                     'koktel|koktejl': { name: 'Koktejl', info: 'Záleží na složení — ovocný koktejl = přirozené cukry + vláknina. Sleduj přidaný cukr.', rada: null, typ: 'ovoce', emoji: '🥤' },
                     'tagliate|tagliatelle': { name: 'Tagliatelle', info: 'Sacharidy z mouky — glykogen váže ~3g vody na 1g. Večer zbytečná zátěž pro metabolismus.', rada: 'Raději na oběd, menší porce. Kombinuj s bílkovinou ne s tučnou omáčkou.', typ: 'sacharid', emoji: '🍝' },
-                    'hliva|hlíva': { name: 'Hlíva', info: 'Výborná — nízkokalorická, bohatá na vitamín D a bílkoviny. Podporuje imunitu.', rada: null, typ: 'zelenina', emoji: '🍄' },
+                    'hliva|hlívou|hlívy|hlíve|hlívy|hlívě': { name: 'Hlíva', info: 'Výborná — nízkokalorická, bohatá na vitamín D a bílkoviny. Podporuje imunitu.', rada: null, typ: 'zelenina', emoji: '🍄' },
                     'zmrzlin': { name: 'Zmrzlina', info: 'Cukr + tuk — inzulínový spike + nasycené tuky. Točená zmrzlina bývá méně kalorická než kopečková.', rada: 'Příležitostně OK — preferuj malou porci. Nahraď třeba zmraženým ovocem.', typ: 'sladkost', emoji: '🍦' },
-                    'paloucek|palůček': { name: 'Palůček', info: 'Sýr — protein + vápník, vyšší obsah tuku a sodíku.', rada: 'V malém množství OK.', typ: 'protein', emoji: '🧀' },
+                    'paloucek|palůček': { name: 'Palůček', info: 'Tučný tavený sýr — vysoký obsah nasycených tuků a sodíku.', rada: 'V malém množství OK — sleduj sodík.', typ: 'tuk', emoji: '🧀' },
                     'rybiz|rybíz': { name: 'Rybíz', info: 'Nízký glykemický index, vitamín C, antioxidanty. Výborná volba!', rada: null, typ: 'ovoce', emoji: '🫐' },
+                    'tortilla|tortila|nachos': { name: 'Tortilla chipsy', info: 'Kukuřičné chipsy — sacharid + tuk ze smažení. Kaloricky husté, vysoký sodík.', rada: 'Příležitostně OK — malá porce. Kombinuj s guacamole (zdravý tuk) ne se smetanou.', typ: 'tuk', emoji: '🌽' },
+                    'bramborov.*chips|chips.*brambor|brambůrky': { name: 'Bramborové chipsy', info: 'Sacharid + tuk ze smažení + vysoký sodík = zadržování vody a inzulínový spike.', rada: 'Nahraď oříšky nebo zeleninou s hummusem.', typ: 'tuk', emoji: '🥔' },
+                    'rýžov.*chlebíč|ryzov.*chlebic|rýžovin': { name: 'Rýžové chlebíčky', info: 'Lehčí sacharid — nízký tuk ale vysoký glykemický index. Lepší než bramborové chipsy.', rada: 'S proteinem (tvaroh, hummus) pro pomalejší vstřebávání.', typ: 'sacharid', emoji: '🍚' },
+                    'chipsy|chips': { name: 'Chipsy', info: 'Sacharid + tuk ze smažení + vysoký sodík — zadržování vody, inzulínový spike.', rada: 'Nahraď oříšky nebo popcornem bez másla. Příležitostně malá porce OK.', typ: 'tuk', emoji: '🍟' },
+                    'řízek|rizek|řízku|rizku|řízkem|rizkem': { name: 'Řízek', info: 'Obalované smažené maso — sacharid z obalení + tuk ze smažení. Dvojitá zátěž pro metabolismus.', rada: 'Raději na oběd. Příště zkus grilované nebo pečené maso bez obalení.', typ: 'tuk', emoji: '🍖' },
+                    'gyros': { name: 'Gyros', info: 'Marinované maso (kuřecí/vepřové) s kořením — dobrý zdroj proteinu. Bez pity = nízké sacharidy.', rada: 'S pitou = sacharid navíc. Bez pity + zelenina = výborná volba.', typ: 'protein', emoji: '🥙' },
+                    'cesnekova omacka|česneková omáčka|cesnekovou|česnekouvou': { name: 'Česneková omáčka', info: 'Majonézový nebo jogurtový základ — záleží na receptu. Jogurtová verze lehčí.', rada: 'Jogurtová česneková OK. Majonézová = tuk navíc.', typ: 'tuk', emoji: '🧄' },
+                    'tzatziki|tzatziky': { name: 'Tzatziki', info: 'Jogurt + okurka + česnek — lehká omáčka, probiotika. Výborná volba k masu.', rada: null, typ: 'protein', emoji: '🥒' },
+                    'husí|husi|husina': { name: 'Husí maso', info: 'Tučnější drůbež — více nasycených tuků než kuřecí. Výborná chuť, příležitostně OK.', rada: 'Lépe na oběd než večer. Kombinuj se zeleninou.', typ: 'protein', emoji: '🍗' },
+                    'králič|kralic|králík|kralik': { name: 'Králičí maso', info: 'Velmi libové maso — nízký obsah tuku, vysoký protein. Výborná volba pro hubnutí.', rada: null, typ: 'protein', emoji: '🐇' },
+                    'kachní|kachna|kachn': { name: 'Kachní maso', info: 'Tučnější drůbež — vyšší obsah nasycených tuků. Výborná chuť, příležitostně.', rada: 'Odstraň kůži — tam je většina tuku.', typ: 'protein', emoji: '🦆' },
+                    'vepřov|vepř|vepřin': { name: 'Vepřové maso', info: 'Střední obsah tuku záleží na části — panenka je libová, bůček tučný.', rada: 'Volb libové části (panenka, kýta). Omezt smažení.', typ: 'protein', emoji: '🥩' },
+                    'jehněč|jehne|jehnec': { name: 'Jehněčí maso', info: 'Libové maso bohaté na omega-3 a železo. Výborná volba.', rada: null, typ: 'protein', emoji: '🥩' },
+                    'tatarka|tatarsk|tatarkou': { name: 'Tatarská omáčka', info: 'Majonézový základ — vysoký obsah tuku. V kombinaci s masem = tuk + protein OK, ale kaloricky husté.', rada: 'Malé množství OK. Nahraď jogurtovou omáčkou pro méně kalorií.', typ: 'tuk', emoji: '🥫' },
+                    'krajíc|krajic': { name: 'Krajíc chleba', info: 'Sacharidy — záleží na druhu chleba. Celozrnný lepší než bílý.', rada: 'Raději dopoledne. Kombinuj s proteinem ne s máslem a uzeninou zároveň.', typ: 'sacharid', emoji: '🍞' },
+                    'víno|vino|wine': { name: 'Víno', info: 'Alkohol — játra zpracovávají ethanol místo tuků. Spalování zastaveno 24-48h.', rada: 'Pij 2l vody po konzumaci. Červené víno má antioxidanty ale alkohol převažuje.', typ: 'alkohol2', emoji: '🍷' },
                     'polevk|polívk|polévk': { name: 'Polévka', info: 'Záleží na druhu — zeleninová výborná. S nudlemi/noky = sacharidy navíc.', rada: 'Zeleninová polévka je ideální lehká večeře.', typ: 'ostatni', emoji: '🍲' },
                 };
 
-                // Pomocná funkce: je potravina v malém množství?
-                const isMale = (foodName, mealLine) => {
-                    const maleSlova = /troška|trošku|lžičk|lžíci|kousek|kus|malý|malé|trochu|jen |pouze |půl /i;
-                    return maleSlova.test(mealLine);
+                // === DETEKCE POTRAVIN PO CHODECH ===
+                // Načti uživatelskou databázi a přidej do foodDB
+                const userFoodDB = getUserFoodDB();
+                Object.entries(userFoodDB).forEach(function(e){ foodDB[e[0]] = e[1]; });
+
+                // Oprav/doplň databázi — jednotlivé potraviny
+                foodDB['losos|lososa|losose'] = { name: 'Losos', info: 'Omega-3 mastné kyseliny snižují zánět a podporují spalování tuků. Výborný zdroj proteinu.', rada: null, typ: 'protein', emoji: '🐟' };
+                foodDB['brokolik|brokolici|brokolice'] = { name: 'Brokolice/květák', info: 'Cruciferous zelenina — podporuje detoxikaci jater, vitamín C, vláknina.', rada: null, typ: 'zelenina', emoji: '🥦' };
+                delete foodDB['brokolik|květák|kedlubna'];
+                foodDB['lzicku smetany|lzickou smetany|lzicka smetany|smetanou|smetany|smetana'] = { name: 'Smetana', info: 'Nasycené tuky — v kombinaci se sacharidy blokuje spalování.', rada: 'Kombinuj se zeleninou nebo bílkovinou, ne se sacharidy.', typ: 'tuk', emoji: '🥛' };
+                delete foodDB['smetana'];
+
+                // === SLOŽENÉ VÝRAZY (mají prioritu před jednotlivými slovy) ===
+                // Klíč začíná "~" = složený výraz, detekuje se jako celek v kontextu
+                const slozeneDB = {
+                    // Omáčky se smetanou — vždy TUK, velká porce
+                    'smetanova omacka|smetanovou omackou|smetanove omacky': {
+                        name: 'Smetanová omáčka', emoji: '🥛',
+                        info: 'Nasycené tuky ve velké porci — v kombinaci se sacharidy (těstoviny, knedlíky) silně blokuje spalování tuků. Glykogen + tuk = dvojí zátěž.',
+                        rada: 'Příště vyměň za rajčatovou nebo houbovou omáčku bez smetany. Kombinuj s bílkovinou ne s těstovinami.',
+                        typ: 'tuk', velka: true
+                    },
+                    // Omáčky houbové/žampionové — záleží na přítomnosti smetany
+                    'houbova omacka|zampionova omacka|hubova omacka': {
+                        name: 'Houbová omáčka', emoji: '🍄',
+                        info: 'Záleží na složení — bez smetany je lehká a výborná. Se smetanou = tuk navíc.',
+                        rada: 'Zkus verzi bez smetany — stejně chutná, méně tuku.',
+                        typ: 'zelenina', velka: false,
+                        kontextTuk: 'smetana|smetanou|smetanov' // pokud je v textu smetana → překlasifikuj na tuk
+                    },
+                    // Rajčatová omáčka — zelenina, OK
+                    'rajcatova omacka|tomatova omacka|bolognese': {
+                        name: 'Rajčatová omáčka', emoji: '🍅',
+                        info: 'Výborná volba — lykopen, vitamín C, nízkokalorická. Ideální základ pro těstoviny místo smetany.',
+                        rada: null, typ: 'zelenina', velka: false
+                    },
+                    // Bramborová kaše — sacharid
+                    'bramborova kase|bramborovou kasi|bramborova kasi|bramborové kase': {
+                        name: 'Bramborová kaše', emoji: '🥔',
+                        info: 'Rychlé sacharidy + často máslo = sacharid + tuk. Vyšší glykemický index než vařené brambory.',
+                        rada: 'Raději vařené brambory než kaše. Na oběd, ne večer.',
+                        typ: 'sacharid', velka: false
+                    },
+                    // Kuřecí vývar — lehké, protein
+                    'kuřecí vývar|kurecí vyvar|slepičí vývar': {
+                        name: 'Kuřecí vývar', emoji: '🍲',
+                        info: 'Lehký, nízkokalorický, podporuje trávení. Kolagen z kostí.',
+                        rada: null, typ: 'protein', velka: false
+                    },
+                    // Česnek s máslem
+                    'cesnekove maslo|česnekové máslo|maslo s cesnekem': {
+                        name: 'Česnekové máslo', emoji: '🧈',
+                        info: 'Nasycené tuky + sodík. V kombinaci se sacharidy blokuje spalování.',
+                        rada: 'Nahraď olivovým olejem s česnekem.',
+                        typ: 'tuk', velka: false
+                    },
+                    // Olivový olej
+                    'olivovy olej|olivovym olejem|extra panensky': {
+                        name: 'Olivový olej', emoji: '🫒',
+                        info: 'Zdravé mononenasycené tuky, antioxidanty. Podporuje metabolismus.',
+                        rada: 'Výborná volba — v rozumném množství (1-2 lžíce).',
+                        typ: 'protein', velka: false // klasifikuj jako protein (neutrální)
+                    },
+                    // Smažené — způsob přípravy
+                    'smažen|obalovan|fritovan': {
+                        name: 'Smažené/obalované', emoji: '🍳',
+                        info: 'Fritování přidává 30-50% kalorií navíc. Nasycené tuky + sacharidy z obalení.',
+                        rada: 'Příště zkus grilované nebo vařené — stejná chuť, méně tuku.',
+                        typ: 'tuk', velka: true
+                    },
+                    // Grilované — způsob přípravy — pozitivní
+                    'grilovan|na grilu|pečen': {
+                        name: 'Grilované/pečené', emoji: '🔥',
+                        info: 'Zdravý způsob přípravy — bez přidaného tuku, zachovává živiny.',
+                        rada: null, typ: 'zelenina', velka: false
+                    },
+                    // Vařené — neutrální
+                    'vařen|uvařen|dušen': {
+                        name: 'Vařené/dušené', emoji: '♨️',
+                        info: 'Šetrný způsob přípravy — bez přidaného tuku.',
+                        rada: null, typ: 'zelenina', velka: false
+                    },
+                    // Gyros v pitě = sacharid navíc
+                    'gyros.*pit|pita.*gyros': {
+                        name: 'Gyros v pitě', emoji: '🥙',
+                        info: 'Maso + pita (sacharid) + omáčka (tuk) = komplexní kombinace. Kaloricky husté.',
+                        rada: 'Bez pity je gyros výborný. S pitou = sacharid navíc — raději na oběd.',
+                        typ: 'sacharid', velka: false
+                    },
+                    // Míchaná vajíčka — protein + tuk, neutrální
+                    'michana vajicka|michane vejce|vajicka na masle|vejce na masle': {
+                        name: 'Míchaná vajíčka na másle', emoji: '🥚',
+                        info: 'Kompletní protein + zdravé tuky z másla. Sytí na dlouho, stabilní hladina cukru. Dobrá volba kdykoliv.',
+                        rada: 'Ideální kombinace — protein + tuk bez sacharidů. Přidej zeleninu pro kompletní jídlo.',
+                        typ: 'protein', velka: false
+                    },
+                    // Tiramisu domácí — lehčí verze
+                    'tiramisu': {
+                        name: 'Tiramisu (domácí)', emoji: '🍰',
+                        info: 'Domácí verze: oplatky (sacharid) + mascarpone (tuk) + jogurt (protein) + jahody + cukr. Lehčí než restaurační — jogurt snižuje kalorickou hustotu.',
+                        rada: 'Malá porce (1/8) OK příležitostně. Mascarpone + cukr = inzulín + tuk — radši po obědě než večer.',
+                        typ: 'sladkost', velka: false
+                    },
+                    // Dort
+                    'dort|dortik': {
+                        name: 'Dort', emoji: '🎂',
+                        info: 'Mouka + máslo/smetana + cukr = trojitá kombinace sacharid + nasycený tuk + rychlý cukr. Silný inzulínový spike.',
+                        rada: 'Výjimečně — malá porce, ideálně na oběd ne večer. Pij hodně vody.',
+                        typ: 'sladkost', velka: true
+                    },
+                    // Cheesecake
+                    'cheesecake|tvarohovy kolac|tvarohový koláč': {
+                        name: 'Cheesecake', emoji: '🍮',
+                        info: 'Tvaroh/mascarpone + cukr + piškoty. Více proteinu než dort, ale stále vysoký obsah cukru a tuku.',
+                        rada: 'Lepší volba než dort — tvaroh = protein. Malá porce OK.',
+                        typ: 'sladkost', velka: false
+                    },
+                    // Ovocný koláč
+                    'ovocny kolac|ovocný koláč|štrůdl|strudl|zavin': {
+                        name: 'Ovocný koláč/štrůdl', emoji: '🥧',
+                        info: 'Těsto (sacharid) + ovoce (přirozený cukr) + cukr. Lepší než dort díky ovoci — vláknina zpomaluje vstřebávání.',
+                        rada: 'Nejlepší dezertní volba — ovoce + méně tuku. Menší porce.',
+                        typ: 'sladkost', velka: false
+                    },
+                    // Čokoládový dezert
+                    'cokoladovy dezert|čokoládový dezert|brownie|fondant': {
+                        name: 'Čokoládový dezert', emoji: '🍫',
+                        info: 'Cukr + tuk + kakao. Kakao má antioxidanty ale v dezertu převažuje cukr a tuk.',
+                        rada: 'Příležitostně OK — malá porce. Lepší volba: 2-3 čtverečky hořké čokolády 70%+.',
+                        typ: 'sladkost', velka: false
+                    },
                 };
 
-                // Rozděl jídlo na části podle typu chodu
-                const mealLines = yesterdayMeal.note.split('\n');
-                const getLines = (typ) => mealLines.filter(l => l.toLowerCase().startsWith(typ.toLowerCase()));
-                const obedLines = getLines('oběd');
-                const vecereLines = getLines('večeře');
-                const snidaneLines = getLines('snídaně');
-                const svacineLines = getLines('svačina');
-                const sladkostiLines = getLines('sladkosti');
-                const alkoholLines = getLines('alkohol');
+                // Detekce malého množství
+                const isMaleQ = function(line) {
+                    return /troška|trošku|trošk|lžičk|lžíci|kousek|kus|malé|malou|trochu|jen |pouze |půl /i.test(line);
+                };
 
-                // Detekuj potraviny zvlášť pro oběd a večeři
-                const detectFoodsInText = (text) => {
-                    const foods = [];
-                    const textNorm = normalize(text);
-                    Object.entries(foodDB).forEach(([key, food]) => {
-                        const patterns = key.split('|');
-                        if (patterns.some(p => textNorm.match(new RegExp(normalize(p))))) {
-                            if (!foods.find(f => f.name === food.name)) {
-                                // Detekuj malé množství
-                                const male = isMale(food.name, text);
-                                foods.push({ ...food, male });
+                // Rozděl na chody
+                const mealLines = yesterdayMeal.note.split('\n');
+                const getChod = function(typ) { return mealLines.filter(function(l){ return l.toLowerCase().startsWith(typ); }).join(' '); };
+                const obedText = getChod('oběd');
+                const vecereText = getChod('večeře');
+                const snidaneText = getChod('snídaně');
+                const svacineText = getChod('svačina');
+                const sladkostiText = getChod('sladkosti');
+                const dezertText = getChod('dezert');
+                const alkoholText = getChod('alkohol');
+
+                const normalize2 = function(s) {
+                    return (s||'').toLowerCase()
+                        .replace(/[áä]/g,'a').replace(/č/g,'c').replace(/ď/g,'d')
+                        .replace(/[éě]/g,'e').replace(/í/g,'i').replace(/ň/g,'n')
+                        .replace(/[óö]/g,'o').replace(/ř/g,'r').replace(/š/g,'s')
+                        .replace(/ť/g,'t').replace(/[úů]/g,'u').replace(/ý/g,'y').replace(/ž/g,'z');
+                };
+
+                // Pomocná: najdi kontext potraviny — segment mezi čárkami kde se nachází
+                const getKontext = function(text, pattern) {
+                    var textN2 = normalize2(text);
+                    var patN = normalize2(pattern);
+                    // Rozděl na segmenty podle čárek a mezer
+                    var segments = text.split(/[,;]/);
+                    for (var i = 0; i < segments.length; i++) {
+                        if (normalize2(segments[i]).match(new RegExp(patN))) {
+                            return segments[i]; // vrať jen segment kde je potravina
+                        }
+                    }
+                    // Fallback — vrať ±25 znaků
+                    var idx = textN2.search(new RegExp(patN));
+                    if (idx < 0) return '';
+                    return text.slice(Math.max(0, idx-25), Math.min(text.length, idx+25));
+                };
+
+                const detectInText = function(text) {
+                    if (!text) return [];
+                    const found = [];
+                    const textN = normalize2(text);
+                    const blockedSimple = [];
+
+                    // 1. NEJDŘÍV složené výrazy (mají prioritu)
+                    Object.entries(slozeneDB).forEach(function(entry) {
+                        var key = entry[0], food = entry[1];
+                        var pats = key.split('|');
+                        if (pats.some(function(p){ return textN.match(new RegExp(normalize2(p))); })) {
+                            var f = Object.assign({}, food, { male: false });
+                            if (food.kontextTuk && textN.match(new RegExp(normalize2(food.kontextTuk)))) {
+                                f.typ = 'tuk';
+                                f.info = food.info + ' Detekována smetana — klasifikováno jako tuk.';
+                            }
+                            if (!found.find(function(x){ return x.name===f.name; })) {
+                                found.push(f);
+                            }
+                            if (key.match(/smetanov/)) blockedSimple.push('smetana');
+                            if (key.match(/houbov|zampionov/)) blockedSimple.push('žampion');
+                            if (key.match(/rajcatov|tomatov/)) blockedSimple.push('rajč');
+                            if (key.match(/bramborov.*kas/)) blockedSimple.push('brambor');
+                            if (key.match(/smažen|obalovan/)) blockedSimple.push('smažen');
+                        }
+                    });
+
+                    // 2. Pak jednotlivá slova — malé množství se kontroluje PER POTRAVINA
+                    Object.entries(foodDB).forEach(function(entry) {
+                        var key = entry[0], food = entry[1];
+                        if (blockedSimple.some(function(b){ return normalize2(key).includes(normalize2(b)); })) return;
+                        var pats = key.split('|');
+                        var matchedPat = pats.find(function(p){ return textN.match(new RegExp(normalize2(p))); });
+                        if (matchedPat) {
+                            if (!found.find(function(f){ return f.name===food.name; })) {
+                                // Kontroluj malé množství POUZE v kontextu této potraviny (±40 znaků)
+                                var kontext = getKontext(text, matchedPat);
+                                var male = isMaleQ(kontext);
+                                found.push(Object.assign({}, food, { male: male }));
                             }
                         }
                     });
-                    return foods;
+                    return found;
                 };
 
-                const obedFoods = detectFoodsInText(obedLines.join(' '));
-                const vecereFoods = detectFoodsInText(vecereLines.join(' '));
-                const ostatniFoods = detectFoodsInText([...snidaneLines, ...svacineLines].join(' '));
-                const detectedFoods = [...obedFoods, ...vecereFoods, ...ostatniFoods].filter((f,i,a) => a.findIndex(x=>x.name===f.name)===i);
+                const obedFoods = detectInText(obedText);
+                const vecereFoods = detectInText(vecereText);
+                const dezertFoods = detectInText(dezertText);
+                const sladkostiFoods = detectInText(sladkostiText);
+                const ostatniFoods = detectInText((snidaneText+' '+svacineText).trim());
+                const detectedFoods = obedFoods.concat(vecereFoods).concat(dezertFoods).concat(sladkostiFoods).concat(ostatniFoods)
+                    .filter(function(f,i,a){ return a.findIndex(function(x){return x.name===f.name;})===i; });
 
-                // ═══ POMOCNÉ PROMĚNNÉ ═══
-                const hasAlkohol = alkoholLines.length > 0;
-                const hasSladkosti = sladkostiLines.length > 0 && !sladkostiLines.join('').match(/čokolád/);
+                const hasAlkohol = alkoholText.length > 0;
+                const hasSladkosti = sladkostiText.length > 0 && !sladkostiText.match(/čokolád/);
                 const lowWater = !yesterdayMeal.water || yesterdayMeal.water < 1.5;
                 const highWater = yesterdayMeal.water >= 2;
                 const win = yesterdayEntry && yesterdayEntry.window ? parseFloat(yesterdayEntry.window) : 0;
                 const longWindow = win > 7;
                 const medWindow = win > 6 && win <= 7;
                 const shortWindow = win > 0 && win <= 5;
-                const obedTuk = obedFoods.some(f=>f.typ==='tuk'&&!f.male);
-                const obedSach = obedFoods.some(f=>f.typ==='sacharid'&&!f.male);
-                const vecereTuk = vecereFoods.some(f=>f.typ==='tuk'&&!f.male);
-                const vecereSach = vecereFoods.some(f=>f.typ==='sacharid'&&!f.male);
-                const vecereProtein = vecereFoods.some(f=>f.typ==='protein');
-                const vecereZelenina = vecereFoods.some(f=>f.typ==='zelenina');
-                const obedProtein = obedFoods.some(f=>f.typ==='protein');
-                const celkovyObjem = mealLines.filter(l=>l.trim()).length; // počet řádků = počet chodů
-                const hasTuk = detectedFoods.some(f=>f.typ==='tuk'&&!f.male);
-                const hasSacharid = detectedFoods.some(f=>f.typ==='sacharid'&&!f.male);
-                const getTukNames = (foods) => (foods||detectedFoods).filter(f=>f.typ==='tuk'&&!f.male).map(f=>f.name).join(', ');
-                const getSachNames = (foods) => (foods||detectedFoods).filter(f=>f.typ==='sacharid'&&!f.male).map(f=>f.name).join(', ');
 
-                // ═══ SOFISTIKOVANÝ SKÓROVACÍ SYSTÉM ═══
-                // Každý faktor má váhu — vyšší = větší vliv na nárůst váhy
+                const obedTuk = obedFoods.some(function(f){return f.typ==='tuk'&&!f.male;});
+                const obedSach = obedFoods.some(function(f){return f.typ==='sacharid'&&!f.male;});
+                const vecereTuk = vecereFoods.some(function(f){return f.typ==='tuk'&&!f.male;});
+                const vecereSach = vecereFoods.some(function(f){return f.typ==='sacharid'&&!f.male;});
+                const vecereProtein = vecereFoods.some(function(f){return f.typ==='protein';});
+                const vecereZelenina = vecereFoods.some(function(f){return f.typ==='zelenina';});
+                const celkovyObjem = mealLines.filter(function(l){return l.trim().length>0;}).length;
+
+                const getTN = function(foods) { return (foods||detectedFoods).filter(function(f){return f.typ==='tuk'&&!f.male;}).map(function(f){return f.name;}).join(', '); };
+                const getSN = function(foods) { return (foods||detectedFoods).filter(function(f){return f.typ==='sacharid'&&!f.male;}).map(function(f){return f.name;}).join(', '); };
+
+                // === SOFISTIKOVANÝ SKÓROVACÍ SYSTÉM ===
                 const faktory = [];
-
-                // NEGATIVNÍ faktory (zvyšují riziko nárůstu)
                 if (hasAlkohol) faktory.push({ body: 5, label: 'Alkohol', detail: 'Játra zpracovávají ethanol místo tuků — spalování zastaveno 24-48h', emoji: '🍺', typ: 'neg' });
-                if (vecereTuk && vecereSach) faktory.push({ body: 4, label: 'Večeře: tuk+sacharid', detail: `${getTukNames(vecereFoods)} se ${getSachNames(vecereFoods)} — inzulín blokuje spalování přes noc`, emoji: '⚠️', typ: 'neg' });
-                if (hasSladkosti) faktory.push({ body: 3, label: 'Sladkosti', detail: 'Rychlý cukr → inzulínový spike → ukládání tuku, zadržení vody', emoji: '🍬', typ: 'neg' });
-                if (celkovyObjem >= 4) faktory.push({ body: 3, label: 'Velký objem jídla', detail: `${celkovyObjem} chodů — kalorická zátěž nad obvyklou normu`, emoji: '🍽️', typ: 'neg' });
-                if (obedTuk && obedSach) faktory.push({ body: 2, label: 'Oběd: tuk+sacharid', detail: `${getTukNames(obedFoods)} se ${getSachNames(obedFoods)} — méně kritické než večer`, emoji: '⚠️', typ: 'neg' });
-                if (lowWater) faktory.push({ body: 2, label: 'Málo vody', detail: `${yesterdayMeal.water||0}l — tělo zadržuje tekutiny jako kompenzaci`, emoji: '💧', typ: 'neg' });
-                if (longWindow) faktory.push({ body: 2, label: `Dlouhé okno (${win}h)`, detail: 'Nad 7h — málo času na spalování tuků v půstu', emoji: '⏰', typ: 'neg' });
-                if (medWindow) faktory.push({ body: 1, label: `Okno ${win}h`, detail: 'Mírně nad optimem — zkrácení by pomohlo', emoji: '⏰', typ: 'neg' });
-                if (vecereSach && !vecereTuk) faktory.push({ body: 2, label: 'Sacharidy večer', detail: `${getSachNames(vecereFoods)} — glykogen váže vodu, večer se nestráví`, emoji: '🍝', typ: 'neg' });
-                if (detectedFoods.some(f=>f.typ==='uzenina'&&!f.male)) faktory.push({ body: 2, label: 'Uzeniny', detail: 'Vysoký sodík = zadržování vody', emoji: '🌭', typ: 'neg' });
-
-                // POZITIVNÍ faktory (snižují riziko)
-                if (shortWindow) faktory.push({ body: -2, label: `Krátké okno (${win}h)`, detail: 'Více času na spalování tuků — výborně!', emoji: '✅', typ: 'pos' });
-                if (highWater) faktory.push({ body: -1, label: `Dobrá hydratace (${yesterdayMeal.water}l)`, detail: 'Podporuje metabolismus a vylučování', emoji: '💧', typ: 'pos' });
+                if (vecereTuk && vecereSach) faktory.push({ body: 4, label: 'Večeře: tuk+sacharid', detail: getTN(vecereFoods)+' se '+getSN(vecereFoods)+' — inzulín blokuje spalování přes noc', emoji: '⚠️', typ: 'neg' });
+                if (vecereSach && !vecereTuk) faktory.push({ body: 3, label: 'Sacharidy k večeři', detail: getSN(vecereFoods)+' — večer se nestráví, uloží se jako glykogen', emoji: '🍝', typ: 'neg' });
+                if (celkovyObjem >= 4) faktory.push({ body: 3, label: 'Velký objem jídla', detail: celkovyObjem+' chodů — kalorická zátěž nad obvyklou normu', emoji: '🍽️', typ: 'neg' });
+                if (hasSladkosti) faktory.push({ body: 2, label: 'Sladkosti', detail: 'Rychlý cukr → inzulínový spike → ukládání tuku, zadržení vody', emoji: '🍬', typ: 'neg' });
+                if (obedTuk && obedSach) faktory.push({ body: 2, label: 'Oběd: tuk+sacharid', detail: getTN(obedFoods)+' se '+getSN(obedFoods)+' — méně kritické než večer', emoji: '⚠️', typ: 'neg' });
+                if (lowWater) faktory.push({ body: 2, label: 'Málo vody ('+( yesterdayMeal.water||0)+'l)', detail: 'Tělo zadržuje tekutiny jako kompenzaci', emoji: '💧', typ: 'neg' });
+                if (longWindow) faktory.push({ body: 2, label: 'Dlouhé okno ('+win+'h)', detail: 'Nad 7h — málo času na spalování tuků v půstu', emoji: '⏰', typ: 'neg' });
+                if (medWindow) faktory.push({ body: 1, label: 'Okno '+win+'h', detail: 'Mírně nad optimem — zkrácení by pomohlo', emoji: '⏰', typ: 'neg' });
+                if (detectedFoods.some(function(f){return f.typ==='uzenina'&&!f.male;})) faktory.push({ body: 2, label: 'Uzeniny', detail: 'Vysoký sodík = zadržování vody', emoji: '🌭', typ: 'neg' });
+                if (shortWindow) faktory.push({ body: -2, label: 'Krátké okno ('+win+'h)', detail: 'Více času na spalování tuků!', emoji: '✅', typ: 'pos' });
+                if (highWater) faktory.push({ body: -1, label: 'Dobrá hydratace ('+yesterdayMeal.water+'l)', detail: 'Podporuje metabolismus a vylučování', emoji: '💧', typ: 'pos' });
                 if (vecereZelenina && !vecereSach) faktory.push({ body: -1, label: 'Zelenina k večeři', detail: 'Lehká večeře = méně zátěže přes noc', emoji: '🥦', typ: 'pos' });
-                if (vecereProtein && !vecereSach && !vecereTuk) faktory.push({ body: -1, label: 'Protein k večeři bez sacharidů', detail: 'Ideální kombinace pro regeneraci bez ukládání', emoji: '🍗', typ: 'pos' });
-                if (obedProtein) faktory.push({ body: -1, label: 'Protein na oběd', detail: 'Termický efekt proteinu spaluje ~30% kalorií při trávení', emoji: '💪', typ: 'pos' });
+                if (vecereProtein && !vecereSach && !vecereTuk) faktory.push({ body: -1, label: 'Protein k večeři (bez sacharidů)', detail: 'Ideální kombinace pro regeneraci bez ukládání', emoji: '🍗', typ: 'pos' });
+                if (obedFoods.some(function(f){return f.typ==='protein';})) faktory.push({ body: -1, label: 'Protein na oběd', detail: 'Termický efekt proteinu spaluje ~30% kalorií při trávení', emoji: '💪', typ: 'pos' });
 
-                const totalScore = faktory.reduce((s, f) => s + f.body, 0);
-                const negFaktory = faktory.filter(f=>f.typ==='neg').sort((a,b)=>b.body-a.body);
-                const posFaktory = faktory.filter(f=>f.typ==='pos');
+                // === EXTERNÍ FAKTORY (stres, spánek, cvičení) ===
+                // Faktory jsou uloženy na VČEREJŠÍ den (zadáváš ráno co bylo včera)
+                var externiF = yesterdayEntry && yesterdayEntry.faktory ? yesterdayEntry.faktory : {};
+                var hasStres = externiF.stres === 'ano';
+                var hasSpanekSpatny = externiF.spanek === 'ano';
+                var hasCviceni = externiF.cviceni === 'ano';
+                if (hasStres) faktory.push({ body: 3, label: 'Stres (včera)', detail: 'Kortizol zadržuje vodu a blokuje spalování tuků', emoji: '😰', typ: 'externi' });
+                if (hasSpanekSpatny) faktory.push({ body: 2, label: 'Špatný spánek', detail: 'Nedostatek spánku zvyšuje kortizol a chuť k jídlu', emoji: '😴', typ: 'externi' });
+                if (hasCviceni) faktory.push({ body: -2, label: 'Cvičení (včera)', detail: 'Nárůst může být svalová regenerace — dočasné zadržení vody', emoji: '🏋️', typ: 'pos' });
 
-                // ═══ ZOBRAZ VÝSLEDEK VÁHY ═══
+                // === CELKOVÁ BILANCE DNE ===
+                const vsechnaJidla = detectedFoods;
+                const celkoveTuky = vsechnaJidla.filter(function(f){return f.typ==='tuk'&&!f.male;});
+                const celkoveSacharidy = vsechnaJidla.filter(function(f){return f.typ==='sacharid'&&!f.male;});
+                const pocetTuku = celkoveTuky.length;
+                const pocetSacharidu = celkoveSacharidy.length;
+
+                // Vysoký příjem tuku za den (2+ tučná jídla)
+                if (pocetTuku >= 3) {
+                    faktory.push({ body: 3, label: 'Vysoký příjem tuku za den ('+celkoveTuky.map(function(f){return f.name;}).join(', ')+')', detail: 'Tři a více tučných jídel za den — játra nestíhají zpracovat, přebytek se ukládá', emoji: '🧈', typ: 'neg' });
+                } else if (pocetTuku === 2) {
+                    faktory.push({ body: 1, label: 'Více tučných jídel ('+celkoveTuky.map(function(f){return f.name;}).join(', ')+')', detail: 'Dva zdroje tuku za den — sleduj celkový příjem', emoji: '🧈', typ: 'neg' });
+                }
+
+                // Dezert večer — horší než po obědě
+                if (dezertFoods.length > 0) {
+                    faktory.push({ body: 2, label: 'Dezert večer', detail: 'Cukr + tuk večer = inzulínový spike těsně před půstem — nejhorší načasování', emoji: '🍰', typ: 'neg' });
+                }
+
+                // Tuk k večeři (hermelín, máslo, smetana) — zpomaluje trávení přes noc
+                if (vecereTuk && !vecereSach) {
+                    faktory.push({ body: 1, label: 'Tuk k večeři', detail: 'Tučná večeře zpomaluje trávení přes noc — tělo tráví místo spalování', emoji: '🌙', typ: 'neg' });
+                }
+
+                // Synergie: málo vody + vysoký tuk
+                if (lowWater && pocetTuku >= 2) {
+                    faktory.push({ body: 2, label: 'Málo vody + vysoký tuk', detail: 'Bez dostatku vody tělo hůř odbourává tuky — játra potřebují vodu pro metabolismus tuků', emoji: '💧', typ: 'neg' });
+                }
+
+                // Synergie: okno + tuk večer
+                if ((medWindow || longWindow) && vecereTuk) {
+                    faktory.push({ body: 1, label: 'Delší okno + tuk večer', detail: 'Tučná večeře + okno nad 6h = tuk se nestráví před začátkem půstu', emoji: '⏰', typ: 'neg' });
+                }
+
+                const totalScore = faktory.reduce(function(s,f){return s+f.body;}, 0);
+                const negFaktory = faktory.filter(function(f){return f.typ==='neg';}).sort(function(a,b){return b.body-a.body;});
+                const posFaktory = faktory.filter(function(f){return f.typ==='pos';});
+
+                // === ZOBRAZ VÁHU ===
                 const diff = todayEntryForAnalysis.diff;
                 const bezVahy = todayEntryForAnalysis.weight === 0;
                 if (bezVahy) {
-                    const predikce = totalScore >= 7 ? '🔴 Vysoké riziko nárůstu zítra' : totalScore >= 4 ? '🟡 Střední riziko — možný mírný nárůst' : totalScore <= 0 ? '🟢 Nízké riziko — spíš pokles nebo stabilní' : '🟡 Mírné riziko — sleduj zítra';
-                    html += `<div style="font-size:12px;color:var(--light);margin-bottom:8px;">Váha nezadána — ${predikce}</div>`;
+                    const predikce = totalScore >= 7 ? '🔴 Vysoké riziko nárůstu zítra' : totalScore >= 4 ? '🟡 Střední riziko — možný mírný nárůst' : totalScore <= 0 ? '🟢 Nízké riziko — spíš pokles nebo stabilní' : '🟡 Mírné riziko';
+                    html += '<div style="font-size:12px;color:var(--light);margin-bottom:8px;">Váha nezadána — '+predikce+'</div>';
                 } else if (diff > 0.3) {
-                    html += `<div style="font-size:12px;color:#ff6b5b;margin-bottom:8px;font-weight:600;">▲ Váha vzrostla o ${diff.toFixed(2)} kg — výraznější nárůst</div>`;
+                    html += '<div style="font-size:12px;color:#ff6b5b;margin-bottom:8px;font-weight:600;">▲ Váha vzrostla o '+diff.toFixed(2)+' kg — výraznější nárůst</div>';
                 } else if (diff > 0.05) {
-                    html += `<div style="font-size:12px;color:#f39c12;margin-bottom:8px;font-weight:600;">▲ Váha vzrostla o ${diff.toFixed(2)} kg — může být přirozený výkyv</div>`;
+                    html += '<div style="font-size:12px;color:#f39c12;margin-bottom:8px;font-weight:600;">▲ Váha vzrostla o '+diff.toFixed(2)+' kg — může být přirozený výkyv</div>';
                 } else if (diff < -0.05) {
-                    html += `<div style="font-size:12px;color:#4ecdc4;margin-bottom:8px;font-weight:600;">▼ Váha klesla o ${Math.abs(diff).toFixed(2)} kg</div>`;
+                    html += '<div style="font-size:12px;color:#4ecdc4;margin-bottom:8px;font-weight:600;">▼ Váha klesla o '+Math.abs(diff).toFixed(2)+' kg</div>';
                 } else {
-                    html += `<div style="font-size:12px;color:#7f8c8d;margin-bottom:8px;font-weight:600;">→ Váha stabilní</div>`;
+                    html += '<div style="font-size:12px;color:#7f8c8d;margin-bottom:8px;font-weight:600;">→ Váha stabilní</div>';
                 }
 
-                // ═══ ZOBRAZ POTRAVINY PO CHODECH ═══
-                const renderChod = (label, foods) => {
-                    if (foods.length === 0) return;
-                    html += `<div style="font-size:11px;font-weight:700;color:var(--light);margin:8px 0 4px;">${label}</div>`;
-                    foods.forEach(food => {
-                        const borderColor = food.typ === 'protein' || food.typ === 'zelenina' || food.typ === 'ovoce' || food.typ === 'cokolada' ? '#4ecdc4' :
-                                           food.typ === 'sladkost' || food.typ === 'uzenina' ? '#ff6b5b' : '#f39c12';
-                        const maleNote = food.male ? ` <span style="color:var(--light);font-weight:400;">(malé množství — nevýznamné)</span>` : '';
-                        html += `<div style="font-size:12px;padding:6px 8px;margin-bottom:6px;border-left:3px solid ${borderColor};line-height:1.5;">
-                            <b>${food.emoji} ${food.name}</b>${maleNote} — ${food.info}${food.rada && !food.male ? `<br><span style="color:var(--primary);">→ ${food.rada}</span>` : ''}
-                        </div>`;
+                // === ZOBRAZ EXTERNÍ FAKTORY ===
+                if (hasStres || hasSpanekSpatny || hasCviceni) {
+                    var extTexty = [];
+                    if (hasStres) extTexty.push('😰 Stres — kortizol zadržuje vodu'+(externiF.stresNote?' ('+externiF.stresNote+')':''));
+                    if (hasSpanekSpatny) extTexty.push('😴 Špatný spánek — zvyšuje kortizol'+(externiF.spanekNote?' ('+externiF.spanekNote+')':''));
+                    if (hasCviceni) extTexty.push('🏋️ Cvičení — nárůst může být regenerace svalů'+(externiF.cviceniNote?' ('+externiF.cviceniNote+')':''));
+                    html += '<div style="background:#fff8e1;padding:8px 10px;border-radius:6px;margin-bottom:8px;border-left:3px solid #f39c12;">'
+                        +'<div style="font-size:11px;font-weight:700;color:#f39c12;margin-bottom:4px;">⚠️ Externí faktory — mohou ovlivnit váhu nezávisle na jídle:</div>'
+                        +extTexty.map(function(t){return '<div style="font-size:12px;padding:2px 0;">'+t+'</div>';}).join('')
+                        +'</div>';
+                }
+
+                // Průměr okna
+                if (win > 0) {
+                    const winColor = shortWindow ? '#4ecdc4' : longWindow ? '#ff6b5b' : '#f39c12';
+                    html += '<div style="font-size:12px;padding:4px 0;color:'+winColor+';">⏰ Jídelní okno včera: <b>'+win+'h</b>'+(shortWindow?' ✅ — výborné!':(longWindow?' — příliš dlouhé, zkrať na 5h':' — mírně nad optimem'))+'</div>';
+                }
+
+                // === POTRAVINY PO CHODECH ===
+                var renderChod2 = function(label, foods) {
+                    if (!foods || foods.length === 0) return;
+                    html += '<div style="font-size:11px;font-weight:700;color:var(--light);margin:8px 0 4px;">'+label+'</div>';
+                    foods.forEach(function(food) {
+                        var bc = food.typ==='protein'||food.typ==='zelenina'||food.typ==='ovoce'||food.typ==='cokolada' ? '#4ecdc4' :
+                                 food.typ==='sladkost'||food.typ==='uzenina' ? '#ff6b5b' : '#f39c12';
+                        var maleNote = food.male ? ' <span style="color:var(--light);font-weight:400;">(malé množství — nevýznamné)</span>' : '';
+                        html += '<div style="font-size:12px;padding:6px 8px;margin-bottom:6px;border-left:3px solid '+bc+';line-height:1.5;">'
+                            +'<b>'+food.emoji+' '+food.name+'</b>'+maleNote+' — '+food.info
+                            +(food.rada && !food.male ? '<br><span style="color:var(--primary);">→ '+food.rada+'</span>' : '')
+                            +'</div>';
                     });
                 };
-                renderChod('🍽️ Oběd', obedFoods);
-                renderChod('🌙 Večeře', vecereFoods);
-                renderChod('🍎 Ostatní', ostatniFoods);
+                renderChod2('🍽️ Oběd', obedFoods);
+                renderChod2('🌙 Večeře', vecereFoods);
+                renderChod2('🍰 Dezert', dezertFoods);
+                renderChod2('🍫 Sladkosti', sladkostiFoods);
+                renderChod2('🍎 Ostatní', ostatniFoods);
 
-                // ═══ KOMPLEXNÍ VYHODNOCENÍ ═══
-                let hodnoceniColor, hodnoceniText, hodnoceniIcon;
+                // === NEROZPOZNANÉ POTRAVINY ===
+                // === DETEKCE NEROZPOZNANÝCH POTRAVIN ===
+                // 1. Vezmi celý text, odstraň nadpisy chodů
+                var vsechnyTexty = [obedText, vecereText, dezertText, sladkostiText, snidaneText, svacineText].join(',');
+                var bezNadpisu = vsechnyTexty.replace(/(oběd|večeře|snídaně|svačina|dezert|sladkosti|alkohol)\s*:/gi, '');
 
+                // 2. Odstraň slova množství
+                var bezMnozstvi = bezNadpisu.replace(/(troška|trošku|trošk\w*|lžičk\w*|lžíci|lžíce|hrst\w*|kousek|kus|půl|pul|pouze|jen|malé|malou|trochu|kousíček|kapku)/gi, '');
+
+                // 3. Odstraň čísla a jednotky
+                var bezJednotek = bezMnozstvi.replace(/\d+\s*(g|kg|ml|dl|l|ks|x|%)/gi, '').replace(/\d+/g, '');
+
+                // 4. Rozděl na slova
+                var slova = bezJednotek.split(/[,;\s]+/).map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 3; });
+
+                // 5. Odstraň slova která analýza rozpoznala (podle detectedFoods)
+                var rozpoznanePatterns = [];
+                detectedFoods.forEach(function(f) {
+                    Object.keys(foodDB).forEach(function(key) {
+                        if (foodDB[key].name === f.name) {
+                            key.split('|').forEach(function(p){ rozpoznanePatterns.push(normalize2(p)); });
+                        }
+                    });
+                    Object.keys(slozeneDB).forEach(function(key) {
+                        if (slozeneDB[key].name === f.name) {
+                            key.split('|').forEach(function(p){ rozpoznanePatterns.push(normalize2(p)); });
+                        }
+                    });
+                });
+
+                // 6. Vyfiltruj — zbytek jsou nerozpoznané potraviny
+                var obecnaSlova = ['nebo','také','jako','este','jeste','které','ktere','podle','primo','tedy','potom','spolu','vedle','spise','doma','domaci','cerstvé','cerstvych','vecere','sladkosti','ovoce','jidlo','chodi','kolem','dobré','lehce','lehky','přímo','recky','řecky','reckeho','řeckého','reckym','řeckým','domaci','čerstvé','čerstvou','čerstvého','klasicky','klasické','prirodni','přírodní','tuky','bílkoviny','sacharidy','kombinace','porce','kousek','kus','cast','část','trocha','trochu','troška','trošku','hrst','hrstic','lžička','lžičku','lžičky','lžíce','lžíci'];
+                var nerozpoznane = [];
+                slova.forEach(function(slovo) {
+                    var sN = normalize2(slovo);
+                    if (sN.length < 4) return;
+                    if (obecnaSlova.indexOf(sN) >= 0) return;
+                    // Přeskoč ignorovaná slova
+                    var ignorovana = getIgnorovane().map(function(s){ return normalize2(s); });
+                    if (ignorovana.indexOf(sN) >= 0) return;
+                    // Je rozpoznané analýzou?
+                    var jeRozpoznane = rozpoznanePatterns.some(function(p){
+                        return p.length > 2 && (sN.includes(p) || p.includes(sN));
+                    });
+                    if (!jeRozpoznane && nerozpoznane.indexOf(slovo) < 0) {
+                        nerozpoznane.push(slovo);
+                    }
+                });
+
+                if (nerozpoznane.length > 0) {
+                    window._nerozpoznane = nerozpoznane.slice(0,5);
+                    html += '<div style="background:#fff8e1;padding:10px;border-radius:8px;margin:8px 0;border-left:3px solid #f39c12;">'
+                        +'<div style="font-size:12px;font-weight:700;color:#f39c12;margin-bottom:6px;">🔍 Nerozpoznané potraviny — chceš přidat?</div>'
+                        +window._nerozpoznane.map(function(s, i){
+                            return '<span style="display:inline-flex;align-items:center;gap:4px;margin:2px;">'
+                                +'<span onclick="openAddFoodPopup(window._nerozpoznane['+i+'])" style="padding:3px 8px;background:white;border:1px solid #f39c12;border-radius:12px;font-size:12px;cursor:pointer;color:#f39c12;">'+s+' ➕</span>'
+                                +'<span onclick="ignorujSlovo('+i+')" style="padding:3px 6px;background:white;border:1px solid #ccc;border-radius:12px;font-size:12px;cursor:pointer;color:#999;" title="Ignorovat">🗑️</span>'
+                                +'</span>';
+                        }).join('')
+                        +'</div>';
+                }
+
+                // Kombinace po chodech
+                if (obedTuk && obedSach) {
+                    html += '<div style="font-size:12px;padding:6px 8px;margin-bottom:6px;border-left:3px solid #ff6b5b;background:#fff5f5;line-height:1.5;">⚠️ <b>Oběd — kombinace:</b> '+getTN(obedFoods)+' + '+getSN(obedFoods)+' — inzulín ze sacharidů blokuje spalování tuků.</div>';
+                }
+                if (vecereTuk && vecereSach) {
+                    html += '<div style="font-size:12px;padding:6px 8px;margin-bottom:6px;border-left:3px solid #ff6b5b;background:#fff5f5;line-height:1.5;">⚠️ <b>Večeře — kombinace:</b> '+getTN(vecereFoods)+' + '+getSN(vecereFoods)+' — večerní sacharidy s tukem jsou nejhorší kombinace pro metabolismus.</div>';
+                }
+
+                // === KOMPLEXNÍ VYHODNOCENÍ ===
+                var hodnoceniColor2, hodnoceniText;
                 if (!bezVahy && diff > 0.05) {
-                    // Reálný nárůst — seřaď příčiny podle váhy
                     if (negFaktory.length === 0) {
-                        hodnoceniIcon = '💧'; hodnoceniColor = '#f39c12';
-                        hodnoceniText = diff <= 0.3 ? 'Přirozený výkyv — v normě (±0.3 kg je běžné). Žádná jasná výživová příčina.' : 'Pravděpodobně zadržené tekutiny — sleduj zítra.';
+                        hodnoceniColor2 = '#f39c12';
+                        hodnoceniText = diff <= 0.3 ? 'Přirozený výkyv (±0.3 kg je normální). Žádná jasná výživová příčina.' : 'Pravděpodobně zadržené tekutiny — sleduj zítra.';
                     } else {
-                        hodnoceniIcon = '❌'; hodnoceniColor = '#e74c3c';
-                        const top2 = negFaktory.slice(0,2).map(f=>f.label).join(' + ');
-                        hodnoceniText = diff <= 0.2 ? `Mírný nárůst — pravděpodobně přirozený výkyv. Přispět mohlo: ${top2}.`
-                            : `Hlavní příčiny nárůstu: ${top2}.${negFaktory.length > 2 ? ` Další faktory: ${negFaktory.slice(2).map(f=>f.label).join(', ')}.` : ''}`;
+                        hodnoceniColor2 = '#e74c3c';
+                        var top2 = negFaktory.slice(0,2).map(function(f){return f.label;}).join(' + ');
+                        hodnoceniText = diff <= 0.2
+                            ? 'Mírný nárůst — pravděpodobně přirozený výkyv. Přispět mohlo: '+top2+'.'
+                            : 'Hlavní příčiny nárůstu: '+top2+'.'+(negFaktory.length>2?' Další faktory: '+negFaktory.slice(2).map(function(f){return f.label;}).join(', ')+'.':'');
                     }
                 } else if (!bezVahy && diff < -0.05) {
-                    if (negFaktory.length === 0) {
-                        hodnoceniIcon = '✅'; hodnoceniColor = '#27ae60';
-                        hodnoceniText = 'Výborný den — čisté jídlo, dobrý režim. Tělo spalovalo efektivně!';
-                    } else {
-                        hodnoceniIcon = '⚠️'; hodnoceniColor = '#27ae60';
-                        hodnoceniText = `Dobrý výsledek i přes ${negFaktory[0].label} — tělo se vyrovnalo díky ${posFaktory.map(f=>f.label).join(', ') || 'dobrému oknu'}.`;
-                    }
+                    hodnoceniColor2 = '#27ae60';
+                    hodnoceniText = negFaktory.length === 0
+                        ? 'Výborný den — čisté jídlo, dobrý režim. Tělo spalovalo efektivně!'
+                        : 'Dobrý výsledek i přes '+negFaktory[0].label+' — '+( posFaktory.length>0?'pomohlo: '+posFaktory.map(function(f){return f.label;}).join(', '):'tělo se vyrovnalo')+'.';
                 } else if (!bezVahy) {
-                    hodnoceniIcon = '→'; hodnoceniColor = '#7f8c8d';
-                    hodnoceniText = negFaktory.length > 0 ? `Stabilní váha. Faktory které brání poklesu: ${negFaktory.slice(0,2).map(f=>f.label).join(', ')}.` : 'Stabilní váha — vše v normě.';
+                    hodnoceniColor2 = '#7f8c8d';
+                    hodnoceniText = negFaktory.length > 0
+                        ? 'Stabilní váha. Co brání poklesu: '+negFaktory.slice(0,2).map(function(f){return f.label;}).join(', ')+'.'
+                        : 'Stabilní váha — vše v normě.';
                 } else {
-                    // Bez váhy — predikce
-                    hodnoceniIcon = totalScore >= 7 ? '🔴' : totalScore >= 4 ? '🟡' : '🟢';
-                    hodnoceniColor = totalScore >= 7 ? '#e74c3c' : totalScore >= 4 ? '#f39c12' : '#27ae60';
-                    hodnoceniText = totalScore >= 7 ? `Náročný den (${negFaktory.slice(0,2).map(f=>f.label).join(' + ')}) — zítra očekávej zadržení vody.`
-                        : totalScore >= 4 ? `Průměrný den — mírné riziko. Hlavní faktory: ${negFaktory.slice(0,2).map(f=>f.label).join(', ')}.`
-                        : totalScore <= 0 ? 'Lehký den — dobrá volba jídel. Zítra pravděpodobně pokles nebo stabilní.'
-                        : `Mírné faktory: ${negFaktory.map(f=>f.label).join(', ')}. Zítra sleduj váhu.`;
+                    hodnoceniColor2 = totalScore >= 7 ? '#e74c3c' : totalScore >= 4 ? '#f39c12' : '#27ae60';
+                    hodnoceniText = totalScore >= 7
+                        ? 'Náročný den ('+negFaktory.slice(0,2).map(function(f){return f.label;}).join(' + ')+') — zítra očekávej zadržení vody.'
+                        : totalScore >= 4 ? 'Průměrný den — mírné riziko. Hlavní faktory: '+negFaktory.slice(0,2).map(function(f){return f.label;}).join(', ')+'.'
+                        : totalScore <= 0 ? 'Lehký den — dobrá volba jídel. Zítra pravděpodobně pokles.'
+                        : 'Mírné faktory: '+negFaktory.map(function(f){return f.label;}).join(', ')+'.';
                 }
 
-                html += `<div style="padding:10px;background:white;border-radius:8px;margin-top:10px;border-left:4px solid ${hodnoceniColor};">
-                    <div style="font-size:13px;font-weight:700;color:${hodnoceniColor};margin-bottom:6px;">${hodnoceniIcon} ${hodnoceniText}</div>`;
+                html += '<div style="padding:10px;background:white;border-radius:8px;margin-top:10px;border-left:4px solid '+hodnoceniColor2+';">'
+                    +'<div style="font-size:13px;font-weight:700;color:'+hodnoceniColor2+';margin-bottom:6px;">'
+                    +(diff>0.05&&negFaktory.length>0?'❌ ':diff<-0.05?'✅ ':bezVahy?'🔮 ':'→ ')
+                    +hodnoceniText+'</div>'
+                    +(posFaktory.length>0?'<div style="font-size:11px;color:#27ae60;margin-top:4px;">✅ Co fungovalo: '+posFaktory.map(function(f){return f.label;}).join(' · ')+'</div>':'')
+                    +'</div>';
 
-                // Zobraz pozitivní faktory pokud jsou
-                if (posFaktory.length > 0) {
-                    html += `<div style="font-size:11px;color:#27ae60;margin-top:4px;">✅ Co fungovalo: ${posFaktory.map(f=>f.label).join(' · ')}</div>`;
-                }
-                html += `</div>`;
-
-                // ═══ DOPORUČENÍ NA DNES/ZÍTRA ═══
-                const tipy = [];
+                // === DOPORUČENÍ — JÍDELNÍ KOMBINACE NA DNES ===
+                var tipy = [];
                 if (hasAlkohol) {
-                    tipy.push({ e:'🚰', t:'Pij dnes 2-3l vody — vyplaví ethanol rychleji' });
-                    tipy.push({ e:'🥗', t:'Zítra čistý den — zelenina + protein, žádné sacharidy ani tuk' });
-                    tipy.push({ e:'⏰', t:'Zkrať okno na 4-5h — kompenzace za alkohol' });
+                    tipy.push('🚰 Pij dnes 2-3l vody — vyplaví ethanol rychleji');
+                    tipy.push('🥗 Dnes čistý den: kuřecí nebo ryba + brokolice/cuketa. Žádné sacharidy ani smetana.');
+                    tipy.push('⏰ Zkrať okno na 4-5h — kompenzace za alkohol');
                 } else if (vecereTuk && vecereSach) {
-                    tipy.push({ e:'🌙', t:`Příště k večeři: ${getSachNames(vecereFoods)} vyměň za zeleninu nebo salát` });
-                    tipy.push({ e:'🐟', t:'Ideální večeře: ryba/kuřecí + brokolice/cuketa — bez sacharidů' });
-                } else if (vecereSach) {
-                    tipy.push({ e:'🥦', t:`${getSachNames(vecereFoods)} přesuň na oběd — večer jen zelenina + protein` });
+                    tipy.push('🌙 Dnes k večeři: losos/kuřecí + brokolice nebo salát — BEZ '+getSN(vecereFoods)+' a '+getTN(vecereFoods));
+                    tipy.push('🍽️ Oběd může být normální — sacharidy patří na oběd, ne na večeři');
+                } else if (vecereSach && !vecereTuk) {
+                    tipy.push('🌙 Dnes večeře bez sacharidů: vejce + zelenina, nebo tvaroh + okurka');
+                    tipy.push('🍝 '+getSN(vecereFoods)+' přesuň na oběd — večer jen protein + zelenina');
+                } else if (obedTuk && obedSach) {
+                    tipy.push('🍽️ Dnes na oběd: protein + zelenina (bez tučné omáčky nebo sacharidů najednou)');
+                    tipy.push('🌙 Večeře lehká: zelenina + bílkovina');
                 }
                 if (hasSladkosti) {
-                    tipy.push({ e:'🍓', t:'Sladkosti nahraď: jahody, borůvky nebo 2 čtverečky hořké čokolády 70%+' });
+                    tipy.push('🍓 Místo sladkostí dnes zkus: jahody, borůvky nebo 2 čtverečky hořké čokolády 70%+');
                 }
                 if (lowWater) {
-                    tipy.push({ e:'💧', t:`Dnes vypij aspoň 2l vody — včera bylo málo (${yesterdayMeal.water||0}l)` });
+                    tipy.push('💧 Dnes cíl: 2l vody — nastavit si připomínku každé 2h');
                 }
                 if (longWindow || medWindow) {
-                    tipy.push({ e:'⏰', t:`Zkrať okno na 5h — včera bylo ${win}h, každá hodina navíc ubírá čas spalování` });
+                    tipy.push('⏰ Dnes zkrať okno na 5h — čím kratší okno, tím více času tělo spaluje tuky');
                 }
                 if (celkovyObjem >= 4 && !hasAlkohol) {
-                    tipy.push({ e:'🍽️', t:'Bylo toho hodně — zítra lehčí den: 2 chody, méně kalorií celkově' });
+                    tipy.push('🍽️ Včera bylo hodně chodů — dnes lehčí: 2 jídla, žádné svačiny');
                 }
-                if (negFaktory.length === 0) {
-                    tipy.push({ e:'💪', t:'Pokračuj stejně — dobrý přístup! Takhle to funguje.' });
+                if (negFaktory.length === 0 && posFaktory.length > 0) {
+                    tipy.push('💪 Pokračuj stejně — dnes: protein na oběd, zelenina k večeři, 2l vody');
                 }
 
                 if (tipy.length > 0) {
-                    html += `<div style="background:#f0f8ff;padding:10px;border-radius:8px;margin-top:8px;border-left:3px solid var(--primary);">
-                        <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:6px;">💡 Doporučení na dnes:</div>
-                        ${tipy.map(t=>`<div style="font-size:12px;padding:3px 0;color:#2c3e50;">${t.e} ${t.t}</div>`).join('')}
-                    </div>`;
+                    html += '<div style="background:#f0f8ff;padding:10px;border-radius:8px;margin-top:8px;border-left:3px solid var(--primary);">'
+                        +'<div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:6px;">💡 Doporučení na dnes (jídelní kombinace):</div>'
+                        +tipy.map(function(t){return '<div style="font-size:12px;padding:3px 0;">'+t+'</div>';}).join('')
+                        +'</div>';
                 }
             }
             html += `</div>`;
@@ -1195,170 +1582,141 @@
             }
             html += `</div>`;
 
-
-            // ═══ PREDIKCE A TRENDY ═══
+            // Trend + Predikce (current rate + overall rate)
             const posledniVaha = lastW ? lastW.weight : 0;
             const zbyvaKg = posledniVaha && appState.goalWeight ? posledniVaha - appState.goalWeight : 0;
-            const weeklyGoalKg = parseFloat(localStorage.getItem('weeklyGoal')) || 0;
+            const weeklyGoalKg = parseFloat(localStorage.getItem('weeklyGoal')) || 0.25;
 
-            // Overall rate (celkový průměr)
-            const overallRateDay = avgDailyChange; // kg/den
+            // Overall rate
+            const overallRateDay = avgDailyChange;
             const overallRateWeek = overallRateDay * 7;
 
             // Current rate (posledních 7 dní)
-            const last7 = daysUpToCurrent.slice(-7).filter(e=>e.diff!==0);
-            const currentRateDay = last7.length > 0
-                ? last7.reduce((s,e)=>s+(e.diff||0),0) / last7.length
+            const last7e = daysUpToCurrent.slice(-7).filter(function(e){return e.diff!==0;});
+            const currentRateDay = last7e.length > 0
+                ? last7e.reduce(function(s,e){return s+(e.diff||0);},0) / last7e.length
                 : overallRateDay;
             const currentRateWeek = currentRateDay * 7;
 
-            // Dny do cíle
             const daysOverall = zbyvaKg > 0 && overallRateDay < 0 ? Math.round(zbyvaKg / Math.abs(overallRateDay)) : null;
             const daysCurrent = zbyvaKg > 0 && currentRateDay < 0 ? Math.round(zbyvaKg / Math.abs(currentRateDay)) : null;
+            const addDaysDate = function(d, n) { const r = new Date(d); r.setDate(r.getDate()+n); return r.toLocaleDateString('cs-CZ',{day:'numeric',month:'numeric',year:'numeric'}); };
 
-            const addDays = (d, n) => { const r = new Date(d); r.setDate(r.getDate()+n); return r.toLocaleDateString('cs-CZ',{day:'numeric',month:'numeric',year:'numeric'}); };
-            const now = new Date(currentDate);
+            const crColor = currentRateWeek < 0 ? '#4ecdc4' : '#ff6b5b';
+            const orColor = overallRateWeek < 0 ? '#4ecdc4' : '#ff6b5b';
 
-            html += \`<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px;">
-                <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px;">📈 Trend a predikce</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-                    <div style="background:white;padding:10px;border-radius:8px;text-align:center;border:2px solid var(--border);">
-                        <div style="font-size:10px;color:var(--light);margin-bottom:2px;">CURRENT RATE</div>
-                        <div style="font-size:11px;color:var(--light);">posl. 7 dní</div>
-                        <div style="font-size:20px;font-weight:700;color:\${currentRateWeek<0?'#4ecdc4':'#ff6b5b'};">\${currentRateWeek>0?'+':''}\${currentRateWeek.toFixed(2)} kg</div>
-                        <div style="font-size:10px;color:var(--light);">za týden</div>
-                    </div>
-                    <div style="background:white;padding:10px;border-radius:8px;text-align:center;border:2px solid var(--border);">
-                        <div style="font-size:10px;color:var(--light);margin-bottom:2px;">OVERALL RATE</div>
-                        <div style="font-size:11px;color:var(--light);">celkový průměr</div>
-                        <div style="font-size:20px;font-weight:700;color:\${overallRateWeek<0?'#4ecdc4':'#ff6b5b'};">\${overallRateWeek>0?'+':''}\${overallRateWeek.toFixed(2)} kg</div>
-                        <div style="font-size:10px;color:var(--light);">za týden</div>
-                    </div>
-                </div>
-                <div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);">Celková změna: <b style="color:\${totalChange<=0?'#4ecdc4':'#ff6b5b'}">\${totalChange.toFixed(2)} kg</b> za \${totalDaysWithW} dní</div>
-                \${zbyvaKg > 0 ? \`
-                <div style="font-size:12px;padding:6px 0;border-bottom:1px solid var(--border);">Do cíle zbývá: <b style="color:#f39c12">\${zbyvaKg.toFixed(2)} kg</b></div>
-                \${daysCurrent ? \`<div style="font-size:12px;padding:4px 0;">📍 Current rate: cíl <b>\${appState.goalWeight} kg</b> za <b style="color:#4ecdc4">\${daysCurrent} dní</b> (cca \${addDays(now, daysCurrent)})</div>\` : ''}
-                \${daysOverall ? \`<div style="font-size:12px;padding:4px 0;">📍 Overall rate: cíl <b>\${appState.goalWeight} kg</b> za <b style="color:#2d5a7b">\${daysOverall} dní</b> (cca \${addDays(now, daysOverall)})</div>\` : ''}
-                \` : ''}
-                \${!appState.goalWeight ? '<div style="font-size:12px;color:var(--light);padding:4px 0;">Nastav cílovou váhu v Nastavení pro predikci.</div>' : ''}
-            </div>\`;
+            html += '<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px;">'
+                + '<div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:10px;">📈 Trend a predikce</div>'
+                + '<div style="font-size:12px;padding:4px 0;">Celková změna: <b style="color:' + (totalChange<=0?'#4ecdc4':'#ff6b5b') + '">' + totalChange.toFixed(2) + ' kg</b> za ' + totalDaysWithW + ' dní</div>'
+                + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;">'
+                + '<div style="background:white;padding:10px;border-radius:8px;text-align:center;">'
+                + '<div style="font-size:10px;color:var(--light);">CURRENT RATE (posl. 7 dní)</div>'
+                + '<div style="font-size:18px;font-weight:700;color:' + crColor + ';">' + (currentRateWeek>0?'+':'') + currentRateWeek.toFixed(2) + ' kg</div>'
+                + '<div style="font-size:10px;color:var(--light);">za týden</div>'
+                + (daysCurrent ? '<div style="font-size:11px;margin-top:4px;">Cíl za <b style="color:#4ecdc4">' + daysCurrent + ' dní</b><br>(' + addDaysDate(currentDate, daysCurrent) + ')</div>' : '')
+                + '</div>'
+                + '<div style="background:white;padding:10px;border-radius:8px;text-align:center;">'
+                + '<div style="font-size:10px;color:var(--light);">OVERALL RATE (průměr)</div>'
+                + '<div style="font-size:18px;font-weight:700;color:' + orColor + ';">' + (overallRateWeek>0?'+':'') + overallRateWeek.toFixed(2) + ' kg</div>'
+                + '<div style="font-size:10px;color:var(--light);">za týden</div>'
+                + (daysOverall ? '<div style="font-size:11px;margin-top:4px;">Cíl za <b style="color:#2d5a7b">' + daysOverall + ' dní</b><br>(' + addDaysDate(currentDate, daysOverall) + ')</div>' : '')
+                + '</div>'
+                + '</div>'
+                + (zbyvaKg > 0 ? '<div style="font-size:12px;padding:4px 0;">Do cíle zbývá: <b style="color:#f39c12">' + zbyvaKg.toFixed(2) + ' kg</b></div>' : '')
+                + '</div>';
 
-            // ═══ TÝDENNÍ SHRNUTÍ (Pondělí → Neděle) ═══
-            // Najdi minulý pondělí
-            const getMonday = (d) => {
-                const dt = new Date(d);
-                const day = dt.getDay();
-                const diff = day === 0 ? -6 : 1 - day;
-                dt.setDate(dt.getDate() + diff);
-                return dt;
+            // === TYDENNI SHRNUTI (Pondeli -> Nedele) ===
+            var getMonday = function(d) {
+                var dt = new Date(d); var day = dt.getDay();
+                dt.setDate(dt.getDate() + (day===0?-6:1-day)); return dt;
             };
-            const thisMonday = getMonday(currentDate);
-            const lastMonday = new Date(thisMonday);
-            lastMonday.setDate(lastMonday.getDate() - 7);
-            const lastSunday = new Date(thisMonday);
-            lastSunday.setDate(lastSunday.getDate() - 1);
-            const lastMondayStr = getDateString(lastMonday);
-            const lastSundayStr = getDateString(lastSunday);
-            const thisMondayStr = getDateString(thisMonday);
+            var thisMonday = getMonday(currentDate);
+            var lastMonday = new Date(thisMonday); lastMonday.setDate(lastMonday.getDate()-7);
+            var lastSunday = new Date(thisMonday); lastSunday.setDate(lastSunday.getDate()-1);
+            var lastMondayStr = getDateString(lastMonday);
+            var lastSundayStr = getDateString(lastSunday);
+            var thisMondayStr = getDateString(thisMonday);
 
-            // Data za minulý týden (Po-Ne)
-            const prevWeekMeals = allMeals.filter(m => m.date >= lastMondayStr && m.date <= lastSundayStr);
-            const prevWeekLog = allLog.filter(e => e.date >= lastMondayStr && e.date <= lastSundayStr);
-            const prevWeekWithW = prevWeekLog.filter(e => e.weight > 0);
+            var prevWeekMeals = allMeals.filter(function(m){return m.date>=lastMondayStr&&m.date<=lastSundayStr;});
+            var prevWeekLog = allLog.filter(function(e){return e.date>=lastMondayStr&&e.date<=lastSundayStr;});
+            var prevWeekWithW = prevWeekLog.filter(function(e){return e.weight>0;});
+            var thisWeekMeals = allMeals.filter(function(m){return m.date>=thisMondayStr&&m.date<=currentDateStr;});
+            var thisWeekLog = allLog.filter(function(e){return e.date>=thisMondayStr&&e.date<=currentDateStr;});
+            var thisWeekWithW = thisWeekLog.filter(function(e){return e.weight>0;});
 
-            // Data za aktuální týden (od tohoto pondělí)
-            const thisWeekMeals = allMeals.filter(m => m.date >= thisMondayStr && m.date <= currentDateStr);
-            const thisWeekLog = allLog.filter(e => e.date >= thisMondayStr && e.date <= currentDateStr);
-            const thisWeekWithW = thisWeekLog.filter(e => e.weight > 0);
+            function renderTydenBlock(label, meals, logData, withW, isPrev) {
+                if (meals.length===0 && logData.length===0) return '';
+                var wAlk = meals.filter(function(m){return m.note.toLowerCase().includes('alkohol');}).length;
+                var wSl = meals.filter(function(m){return m.note.toLowerCase().includes('sladkosti');}).length;
+                var wDob = withW.filter(function(e){return e.diff<-0.05;}).length;
+                var wSp = withW.filter(function(e){return e.diff>0.05;}).length;
+                var wSt = withW.filter(function(e){return Math.abs(e.diff)<=0.05;}).length;
+                var winData = logData.filter(function(e){return parseFloat(e.window)>0;});
+                var wOkno = winData.length>0 ? winData.reduce(function(s,e){return s+parseFloat(e.window||0);},0)/winData.length : 0;
+                var wVoda = meals.length>0 ? meals.reduce(function(s,m){return s+(m.water||0);},0)/meals.length : 0;
+                var wChange = withW.length>=2 ? withW[withW.length-1].weight-withW[0].weight : null;
 
-            const renderTyden = (label, meals, logData, withW, isPrev) => {
-                if (meals.length === 0 && logData.length === 0) return '';
-                const wAlkohol = meals.filter(m => m.note.toLowerCase().includes('alkohol')).length;
-                const wSladkosti = meals.filter(m => m.note.toLowerCase().includes('sladkosti')).length;
-                const wDobryDen = withW.filter(e => e.diff < -0.05).length;
-                const wSpatnyDen = withW.filter(e => e.diff > 0.05).length;
-                const wStabilni = withW.filter(e => Math.abs(e.diff) <= 0.05).length;
-                const wAvgOkno = logData.filter(e=>parseFloat(e.window)>0).reduce((s,e)=>s+parseFloat(e.window||0),0) / Math.max(logData.filter(e=>parseFloat(e.window)>0).length,1);
-                const wAvgVoda = meals.reduce((s,m)=>s+(m.water||0),0) / Math.max(meals.length,1);
-                const wChange = withW.length >= 2 ? withW[withW.length-1].weight - withW[0].weight : null;
+                var cilSplnen = weeklyGoalKg>0 && wChange!==null && wChange<=-(weeklyGoalKg*0.8);
+                var cilText = weeklyGoalKg>0 && wChange!==null
+                    ? (cilSplnen ? '✅ Týdenní cíl splněn! (cíl: -'+weeklyGoalKg+' kg, skutečnost: '+wChange.toFixed(2)+' kg)'
+                        : '❌ Cíl nesplněn (cíl: -'+weeklyGoalKg+' kg, skutečnost: '+wChange.toFixed(2)+' kg)') : '';
 
-                // Týdenní cíl — splněno?
-                const tydenCilSplnen = weeklyGoalKg > 0 && wChange !== null && wChange <= -(weeklyGoalKg * 0.8);
-                const tydenCilText = weeklyGoalKg > 0 && wChange !== null
-                    ? (tydenCilSplnen ? \`✅ Týdenní cíl splněn! (cíl: -\${weeklyGoalKg} kg, skutečnost: \${wChange.toFixed(2)} kg)\`
-                        : \`❌ Týdenní cíl nesplněn (cíl: -\${weeklyGoalKg} kg, skutečnost: \${wChange!==null?wChange.toFixed(2)+'kg':'?'})\`)
-                    : '';
+                var body = (wDob*2)-(wSp*1)-(wAlk*1.5)-(wSl*0.5);
+                var hod, col;
+                // Pokud váha celkově klesla, nemůže být "náročný týden"
+                if (wChange !== null && wChange < -0.3) {
+                    hod='🏆 Výborný týden!'; col='#27ae60';
+                } else if (wChange !== null && wChange < 0) {
+                    hod = body >= 0 ? '🏆 Výborný týden!' : '👍 Dobrý týden — váha klesla!';
+                    col = '#27ae60';
+                } else if (body>=3){hod='🏆 Výborný týden!';col='#27ae60';}
+                else if(body>=0){hod='👍 Dobrý týden';col='#f39c12';}
+                else{hod='😓 Náročný týden';col='#e74c3c';}
 
-                const tydenBody = (wDobryDen * 2) - (wSpatnyDen * 1) - (wAlkohol * 1.5) - (wSladkosti * 0.5);
-                let tydenHodnoceni, tydenColor;
-                if (tydenBody >= 3) { tydenHodnoceni = '🏆 Výborný týden!'; tydenColor = '#27ae60'; }
-                else if (tydenBody >= 0) { tydenHodnoceni = '👍 Dobrý týden'; tydenColor = '#f39c12'; }
-                else { tydenHodnoceni = '😓 Náročný týden'; tydenColor = '#e74c3c'; }
+                var zlep=[];
+                if(wAlk>=3) zlep.push('🍺 Příští týden max 1-2x alkohol (bylo '+wAlk+'x)');
+                else if(wAlk>=2) zlep.push('🍺 '+wAlk+'x alkohol — zkus jeden týden bez');
+                if(wAlk===0) zlep.push('✅ Žádný alkohol — skvěle!');
+                if(wSl>=3) zlep.push('🍬 Sladkosti '+wSl+'x — nahraď ovocem nebo čokoládou 70%+');
+                if(wOkno>6.5) zlep.push('⏰ Průměrné okno '+wOkno.toFixed(1)+'h — zkrať na 5h');
+                else if(wOkno>0&&wOkno<=5) zlep.push('⏰ Okno '+wOkno.toFixed(1)+'h — výborné!');
+                if(wVoda<1.5) zlep.push('💧 Průměrná voda jen '+wVoda.toFixed(1)+'l — cíl 2l denně');
+                else if(wVoda>=2) zlep.push('💧 Hydratace '+wVoda.toFixed(1)+'l — výborně!');
+                if(wSp>=3) zlep.push('🌙 Mnoho nárůstů — zkus večeře jen protein + zelenina');
+                if(body>=3&&zlep.filter(function(z){return z.startsWith('✅')||z.startsWith('💪');}).length===0) zlep.push('💪 Pokračuj stejně!');
 
-                // Konkrétní návrhy na zlepšení
-                const zlepseni = [];
-                if (wAlkohol >= 3) zlepseni.push(\`🍺 Příští týden zkus max 1-2x alkohol (bylo \${wAlkohol}x) — každý den s alkoholem zablokuje spalování na 48h\`);
-                else if (wAlkohol >= 2) zlepseni.push(\`🍺 \${wAlkohol}x alkohol — zkus jeden týden bez a sleduj rozdíl na váze\`);
-                if (wSladkosti >= 3) zlepseni.push(\`🍬 Sladkosti \${wSladkosti}x — zkus je nahradit: jahody, borůvky, 2 čtverečky čokolády 70%+\`);
-                if (wAvgOkno > 6.5) zlepseni.push(\`⏰ Průměrné okno bylo \${wAvgOkno.toFixed(1)}h — zkrať na 5h a uvidíš rychlejší výsledky\`);
-                if (wAvgVoda < 1.5) zlepseni.push(\`💧 Pila jsi průměrně jen \${wAvgVoda.toFixed(1)}l — příští týden cíl 2l denně\`);
-                if (wSpatnyDen >= 3) zlepseni.push('🌙 Příliš mnoho večerních sacharidů — zkus večeře jen protein + zelenina');
-                if (wDobryDen >= 4) zlepseni.push('💪 Super — pokračuj v tomhle rytmu!');
-                if (zlepseni.length === 0 && tydenBody >= 3) zlepseni.push('🎯 Perfektní týden — jen pokračuj stejně!');
+                var wChangeColor = wChange!==null?(wChange<=0?'#4ecdc4':'#ff6b5b'):'#7f8c8d';
+                var zlepColor = isPrev?'var(--primary)':'#27ae60';
+                var zlepBg = isPrev?'#f0f8ff':'#f0fff0';
+                var zlepLabel = isPrev?'💡 Příští týden zkus:':'💡 Tipy na zbytek týdne:';
 
-                return \`<div style="background:var(--bg);padding:12px;border-radius:8px;margin-top:12px;">
-                    <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:6px;">📅 \${label}</div>
-                    <div style="font-size:13px;font-weight:700;color:\${tydenColor};margin-bottom:8px;">\${tydenHodnoceni}</div>
-                    \${tydenCilText ? \`<div style="font-size:12px;padding:6px 8px;border-radius:6px;margin-bottom:8px;background:white;color:\${tydenCilSplnen?'#27ae60':'#e74c3c'};">\${tydenCilText}</div>\` : ''}
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;">
-                        <div style="background:white;padding:8px;border-radius:6px;text-align:center;">
-                            <div style="font-size:18px;font-weight:700;color:#4ecdc4;">\${wDobryDen}</div>
-                            <div style="font-size:10px;color:var(--light);">Poklesů</div>
-                        </div>
-                        <div style="background:white;padding:8px;border-radius:6px;text-align:center;">
-                            <div style="font-size:18px;font-weight:700;color:#ff6b5b;">\${wSpatnyDen}</div>
-                            <div style="font-size:10px;color:var(--light);">Nárůstů</div>
-                        </div>
-                        <div style="background:white;padding:8px;border-radius:6px;text-align:center;">
-                            <div style="font-size:18px;font-weight:700;color:#7f8c8d;">\${wStabilni}</div>
-                            <div style="font-size:10px;color:var(--light);">Stabilních</div>
-                        </div>
-                        <div style="background:white;padding:8px;border-radius:6px;text-align:center;">
-                            <div style="font-size:18px;font-weight:700;color:#f39c12;">\${wAlkohol}</div>
-                            <div style="font-size:10px;color:var(--light);">Alkohol</div>
-                        </div>
-                        <div style="background:white;padding:8px;border-radius:6px;text-align:center;">
-                            <div style="font-size:18px;font-weight:700;color:#f39c12;">\${wSladkosti}</div>
-                            <div style="font-size:10px;color:var(--light);">Sladkosti</div>
-                        </div>
-                        \${wChange !== null ? \`<div style="background:white;padding:8px;border-radius:6px;text-align:center;">
-                            <div style="font-size:18px;font-weight:700;color:\${wChange<=0?'#4ecdc4':'#ff6b5b'};">\${wChange>0?'+':''}\${wChange.toFixed(2)}</div>
-                            <div style="font-size:10px;color:var(--light);">kg celkem</div>
-                        </div>\` : ''}
-                    </div>
-                    \${wAvgOkno > 0 ? \`<div style="font-size:12px;padding:3px 0;color:var(--light);">⏰ Průměrné okno: \${wAvgOkno.toFixed(1)}h &nbsp;|&nbsp; 💧 Průměrná voda: \${wAvgVoda.toFixed(1)}l</div>\` : ''}
-                    \${isPrev && zlepseni.length > 0 ? \`<div style="margin-top:8px;padding:8px;background:#f0f8ff;border-radius:6px;border-left:3px solid var(--primary);">
-                        <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:4px;">💡 Příští týden zkus:</div>
-                        \${zlepseni.map(z=>\`<div style="font-size:12px;padding:2px 0;">\${z}</div>\`).join('')}
-                    </div>\` : ''}
-                    \${!isPrev && zlepseni.length > 0 ? \`<div style="margin-top:8px;padding:8px;background:#f0fff0;border-radius:6px;border-left:3px solid #27ae60;">
-                        <div style="font-size:12px;font-weight:700;color:#27ae60;margin-bottom:4px;">💡 Tipy na zbytek týdne:</div>
-                        \${zlepseni.map(z=>\`<div style="font-size:12px;padding:2px 0;">\${z}</div>\`).join('')}
-                    </div>\` : ''}
-                </div>\`;
-            };
+                return '<div style="background:var(--bg);padding:12px;border-radius:8px;margin-top:12px;">'
+                    +'<div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:6px;">'+label+'</div>'
+                    +'<div style="font-size:13px;font-weight:700;color:'+col+';margin-bottom:8px;">'+hod+'</div>'
+                    +(cilText?'<div style="font-size:12px;padding:6px 8px;border-radius:6px;margin-bottom:8px;background:white;color:'+(cilSplnen?'#27ae60':'#e74c3c')+';">'+cilText+'</div>':'')
+                    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;">'
+                    +'<div style="background:white;padding:8px;border-radius:6px;text-align:center;"><div style="font-size:18px;font-weight:700;color:#4ecdc4;">'+wDob+'</div><div style="font-size:10px;color:var(--light);">Poklesů</div></div>'
+                    +'<div style="background:white;padding:8px;border-radius:6px;text-align:center;"><div style="font-size:18px;font-weight:700;color:#ff6b5b;">'+wSp+'</div><div style="font-size:10px;color:var(--light);">Nárůstů</div></div>'
+                    +'<div style="background:white;padding:8px;border-radius:6px;text-align:center;"><div style="font-size:18px;font-weight:700;color:#7f8c8d;">'+wSt+'</div><div style="font-size:10px;color:var(--light);">Stabilních</div></div>'
+                    +'<div style="background:white;padding:8px;border-radius:6px;text-align:center;"><div style="font-size:18px;font-weight:700;color:#f39c12;">'+wAlk+'</div><div style="font-size:10px;color:var(--light);">Alkohol</div></div>'
+                    +'<div style="background:white;padding:8px;border-radius:6px;text-align:center;"><div style="font-size:18px;font-weight:700;color:#f39c12;">'+wSl+'</div><div style="font-size:10px;color:var(--light);">Sladkosti</div></div>'
+                    +(wChange!==null?'<div style="background:white;padding:8px;border-radius:6px;text-align:center;"><div style="font-size:18px;font-weight:700;color:'+wChangeColor+';">'+(wChange>0?'+':'')+wChange.toFixed(2)+'</div><div style="font-size:10px;color:var(--light);">kg celkem</div></div>':'')
+                    +'</div>'
+                    +(wOkno>0?'<div style="font-size:12px;padding:3px 0;color:var(--light);">⏰ Prům. okno: '+wOkno.toFixed(1)+'h &nbsp;|&nbsp; 💧 Prům. voda: '+wVoda.toFixed(1)+'l</div>':'')
+                    +(zlep.length>0?'<div style="margin-top:8px;padding:8px;background:'+zlepBg+';border-radius:6px;border-left:3px solid '+zlepColor+';">'
+                        +'<div style="font-size:12px;font-weight:700;color:'+zlepColor+';margin-bottom:4px;">'+zlepLabel+'</div>'
+                        +zlep.map(function(z){return '<div style="font-size:12px;padding:2px 0;">'+z+'</div>';}).join('')
+                        +'</div>':'')
+                    +'</div>';
+            }
 
-            html += renderTyden(
-                \`Minulý týden (\${lastMonday.toLocaleDateString('cs-CZ',{day:'numeric',month:'numeric'})}–\${lastSunday.toLocaleDateString('cs-CZ',{day:'numeric',month:'numeric'})})\`,
+            html += renderTydenBlock(
+                'Minulý týden ('+lastMonday.toLocaleDateString('cs-CZ',{day:'numeric',month:'numeric'})+'–'+lastSunday.toLocaleDateString('cs-CZ',{day:'numeric',month:'numeric'})+')',
                 prevWeekMeals, prevWeekLog, prevWeekWithW, true
             );
-            html += renderTyden(
-                \`Tento týden (od \${thisMonday.toLocaleDateString('cs-CZ',{day:'numeric',month:'numeric'})})\`,
-                thisWeekMeals, thisWeekLog, thisWeekWithW, false
-            );
+            // Aktuální týden zobrazit až v pondělí jako minulý týden
 
-
+            div.innerHTML = html;
             drawTrendChart(sorted);
         }
 
@@ -1684,6 +2042,402 @@
             });
         }
 
+        // Stav faktorů pro aktuální den
+        var faktoryState = { spanek: 'ne', stres: 'ne', cviceni: 'ne' };
+
+        function setFaktor(typ, hodnota) {
+            faktoryState[typ] = hodnota;
+            var ne = document.getElementById(typ+'Ne');
+            var ano = document.getElementById(typ+'Ano');
+            if (hodnota === 'ne') {
+                ne.style.background = '#4ecdc4'; ne.style.color = 'white'; ne.style.fontWeight = '600';
+                ano.style.background = 'white'; ano.style.color = 'var(--light)'; ano.style.fontWeight = 'normal';
+            } else {
+                ano.style.background = '#ff6b5b'; ano.style.color = 'white'; ano.style.fontWeight = '600';
+                ne.style.background = 'white'; ne.style.color = 'var(--light)'; ne.style.fontWeight = 'normal';
+            }
+        }
+
+        function saveFaktory() {
+            var today = getDateString(currentDate);
+            var entry = appState.logbook.find(function(e){ return e.date === today; });
+            if (!entry) {
+                appState.logbook.push({ date: today, weight: 0, diff: 0, window: '', meal: '', water: 0 });
+                entry = appState.logbook[appState.logbook.length-1];
+            }
+            entry.faktory = {
+                spanek: faktoryState.spanek,
+                spanekNote: document.getElementById('spanekNote').value,
+                stres: faktoryState.stres,
+                stresNote: document.getElementById('stresNote').value,
+                cviceni: faktoryState.cviceni,
+                cviceniNote: document.getElementById('cviceniNote').value
+            };
+            save();
+            showToast('Faktory uloženy!', '#4ecdc4');
+        }
+
+        function loadFaktory() {
+            var today = getDateString(currentDate);
+            var entry = appState.logbook.find(function(e){ return e.date === today; });
+            var f = entry && entry.faktory ? entry.faktory : {};
+            faktoryState.spanek = f.spanek || 'ne';
+            faktoryState.stres = f.stres || 'ne';
+            faktoryState.cviceni = f.cviceni || 'ne';
+            setFaktor('spanek', faktoryState.spanek);
+            setFaktor('stres', faktoryState.stres);
+            setFaktor('cviceni', faktoryState.cviceni);
+            document.getElementById('spanekNote').value = f.spanekNote || '';
+            document.getElementById('stresNote').value = f.stresNote || '';
+            document.getElementById('cviceniNote').value = f.cviceniNote || '';
+        }
+
+        // ═══ SUMMARY TAB ═══
+        function renderSummary() {
+            const div = document.getElementById('summaryContent');
+            if (!div) return;
+
+            const allLog = appState.logbook.filter(function(e){ return e.weight > 0; }).sort(function(a,b){ return a.date.localeCompare(b.date); });
+            if (allLog.length === 0) { div.innerHTML = '<p style="color:var(--light);text-align:center;padding:20px;">Zatím žádná data. Zadej váhu!</p>'; return; }
+
+            const latest = allLog[allLog.length-1];
+            const startW = parseFloat(localStorage.getItem('summaryStartWeight')) || allLog[0].weight;
+            const goalW = parseFloat(localStorage.getItem('msGoalWeightSaved')) || appState.goalWeight || 58;
+            const startDate = localStorage.getItem('summaryStartDate') || allLog[0].date;
+            const weeklyGoalKg = parseFloat(localStorage.getItem('weeklyGoal')) || 0.25;
+            const milestoneCount = parseInt(localStorage.getItem('milestoneCount')) || 10;
+
+            // Milestone výpočet
+            const totalDiff = startW - goalW;
+            const milestoneStep = totalDiff / milestoneCount;
+            const milestones = [];
+            for (var i = 0; i <= milestoneCount; i++) {
+                milestones.push(parseFloat((startW - i * milestoneStep).toFixed(2)));
+            }
+            // Najdi aktuální milník
+            var currentMilestone = 0;
+            for (var i = milestoneCount; i >= 0; i--) {
+                if (latest.weight <= milestones[i] + 0.001) { currentMilestone = i; break; }
+            }
+            var completedMilestones = currentMilestone;
+            var nextMilestone = milestones[currentMilestone + 1] || goalW;
+            var prevMilestone = milestones[currentMilestone] || startW;
+            var progressInMilestone = prevMilestone - latest.weight;
+            var milestoneSize = prevMilestone - nextMilestone;
+            var milestonePercent = milestoneSize > 0 ? Math.min(100, Math.round(progressInMilestone / milestoneSize * 100)) : 100;
+            var overallPercent = Math.round((startW - latest.weight) / totalDiff * 100);
+
+            // Rates
+            const last7 = allLog.slice(-7);
+            const currentRateDay = last7.length > 1 ? (last7[0].weight - last7[last7.length-1].weight) / (last7.length-1) : 0;
+            const currentRateWeek = currentRateDay * 7;
+            const overallRateDay = allLog.length > 1 ? (allLog[0].weight - allLog[allLog.length-1].weight) / (allLog.length-1) : 0;
+            const overallRateWeek = overallRateDay * 7;
+            const zbyvaKg = latest.weight - goalW;
+
+            const addDaysToDate = function(d, n) {
+                var r = new Date(d); r.setDate(r.getDate()+n);
+                return r.toLocaleDateString('cs-CZ',{day:'numeric',month:'numeric',year:'numeric'});
+            };
+            var todayStr = getDateString(currentDate);
+
+            const daysCommit = weeklyGoalKg > 0 ? Math.round(zbyvaKg / weeklyGoalKg * 7) : null;
+            const daysCurrent = currentRateWeek > 0.01 ? Math.round(zbyvaKg / currentRateWeek * 7) : null;
+            const daysOverall = overallRateWeek > 0.01 ? Math.round(zbyvaKg / overallRateWeek * 7) : null;
+
+            // Recent stats
+            const last14 = allLog.slice(-14);
+            const highEntry = last14.reduce(function(a,b){ return a.weight > b.weight ? a : b; });
+            const lowEntry = last14.reduce(function(a,b){ return a.weight < b.weight ? a : b; });
+            const daysSinceHigh = Math.round((new Date(todayStr) - new Date(highEntry.date)) / 86400000);
+            const daysSinceLow = Math.round((new Date(todayStr) - new Date(lowEntry.date)) / 86400000);
+
+            // Trend (exponenciální klouzavý průměr)
+            var ema = allLog[0].weight;
+            allLog.forEach(function(e){ ema = 0.1 * e.weight + 0.9 * ema; });
+            var trendW = parseFloat(ema.toFixed(2));
+
+            // Lost in periods
+            const now = new Date(todayStr);
+            const get7ago = allLog.filter(function(e){ return (now - new Date(e.date)) / 86400000 <= 7; });
+            const get30ago = allLog.filter(function(e){ return (now - new Date(e.date)) / 86400000 <= 30; });
+            const get90ago = allLog.filter(function(e){ return (now - new Date(e.date)) / 86400000 <= 90; });
+            const lost7 = get7ago.length > 1 ? parseFloat((get7ago[0].weight - get7ago[get7ago.length-1].weight).toFixed(2)) : 0;
+            const lost30 = get30ago.length > 1 ? parseFloat((get30ago[0].weight - get30ago[get30ago.length-1].weight).toFixed(2)) : 0;
+            const lost90 = get90ago.length > 1 ? parseFloat((get90ago[0].weight - get90ago[get90ago.length-1].weight).toFixed(2)) : 0;
+            const lostAll = parseFloat((allLog[0].weight - allLog[allLog.length-1].weight).toFixed(2));
+
+            var selectedRate = localStorage.getItem('summaryRate') || 'commit';
+
+            var html = '';
+
+            // RECENT STATS
+            html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
+                + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
+                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Recent Stats</div>'
+                + '<span style="color:var(--light);font-size:18px;cursor:pointer;" onclick="showInfo(1)">⚙️</span>'
+                + '</div>'
+                + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
+                + '<div style="background:#f8f0ff;padding:10px;border-radius:8px;text-align:center;">'
+                + '<div style="font-size:10px;font-weight:700;color:#9b59b6;">• HIGH</div>'
+                + '<div style="font-size:22px;font-weight:700;color:#9b59b6;">'+highEntry.weight.toFixed(2)+'</div>'
+                + '<div style="font-size:11px;color:#9b59b6;">'+daysSinceHigh+' dní zpět</div></div>'
+                + '<div style="background:#f5f5f5;padding:10px;border-radius:8px;text-align:center;">'
+                + '<div style="font-size:10px;font-weight:700;color:#555;">• LATEST</div>'
+                + '<div style="font-size:22px;font-weight:700;color:#333;">'+latest.weight.toFixed(2)+'</div>'
+                + '<div style="font-size:11px;color:#555;">dnes</div></div>'
+                + '<div style="background:#e8f4fd;padding:10px;border-radius:8px;text-align:center;">'
+                + '<div style="font-size:10px;font-weight:700;color:#3498db;">• TREND</div>'
+                + '<div style="font-size:22px;font-weight:700;color:#3498db;">'+trendW.toFixed(2)+'</div>'
+                + '<div style="font-size:11px;color:#3498db;">průměr</div></div>'
+                + '<div style="background:#e8fff8;padding:10px;border-radius:8px;text-align:center;">'
+                + '<div style="font-size:10px;font-weight:700;color:#27ae60;">• LOW</div>'
+                + '<div style="font-size:22px;font-weight:700;color:#27ae60;">'+lowEntry.weight.toFixed(2)+'</div>'
+                + '<div style="font-size:11px;color:#27ae60;">'+daysSinceLow+' dní zpět</div></div>'
+                + '</div></div>';
+
+            // WEIGHT LOSS PROGRESS + MILESTONES
+            const gaugePercent = milestonePercent;
+            const gaugeAngle = 180 * gaugePercent / 100;
+            html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
+                + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
+                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Weight Loss Progress</div>'
+                + '<span style="color:var(--light);font-size:18px;cursor:pointer;" onclick="openMilestoneSettings()">⚙️</span>'
+                + '</div>'
+                // Gauge
+                + '<div style="position:relative;width:200px;height:110px;margin:0 auto 12px;">'
+                + '<svg viewBox="0 0 200 110" style="width:100%;height:100%;">'
+                + '<path d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#eee" stroke-width="16" stroke-linecap="round"/>'
+                + '<path d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#f0a070" stroke-width="16" stroke-linecap="round" stroke-dasharray="'+(Math.PI*90*gaugePercent/100)+' '+(Math.PI*90)+'" />'
+                + '</svg>'
+                + '<div style="position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);text-align:center;">'
+                + '<div style="font-size:11px;font-weight:700;color:#888;">MILESTONE '+( completedMilestones+1)+'</div>'
+                + '<div style="font-size:28px;font-weight:700;color:#333;">'+nextMilestone.toFixed(2)+'</div>'
+                + '</div>'
+                + '</div>'
+                + '<div style="text-align:center;margin-bottom:8px;">'
+                + '<div style="font-size:13px;color:#555;">'+latest.weight.toFixed(2)+' TODAY</div>'
+                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">'+milestonePercent+'% COMPLETE</div>'
+                + '<div style="font-size:13px;color:#888;">'+parseFloat(Math.max(0,(latest.weight - nextMilestone)).toFixed(2))+' TO GO</div>'
+                + '</div>'
+                // Progress bar milníků
+                + '<div style="display:flex;align-items:center;gap:4px;margin:10px 0;">'
+                + Array.from({length: milestoneCount}, function(_,i){
+                    var done = i < completedMilestones;
+                    var current = i === completedMilestones;
+                    return '<div style="flex:1;height:8px;border-radius:4px;background:'+(done?'#f0a070':current?'#f0a070':'#ddd')+';">'
+                        + (current ? '<div style="width:60%;height:100%;border-radius:4px;background:#f0a070;"></div>' : '')
+                        + '</div>';
+                }).join('')
+                + '</div>'
+                + '<div style="text-align:center;font-size:12px;color:#555;font-weight:700;margin-top:4px;">'+completedMilestones+' OF '+milestoneCount+' MILESTONES COMPLETED</div>'
+                + '<div style="text-align:center;font-size:12px;color:#888;margin-bottom:12px;">'+overallPercent+'% COMPLETE OVERALL</div>';
+
+            // Seznam milníků
+            html += '<div style="border-top:1px solid var(--border);padding-top:10px;">';
+            milestones.slice(1).forEach(function(m, i) {
+                var num = i + 1;
+                var done = latest.weight <= m + 0.001;
+                var isCurrent = num === completedMilestones + 1;
+                var label = num === milestoneCount ? 'Goal Weight' : 'Milestone ' + num;
+                var toGo = isCurrent ? parseFloat((latest.weight - m).toFixed(2)) : null;
+                var col = done ? '#27ae60' : isCurrent ? 'var(--primary)' : '#888';
+                var fw = isCurrent ? '700' : '400';
+                html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0f0;">'
+                    + '<span style="font-size:13px;color:'+col+';font-weight:'+fw+';">'+(done?'✅ ':isCurrent?'→ ':'')+label+'</span>'
+                    + '<span style="font-size:13px;font-weight:700;color:'+col+';">'+m.toFixed(2)+' kg</span>'
+                    + ''
+                    + '</div>';
+            });
+            html += '</div></div>';
+
+            // WEIGHT TRENDS
+            html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
+                + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
+                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Weight Trends</div>'
+                + '<span style="color:var(--light);font-size:18px;cursor:pointer;" onclick="showInfo(3)">⚙️</span>'
+                + '</div>'
+                + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;">'
+                + ['<b>'+lost7.toFixed(2)+'</b><br><span>LOST<br>IN 7 DAYS</span>',
+                   '<b>'+lost30.toFixed(2)+'</b><br><span>LOST<br>IN 30 DAYS</span>',
+                   '<b>'+lost90.toFixed(2)+'</b><br><span>LOST<br>IN 90 DAYS</span>',
+                   '<b>'+lostAll.toFixed(2)+'</b><br><span>LOST<br>ALL TIME</span>'].map(function(t){
+                    return '<div style="background:#e8fff8;padding:8px;border-radius:8px;text-align:center;font-size:11px;color:#27ae60;">'+t+'</div>';
+                }).join('')
+                + '</div></div>';
+
+            // PREDICTIONS
+            html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
+                + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
+                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Predictions</div>'
+                + '<span style="color:var(--light);font-size:18px;cursor:pointer;" onclick="showInfo(4)">⚙️</span>'
+                + '</div>'
+                // Rate buttons
+                + '<div style="display:flex;gap:8px;margin-bottom:12px;">'
+                + ['commit','current','overall'].map(function(r){
+                    var active = selectedRate === r;
+                    var label = r==='commit' ? 'COMMITMENT<br>'+weeklyGoalKg.toFixed(2) : r==='current' ? 'CURRENT RATE<br>'+currentRateWeek.toFixed(2) : 'OVERALL RATE<br>'+overallRateWeek.toFixed(2);
+                    var onclick2 = 'selectSummaryRate(\"'+r+'\")';
+                    return '<div onclick="'+onclick2+'" style="flex:1;padding:10px 6px;border-radius:8px;text-align:center;cursor:pointer;border:2px solid '+(active?'var(--primary)':'#ddd')+';background:'+(active?'#eef6ff':'white')+';">'
+                        + '<div style="font-size:9px;font-weight:700;color:'+(active?'var(--primary)':'#888')+';">'+label+'</div></div>';
+                }).join('')
+                + '</div>';
+
+            // Milníky pro vybranou variantu
+            var days = selectedRate === 'commit' ? daysCommit : selectedRate === 'current' ? daysCurrent : daysOverall;
+            var rateKg = selectedRate === 'commit' ? weeklyGoalKg : selectedRate === 'current' ? currentRateWeek : overallRateWeek;
+            var rateDay = rateKg / 7;
+            if (days && rateDay > 0) {
+                html += '<div style="font-size:12px;color:#3498db;text-align:center;margin-bottom:8px;">At '+rateKg.toFixed(2)+' kg per week, you will reach</div>';
+                // Zobraz next milestone + 7 days + 30 days + cíl
+                var items = [];
+                // Příští milník
+                var daysToNextM = rateDay > 0 ? Math.round((latest.weight - nextMilestone) / rateDay) : null;
+                if (daysToNextM && daysToNextM > 0) items.push({ label: 'Milestone '+(completedMilestones+1), days: daysToNextM });
+                // 7, 30 dní
+                [7,30].forEach(function(d){
+                    var projected = parseFloat((latest.weight - rateDay * d).toFixed(2));
+                    if (projected > goalW) items.push({ label: projected+' kg', days: d });
+                });
+                // Cíl
+                if (days > 0) items.push({ label: 'Final Goal', days: days });
+
+                items.forEach(function(item){
+                    var dStr = item.days > 60 ? Math.round(item.days/30)+' měsíců' : item.days > 14 ? Math.round(item.days/7)+' týdnů' : item.days+' dní';
+                    html += '<div style="display:flex;justify-content:space-between;padding:8px 10px;background:#f0f8ff;border-radius:6px;margin-bottom:4px;font-size:12px;">'
+                        + '<span style="color:#3498db;font-weight:600;">'+item.label+'</span>'
+                        + '<span style="color:#555;">'+addDaysToDate(todayStr, item.days)+'</span>'
+                        + '<span style="color:#888;font-size:11px;">IN '+dStr.toUpperCase()+'</span>'
+                        + '</div>';
+                });
+            } else {
+                html += '<div style="font-size:12px;color:#888;text-align:center;">Data nestačí pro predikci</div>';
+            }
+            html += '</div>';
+
+            div.innerHTML = html;
+        }
+
+        function showInfo(n) {
+            var msgs = {1:'Zobrazuje high/low/trend za posledních 14 dní', 3:'Zobrazuje úbytek za různá časová období', 4:'Přepínej mezi variantami předpovědi - Commitment/Current/Overall'};
+            alert(msgs[n] || '');
+        }
+
+        function selectSummaryRate(rate) {
+            localStorage.setItem('summaryRate', rate);
+            renderSummary();
+        }
+
+        function openMilestoneSettings() {
+            var allLog = appState.logbook.filter(function(e){return e.weight>0;}).sort(function(a,b){return a.date.localeCompare(b.date);});
+            msState.startW = parseFloat(localStorage.getItem('summaryStartWeight')) || (allLog.length>0?allLog[0].weight:66.10);
+            msState.startD = localStorage.getItem('summaryStartDate') || (allLog.length>0?allLog[0].date:getDateString(new Date()));
+            msState.goalW = appState.goalWeight || 58;
+            msState.weekly = parseFloat(localStorage.getItem('weeklyGoal')) || 0.25;
+            msState.count = parseInt(localStorage.getItem('milestoneCount')) || 10;
+            msState.obj = localStorage.getItem('weightObjective') || 'lose';
+            msState.split = localStorage.getItem('msSplit') || 'equal';
+
+            // Nastav input hodnoty
+            if(document.getElementById('msStartWeight')) document.getElementById('msStartWeight').value = msState.startW;
+            if(document.getElementById('msStartDate')) document.getElementById('msStartDate').value = msState.startD;
+            if(document.getElementById('msGoalWeight')) document.getElementById('msGoalWeight').value = msState.goalW;
+            if(document.getElementById('msWeeklyGoal')) document.getElementById('msWeeklyGoal').value = msState.weekly;
+            if(document.getElementById('msMilestoneCount')) document.getElementById('msMilestoneCount').value = msState.count;
+
+            document.getElementById('milestoneSettingsPopup').style.display = 'flex';
+            msNav(0);
+            msSetObj(msState.obj);
+            msSetSplit(msState.split);
+        }
+
+        // MS navigace
+        var msState = { obj:'lose', startW:0, startD:'', goalW:58, weekly:0.25, count:10, split:'equal' };
+
+        function msNav(page) {
+            // Ulož aktuální hodnoty před přechodem
+            if(document.getElementById('msStartWeight') && document.getElementById('msStartWeight').value) msState.startW = parseFloat(document.getElementById('msStartWeight').value);
+            if(document.getElementById('msStartDate') && document.getElementById('msStartDate').value) msState.startD = document.getElementById('msStartDate').value;
+            if(document.getElementById('msGoalWeight') && document.getElementById('msGoalWeight').value) msState.goalW = parseFloat(document.getElementById('msGoalWeight').value);
+            if(document.getElementById('msWeeklyGoal') && document.getElementById('msWeeklyGoal').value) msState.weekly = parseFloat(document.getElementById('msWeeklyGoal').value);
+            if(document.getElementById('msMilestoneCount') && document.getElementById('msMilestoneCount').value) msState.count = parseInt(document.getElementById('msMilestoneCount').value);
+
+            // Skryj vše
+            for(var i=0;i<=5;i++) {
+                var p = document.getElementById('msPage'+i);
+                if(p) p.style.display = 'none';
+            }
+            var target = document.getElementById('msPage'+page);
+            if(target) target.style.display = 'block';
+
+            // Aktualizuj hlavní stránku
+            if(page === 0) msUpdateMain();
+            if(page === 5) msUpdatePreview();
+        }
+
+        function msUpdateMain() {
+            var objLabels = {lose:'Hubnout', maintain:'Udržet váhu', gain:'Přibrat'};
+            var splitLabels = {one:'Jeden segment', equal: msState.count+' stejných segmentů', round: msState.count+' (kulatá čísla)'};
+            var objEl = document.getElementById('msObjVal');
+            var startEl = document.getElementById('msStartVal');
+            var goalEl = document.getElementById('msGoalVal');
+            var commitEl = document.getElementById('msCommitVal');
+            var splitEl = document.getElementById('msSplitVal');
+            if(objEl) objEl.textContent = objLabels[msState.obj] || 'Hubnout';
+            if(startEl) startEl.textContent = msState.startW ? msState.startW.toFixed(2)+' kg ('+msState.startD+')' : '—';
+            if(goalEl) goalEl.textContent = msState.goalW ? msState.goalW.toFixed(2)+' kg' : '—';
+            if(commitEl) commitEl.textContent = msState.weekly ? msState.weekly+' kg/týden' : '—';
+            if(splitEl) splitEl.textContent = splitLabels[msState.split] || '—';
+        }
+
+        function msSetObj(val) {
+            msState.obj = val;
+            ['lose','maintain','gain'].forEach(function(o){
+                var el = document.getElementById('msObjCheck_'+o);
+                if(el) el.style.display = o===val?'block':'none';
+            });
+        }
+
+        function msSetSplit(val) {
+            msState.split = val;
+            ['one','equal','round'].forEach(function(s){
+                var el = document.getElementById('msSplitCheck_'+s);
+                if(el) el.style.display = s===val?'block':'none';
+            });
+            var countBox = document.getElementById('msSplitCountBox');
+            if(countBox) countBox.style.display = val==='one'?'none':'block';
+            msUpdatePreview();
+        }
+
+        function msUpdatePreview() {
+            var prev = document.getElementById('msMilestonePreview');
+            if(!prev) return;
+            var sw = msState.startW || 66.10;
+            var gw = msState.goalW || 58;
+            var cnt = msState.split==='one' ? 1 : (msState.count || 10);
+            var step = (sw - gw) / cnt;
+            var items = ['<div style="padding:10px 16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;"><span style="color:#888;">Startovní váha</span><span style="font-weight:600;">'+sw.toFixed(2)+' kg</span></div>'];
+            for(var i=1;i<=cnt;i++){
+                var mw = msState.split==='round' ? Math.round((sw - i*step)*2)/2 : parseFloat((sw - i*step).toFixed(2));
+                var label = i===cnt ? 'Cílová váha' : 'Milník '+i;
+                items.push('<div style="padding:10px 16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;"><span style="color:#555;">'+label+'</span><span style="font-weight:600;">'+mw.toFixed(2)+' kg</span></div>');
+            }
+            prev.innerHTML = items.join('');
+        }
+
+        function saveMilestoneSettings() {
+            if(msState.goalW) { appState.goalWeight = msState.goalW; save(); }
+            if(msState.weekly) localStorage.setItem('weeklyGoal', msState.weekly);
+            if(msState.count >= 2) localStorage.setItem('milestoneCount', msState.count);
+            localStorage.setItem('weightObjective', msState.obj);
+            localStorage.setItem('msSplit', msState.split);
+            if(msState.startW) localStorage.setItem('summaryStartWeight', msState.startW);
+            if(msState.startD) localStorage.setItem('summaryStartDate', msState.startD);
+            document.getElementById('milestoneSettingsPopup').style.display = 'none';
+            renderSummary();
+            showToast('Nastavení uloženo!', '#4ecdc4');
+        }
+
         function saveGoalWeight() {
             const goal = parseFloat(document.getElementById('goalWeight').value);
             if (goal && goal > 0) {
@@ -1694,10 +2448,10 @@
         }
 
         function saveWeeklyGoal() {
-            const goal = parseFloat(document.getElementById("weeklyGoal").value);
+            const goal = parseFloat(document.getElementById('weeklyGoal').value);
             if (goal && goal > 0) {
-                localStorage.setItem("weeklyGoal", goal);
-                alert("Týdenní cíl uložen: -" + goal + " kg/týden");
+                localStorage.setItem('weeklyGoal', goal);
+                alert('Týdenní cíl uložen: -' + goal + ' kg/týden');
             }
         }
 
@@ -1779,34 +2533,120 @@
             if (!appState.logbook.find(e => e.date === '2026-05-06')) {
                 appState.logbook.push({ date: '2026-05-06', weight: 66.3, diff: 0.5, window: 6, fastingCompleted: true, meal: '', water: 1.5 });
             }
-            // Export 2026-05-11 až 2026-05-12
-            // Force update 11.5 - oprava překlep Jakos→jahod
-            const meal11 = appState.meals.find(m => m.date === '2026-05-11');
+            // Export 2026-05-11 az 2026-05-12
+            const meal11 = appState.meals.find(function(m){return m.date==='2026-05-11';});
             const note11 = 'Oběd: Tagliatele se smetanovou omáčkou se žampiony, hlívou a brokolici, paloucek, 200 g jogurt řecky 5 ks jahod, hrst kesu\nVečeře: Losos s brokolici, troškou vařených brambor a lžičkou smetany s maslem';
             if (!meal11) { appState.meals.push({ date: '2026-05-11', note: note11, water: 1.5 }); }
             else { meal11.note = note11; }
-            save();
-            if (!appState.logbook.find(e => e.date === '2026-05-11')) {
-                appState.logbook.push({ date: '2026-05-11', weight: 0, diff: 0, window: 5.9, fastingCompleted: true, meal: '', water: 0 });
-                save();
-            } else {
-                const e11 = appState.logbook.find(e => e.date === '2026-05-11');
-                if (e11 && (!e11.window || e11.window === '')) { e11.window = 5.9; save(); }
-            }
-            if (!appState.logbook.find(e => e.date === '2026-05-12')) {
-                appState.logbook.push({ date: '2026-05-12', weight: 65.5, diff: 0.2, window: '', meal: '', water: 0 });
-                recalculateAllDiffs();
-                save();
-            }
+            const log11 = appState.logbook.find(function(e){return e.date==='2026-05-11';});
+            if (!log11) { appState.logbook.push({ date: '2026-05-11', weight: 0, diff: 0, window: 5.9, fastingCompleted: true, meal: '', water: 0 }); }
+            else if (!log11.window || log11.window==='') { log11.window = 5.9; }
+            const log12 = appState.logbook.find(function(e){return e.date==='2026-05-12';});
+            if (!log12) { appState.logbook.push({ date: '2026-05-12', weight: 65.5, diff: 0, window: 6, meal: '', water: 0 }); }
+            else { log12.weight = 65.5; log12.window = 6; }
+            const log13 = appState.logbook.find(function(e){return e.date==='2026-05-13';});
+            if (!log13) { appState.logbook.push({ date: '2026-05-13', weight: 65.4, diff: 0, window: '', meal: '', water: 0 }); }
+            else { log13.weight = 65.4; }
+            recalculateAllDiffs();
+            const meal12 = appState.meals.find(function(m){return m.date==='2026-05-12';});
+            const note12 = 'Oběd: 200g jogurt 10%, 4 jahody, půl banánu, hrst kešu\nVečeře: 100g hermelín, míchaná vajíčka na másle 3ks, 5 cherry rajčátek\nDezert: 1/8 tiramisu';
+            if (!meal12) { appState.meals.push({ date: '2026-05-12', note: note12, water: 1.5 }); }
+            else { meal12.note = note12; meal12.water = 1.5; }
+            recalculateAllDiffs();
 
             document.getElementById('fastLength').value = localStorage.getItem('fastLength') || 19;
             document.getElementById('windowLength').value = localStorage.getItem('windowLength') || 5;
-            document.getElementById('goalWeight').value = appState.goalWeight || '';
-            document.getElementById('weeklyGoal').value = localStorage.getItem('weeklyGoal') || '';
+            if(document.getElementById('goalWeight')) document.getElementById('goalWeight').value = appState.goalWeight || '';
+            if(document.getElementById('weeklyGoal')) document.getElementById('weeklyGoal').value = localStorage.getItem('weeklyGoal') || '0.25';
 
             // Přepočítej všechny diffy
             recalculateAllDiffs();
             save();
+        }
+
+        // === VLASTNÍ DATABÁZE POTRAVIN ===
+        // === IGNOROVANÉ POTRAVINY ===
+        function getIgnorovane() {
+            try { return JSON.parse(localStorage.getItem('ignorovanaSlova') || '[]'); }
+            catch(e) { return []; }
+        }
+
+        function ignorujSlovo(idx) {
+            var slovo = window._nerozpoznane[idx];
+            if (!slovo) return;
+            var seznam = getIgnorovane();
+            if (seznam.indexOf(slovo) < 0) seznam.push(slovo);
+            localStorage.setItem('ignorovanaSlova', JSON.stringify(seznam));
+            showToast(slovo+' bude ignorováno', '#7f8c8d');
+            renderAnalysis();
+        }
+
+        function getUserFoodDB() {
+            try { return JSON.parse(localStorage.getItem('userFoodDB') || '{}'); }
+            catch(e) { return {}; }
+        }
+
+        function saveNewFood() {
+            var name = document.getElementById('newFoodName').value.trim();
+            var key = document.getElementById('newFoodKey').value.trim().toLowerCase();
+            var typ = document.getElementById('newFoodTyp').value;
+            var info = document.getElementById('newFoodInfo').value.trim() || 'Uživatelsky přidaná potravina.';
+            if (!name || !key) { alert('Vyplň název a klíčové slovo!'); return; }
+            var db = getUserFoodDB();
+            var defaultInfo = typ==='protein' ? 'Zdroj bílkovin — podporuje svalovou regeneraci a sytost.'
+                    : typ==='sacharid' ? 'Zdroj sacharidů — sleduj množství a načasování (raději na oběd).'
+                    : typ==='tuk' ? 'Zdroj tuků — sleduj kombinace se sacharidy.'
+                    : typ==='zelenina' ? 'Zelenina — vitamíny, vláknina, minimum kalorií.'
+                    : typ==='ovoce' ? 'Ovoce — přirozené cukry s vlákninou, pomalé vstřebávání.'
+                    : 'Sladkost — rychlý cukr, inzulínový spike, sleduj množství.';
+                db[key] = { name: name, info: info || defaultInfo, rada: null, typ: typ, emoji: typ==='zelenina'?'🥦':typ==='protein'?'🍗':typ==='sacharid'?'🍝':typ==='tuk'?'🧈':typ==='ovoce'?'🍓':'🍬', custom: true };
+            localStorage.setItem('userFoodDB', JSON.stringify(db));
+            document.getElementById('addFoodPopup').style.display = 'none';
+            showToast('✅ '+name+' přidáno do databáze!', '#4ecdc4');
+            renderAnalysis();
+        }
+
+        function openAddFoodPopup(prefill) {
+            document.getElementById('newFoodName').value = prefill || '';
+            document.getElementById('newFoodKey').value = (prefill || '').toLowerCase();
+            document.getElementById('newFoodInfo').value = '';
+            document.getElementById('addFoodPopup').style.display = 'flex';
+        }
+
+        // === POPUP: EXPORT PŘIPOMÍNKA ===
+        function checkExportPopup() {
+            var now = new Date();
+            if (now.getDay() !== 1) return; // pouze pondělí
+            if (now.getHours() < 9) return; // až od 9:00
+            var lastShown = localStorage.getItem('exportPopupLastShown');
+            if (lastShown) {
+                var last = new Date(lastShown);
+                var diffH = (now - last) / 3600000;
+                if (diffH < 2) return; // nezobrazuj do 2h po odložení
+                // Pokud byl zobrazený tento týden (ne jen dnes), přeskoč
+                var daysSince = (now - last) / 86400000;
+                if (daysSince < 6) return;
+            }
+            document.getElementById('exportPopup').style.display = 'flex';
+        }
+
+        function exportPopupExport() {
+            document.getElementById('exportPopup').style.display = 'none';
+            localStorage.setItem('exportPopupLastShown', new Date().toISOString());
+            exportData();
+        }
+
+        function exportPopupLater() {
+            document.getElementById('exportPopup').style.display = 'none';
+            localStorage.setItem('exportPopupLastShown', new Date().toISOString());
+        }
+
+        function exportPopupClose() {
+            document.getElementById('exportPopup').style.display = 'none';
+            // Při zavření nastav jako "zobrazeno tento týden" aby se znovu nezobrazil
+            var nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() - 1); // den zpět = nezobrazí se do příštího pondělí
+            localStorage.setItem('exportPopupLastShown', nextWeek.toISOString());
         }
 
         function init() {
@@ -1854,6 +2694,16 @@
                 console.error('Init error:', e);
             }
 
+            // Přidej výchozí ignorovaná slova
+            var defIgn = getIgnorovane();
+            ['troškou','trošku','troška','hrst','hrstic','lžičkou','lžičku','maslem','cherry','řecky','recky','domácí','domaci','točená','točenou','točené','vanilka','vanilkova','vanilkovou','rybízová','rybízovou','jahodová','jahodovou','čokoládová','čokoládovou','pistáciová','pistáciovou','malinová','malinovou','citronová','citronovou','meruňková','meruňkovou','kopečková','kopečkovou','ovocná','ovocnou','stehno','stehna','masem','mase','masa','maso','česneková','cesnekova','pikantní','pikantni','solené','solene','slanou','slaný','sladkou','sladký','kyselou','kyselý','suchý','suchou','čerstvou','cerstvou','plnotučný','plnotucny','odtučněný','odtucneny','nízkotučný','nizkotucny','stehnо','prso','prsa','křídlo','kridlo','čtvrtka','ctvrtka','půlka','pulka','kousek','filet','filety','plátek','platky','plátky','porce'].forEach(function(s){
+                if (defIgn.indexOf(s) < 0) defIgn.push(s);
+            });
+            localStorage.setItem('ignorovanaSlova', JSON.stringify(defIgn));
+
+            // Zkontroluj export popup (pondělí 9:00)
+            checkExportPopup();
+
             // Swipe gesta
             let touchStartX = 0;
             let touchStartY = 0;
@@ -1873,5 +2723,188 @@
 
         init();
     </script>
+
+    <!-- POPUP: Export připomínka -->
+    <div id="exportPopup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:white;border-radius:16px;padding:24px;margin:20px;max-width:340px;width:100%;">
+            <div style="font-size:32px;text-align:center;margin-bottom:8px;">📦</div>
+            <div style="font-size:16px;font-weight:700;text-align:center;color:var(--primary);margin-bottom:8px;">Týdenní záloha dat</div>
+            <div style="font-size:13px;color:#666;text-align:center;margin-bottom:20px;">Je pondělí — nezapomeň exportovat data a poslat mi nová jídla k přidání do databáze!</div>
+            <button onclick="exportPopupExport()" style="width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px;">📤 Exportovat teď</button>
+            <button onclick="exportPopupLater()" style="width:100%;padding:12px;background:#f0f0f0;color:#333;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-bottom:8px;">⏰ Připomenout za 2h</button>
+            <button onclick="exportPopupClose()" style="width:100%;padding:12px;background:white;color:#999;border:1px solid #ddd;border-radius:8px;font-size:14px;cursor:pointer;">✕ Zavřít</button>
+        </div>
+    </div>
+
+    <!-- POPUP: Nastavení milníků -->
+    <div id="milestoneSettingsPopup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:flex-end;justify-content:center;">
+        <div style="background:#f2f2f7;border-radius:16px 16px 0 0;width:100%;max-width:500px;box-sizing:border-box;max-height:92vh;overflow-y:auto;">
+            <div id="msPage0" style="padding:20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                    <div style="width:60px;"></div>
+                    <div style="font-size:17px;font-weight:700;">Váhové cíle</div>
+                    <button onclick="saveMilestoneSettings()" style="background:none;border:none;color:#007aff;font-size:16px;font-weight:600;cursor:pointer;width:60px;text-align:right;">Hotovo</button>
+                </div>
+                <div style="background:white;border-radius:12px;overflow:hidden;margin-bottom:16px;">
+                    <div id="msObjRow" onclick="msNav(1)" style="padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                        <div>
+                            <div style="font-size:13px;color:#888;">Můj cíl</div>
+                            <div id="msObjVal" style="font-size:16px;font-weight:600;color:#333;">Hubnout</div>
+                        </div>
+                        <span style="color:#c7c7cc;font-size:18px;">›</span>
+                    </div>
+                    <div onclick="msNav(2)" style="padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                        <div>
+                            <div style="font-size:13px;color:#888;">Startovní bod</div>
+                            <div id="msStartVal" style="font-size:16px;font-weight:600;color:#333;">—</div>
+                        </div>
+                        <span style="color:#c7c7cc;font-size:18px;">›</span>
+                    </div>
+                    <div onclick="msNav(3)" style="padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                        <div>
+                            <div style="font-size:13px;color:#888;">Cílová váha</div>
+                            <div id="msGoalVal" style="font-size:16px;font-weight:600;color:#333;">—</div>
+                        </div>
+                        <span style="color:#c7c7cc;font-size:18px;">›</span>
+                    </div>
+                    <div onclick="msNav(4)" style="padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                        <div>
+                            <div style="font-size:13px;color:#888;">Závazek — shodit</div>
+                            <div id="msCommitVal" style="font-size:16px;font-weight:600;color:#333;">—</div>
+                        </div>
+                    </div>
+                    <div onclick="msNav(5)" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                        <div>
+                            <div style="font-size:13px;color:#888;">Rozdělit cíl na</div>
+                            <div id="msSplitVal" style="font-size:16px;font-weight:600;color:#333;">—</div>
+                        </div>
+                        <span style="color:#c7c7cc;font-size:18px;">›</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stránka 1: Můj cíl -->
+            <div id="msPage1" style="display:none;padding:20px;">
+                <div style="display:flex;align-items:center;margin-bottom:20px;">
+                    <button onclick="msNav(0)" style="background:none;border:none;color:#007aff;font-size:16px;cursor:pointer;padding:0;margin-right:12px;">‹</button>
+                    <div style="font-size:17px;font-weight:700;">Můj cíl</div>
+                </div>
+                <div style="background:white;border-radius:12px;overflow:hidden;">
+                    <div onclick="msSetObj('lose')" id="msObj_lose" style="padding:16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                        <span style="font-size:16px;">Hubnout</span><span id="msObjCheck_lose" style="color:#007aff;font-size:18px;display:none;">✓</span>
+                    </div>
+                    <div onclick="msSetObj('maintain')" id="msObj_maintain" style="padding:16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                        <span style="font-size:16px;">Udržet váhu</span><span id="msObjCheck_maintain" style="color:#007aff;font-size:18px;display:none;">✓</span>
+                    </div>
+                    <div onclick="msSetObj('gain')" id="msObj_gain" style="padding:16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                        <span style="font-size:16px;">Přibrat</span><span id="msObjCheck_gain" style="color:#007aff;font-size:18px;display:none;">✓</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stránka 2: Startovní bod -->
+            <div id="msPage2" style="display:none;padding:20px;">
+                <div style="display:flex;align-items:center;margin-bottom:20px;">
+                    <button onclick="msNav(0)" style="background:none;border:none;color:#007aff;font-size:16px;cursor:pointer;padding:0;margin-right:12px;">‹</button>
+                    <div style="font-size:17px;font-weight:700;">Startovní bod</div>
+                </div>
+                <div style="background:white;border-radius:12px;overflow:hidden;margin-bottom:12px;">
+                    <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
+                        <div style="font-size:13px;color:#888;margin-bottom:4px;">Startovní váha (kg)</div>
+                        <input id="msStartWeight" type="number" step="0.1" placeholder="66.10" style="width:100%;border:none;font-size:22px;font-weight:600;outline:none;color:#333;box-sizing:border-box;">
+                    </div>
+                    <div style="padding:16px;">
+                        <div style="font-size:13px;color:#888;margin-bottom:4px;">Datum startu</div>
+                        <input id="msStartDate" type="date" style="width:100%;border:none;font-size:16px;outline:none;color:#333;box-sizing:border-box;">
+                    </div>
+                </div>
+                <button onclick="msNav(0)" style="width:100%;padding:14px;background:#007aff;color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;">Uložit</button>
+            </div>
+
+            <!-- Stránka 3: Cílová váha -->
+            <div id="msPage3" style="display:none;padding:20px;">
+                <div style="display:flex;align-items:center;margin-bottom:20px;">
+                    <button onclick="msNav(0)" style="background:none;border:none;color:#007aff;font-size:16px;cursor:pointer;padding:0;margin-right:12px;">‹</button>
+                    <div style="font-size:17px;font-weight:700;">Cílová váha</div>
+                </div>
+                <div style="background:white;border-radius:12px;overflow:hidden;margin-bottom:12px;">
+                    <div style="padding:16px;">
+                        <div style="font-size:13px;color:#888;margin-bottom:4px;">Cílová váha (kg)</div>
+                        <input id="msGoalWeight" type="number" step="0.1" placeholder="58.00" style="width:100%;border:none;font-size:22px;font-weight:600;outline:none;color:#333;box-sizing:border-box;">
+                    </div>
+                </div>
+                <button onclick="msNav(0)" style="width:100%;padding:14px;background:#007aff;color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;">Uložit</button>
+            </div>
+
+            <!-- Stránka 4: Závazek -->
+            <div id="msPage4" style="display:none;padding:20px;">
+                <div style="display:flex;align-items:center;margin-bottom:20px;">
+                    <button onclick="msNav(0)" style="background:none;border:none;color:#007aff;font-size:16px;cursor:pointer;padding:0;margin-right:12px;">‹</button>
+                    <div style="font-size:17px;font-weight:700;">Závazek</div>
+                </div>
+                <div style="background:white;border-radius:12px;overflow:hidden;margin-bottom:12px;">
+                    <div style="padding:16px;">
+                        <div style="font-size:13px;color:#888;margin-bottom:4px;">Shodit kg za týden</div>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <input id="msWeeklyGoal" type="number" step="0.05" min="0.05" max="2" placeholder="0.25" style="flex:1;border:none;font-size:22px;font-weight:600;outline:none;color:#333;">
+                            <span style="font-size:16px;color:#888;">kg/týden</span>
+                        </div>
+                    </div>
+                </div>
+                <p style="font-size:12px;color:#888;text-align:center;">Realistické tempo: 0.2–0.5 kg/týden</p>
+                <button onclick="msNav(0)" style="width:100%;padding:14px;background:#007aff;color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;">Uložit</button>
+            </div>
+
+            <!-- Stránka 5: Rozdělit cíl -->
+            <div id="msPage5" style="display:none;padding:20px;">
+                <div style="display:flex;align-items:center;margin-bottom:20px;">
+                    <button onclick="msNav(0)" style="background:none;border:none;color:#007aff;font-size:16px;cursor:pointer;padding:0;margin-right:12px;">‹</button>
+                    <div style="font-size:17px;font-weight:700;">Rozdělit cíl na</div>
+                </div>
+                <div style="font-size:13px;color:#888;margin-bottom:8px;">Jak rozdělit cíl?</div>
+                <div style="background:white;border-radius:12px;overflow:hidden;margin-bottom:16px;">
+                    <div onclick="msSetSplit('one')" style="padding:16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                        <span style="font-size:16px;">Jeden velký segment</span><span id="msSplitCheck_one" style="color:#007aff;display:none;">✓</span>
+                    </div>
+                    <div onclick="msSetSplit('equal')" style="padding:16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                        <span style="font-size:16px;">Stejně velké segmenty</span><span id="msSplitCheck_equal" style="color:#007aff;display:none;">✓</span>
+                    </div>
+                    <div onclick="msSetSplit('round')" style="padding:16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+                        <span style="font-size:16px;">Kulatá čísla</span><span id="msSplitCheck_round" style="color:#007aff;display:none;">✓</span>
+                    </div>
+                </div>
+                <div id="msSplitCountBox" style="background:white;border-radius:12px;padding:16px;margin-bottom:16px;">
+                    <div style="font-size:13px;color:#888;margin-bottom:4px;">Počet milníků</div>
+                    <input id="msMilestoneCount" type="number" min="2" max="20" placeholder="10" style="width:100%;border:none;font-size:22px;font-weight:600;outline:none;color:#333;box-sizing:border-box;">
+                </div>
+                <div id="msMilestonePreview" style="background:white;border-radius:12px;overflow:hidden;margin-bottom:16px;"></div>
+                <button onclick="msNav(0)" style="width:100%;padding:14px;background:#007aff;color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;">Uložit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP: Přidat potravinu do databáze -->
+    <div id="addFoodPopup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:white;border-radius:16px;padding:24px;margin:20px;max-width:340px;width:100%;">
+            <div style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:16px;">➕ Přidat potravinu</div>
+            <label style="font-size:13px;color:#666;">Název potraviny</label>
+            <input id="newFoodName" type="text" placeholder="Např. cherry rajčátka" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:14px;margin-bottom:12px;box-sizing:border-box;">
+            <label style="font-size:13px;color:#666;">Klíčové slovo (pro detekci)</label>
+            <input id="newFoodKey" type="text" placeholder="Např. cherry|rajčátk" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:14px;margin-bottom:12px;box-sizing:border-box;">
+            <label style="font-size:13px;color:#666;">Typ</label>
+            <select id="newFoodTyp" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:14px;margin-bottom:12px;box-sizing:border-box;">
+                <option value="zelenina">🥦 Zelenina</option>
+                <option value="protein">🍗 Protein</option>
+                <option value="sacharid">🍝 Sacharid</option>
+                <option value="tuk">🧈 Tuk</option>
+                <option value="ovoce">🍓 Ovoce</option>
+                <option value="sladkost">🍬 Sladkost</option>
+            </select>
+            <label style="font-size:13px;color:#666;">Popis (volitelný)</label>
+            <input id="newFoodInfo" type="text" placeholder="Krátký popis..." style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:14px;margin-bottom:16px;box-sizing:border-box;">
+            <button onclick="saveNewFood()" style="width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px;">✅ Uložit do databáze</button>
+            <button onclick="document.getElementById('addFoodPopup').style.display='none';" style="width:100%;padding:12px;background:white;color:#999;border:1px solid #ddd;border-radius:8px;font-size:14px;cursor:pointer;">Zrušit</button>
+        </div>
+    </div>
 </body>
 </html>
