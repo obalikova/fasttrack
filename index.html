@@ -427,7 +427,7 @@
             document.querySelectorAll('.tab')[idx].classList.add('active');
             if (idx === 1) renderAnalysis();
             if (idx === 3) { renderLogbook(); loadFaktory(); }
-            if (idx === 4) { renderSummary(); }
+            if (idx === 4) { try { renderSummary(); } catch(e) { console.error('Summary error:', e.message, e.stack); } }
             // Datum se NEMĚNÍ při přepínání tabů - zachová vybrané datum
             updateMealFields();
             updateWeightFields();
@@ -867,6 +867,7 @@
         }
 
         function renderAnalysis() {
+            const weeklyGoalKg = parseFloat(localStorage.getItem('weeklyGoal')) || 0.25;
             const div = document.getElementById('analysisContent');
             if (!div) return;
             if (!appState.logbook || appState.logbook.length < 2) {
@@ -959,12 +960,17 @@
                     'játr': { name: 'Játra', info: 'Výjimečně bohatá na železo, vitamín B12 a A. Vysoká nutriční hodnota.', rada: 'Max. 1-2x týdně — vysoký obsah vitamínu A.', typ: 'protein', emoji: '🥩' },
                     'ryba |tunak|sardin': { name: 'Ryba/tuňák', info: 'Omega-3 mastné kyseliny snižují zánět a podporují spalování tuků. Lehce stravitelný protein.', rada: null, typ: 'protein', emoji: '🐟' },
                     'rybiz|rybíz': { name: 'Rybíz', info: 'Nízký glykemický index, vitamín C, antioxidanty. Výborná volba!', rada: null, typ: 'ovoce', emoji: '🫐' },
+                    'kabanos|kabanosi|kabanosy': { name: 'Kabanos', info: 'Uzená uzenina — vysoký sodík a nasycené tuky. Zadržování vody + konzervant.', rada: 'Max. příležitostně — 1-2 ks. Nahraď čerstvým masem.', typ: 'uzenina', emoji: '🌭' },
+                    'salám|salami|salámu': { name: 'Salám', info: 'Zpracované maso — vysoký sodík, nasycené tuky, konzervany. Zadržování vody.', rada: 'Nahraď čerstvým masem nebo tuňákem.', typ: 'uzenina', emoji: '🥩' },
+                    'párek|párky|parek': { name: 'Párek', info: 'Zpracované maso — vysoký sodík a additiva. Nízká nutriční hodnota.', rada: 'Nahraď vejcem nebo kuřecím.', typ: 'uzenina', emoji: '🌭' },
+                    'slanina|bacon': { name: 'Slanina/bacon', info: 'Velmi tučné + vysoký sodík + nasycené tuky. Kaloricky husté.', rada: 'Jen příležitostně — malé množství.', typ: 'uzenina', emoji: '🥓' },
                     'šunk': { name: 'Šunka', info: 'Zpracované maso — vysoký sodík zadržuje vodu. Skrytý tuk a konzervanty.', rada: 'Omez na výjimky — raději čerstvé maso.', typ: 'uzenina', emoji: '🥓' },
                     'salam|klobás|poličan': { name: 'Salám/klobása', info: 'Nasycené tuky + vysoký sodík = zadržování vody a pomalejší metabolismus.', rada: 'Příležitostně — raději na oběd než večer.', typ: 'uzenina', emoji: '🌭' },
                     'slanin|škvarky': { name: 'Slanina/škvarky', info: 'Nasycené tuky a vysoký sodík — zadržování vody, pomalé trávení.', rada: 'Výjimečně — kombinuj s dostatkem vody.', typ: 'uzenina', emoji: '🥓' },
-                    'mozzarell': { name: 'Mozzarella', info: 'Lehčí sýr, dobrý zdroj vápníku a proteinu. Nižší obsah tuku než tvrdé sýry.', rada: null, typ: 'protein', emoji: '🧀' },
+                    'mozzarell': { name: 'Mozzarella', info: 'Střední obsah tuku — záleží na druhu. Tvrdá (na pizzu) = více tuku. Čerstvá v nálevu = lehčí protein.', rada: 'Čerstvá mozzarella lepší volba než strouhaná.', typ: 'tuk', emoji: '🧀' },
                     'hermelín|hermelinu|hermelin|hermelínem|brie|camembert': { name: 'Hermelín/brie', info: 'Tučný sýr — 50% tuku. Nasycené tuky + sodík. Sytí dobře ale kaloricky velmi hustý.', rada: 'Max. 50g denně — vysoký obsah tuku a sodíku.', typ: 'tuk', emoji: '🧀' },
-                    'sýr|syru|syrem|eidam|gouda|čedar|ementál': { name: 'Sýr (tvrdý)', info: 'Protein + vápník, střední obsah tuku. Lepší volba než tučné měkké sýry.', rada: 'V menším množství OK.', typ: 'protein', emoji: '🧀' },
+                    'eidam|gouda|čedar|ementál|pecorino|parmazán|parmezán|manchego': { name: 'Tvrdý sýr', info: 'Protein + vápník, střední obsah tuku. Lepší volba než tučné měkké sýry.', rada: 'V menším množství OK.', typ: 'protein', emoji: '🧀' },
+                    'feta|fetou|fety': { name: 'Feta', info: 'Střední tuk + vysoký sodík. Dobrý protein a vápník. Ovčí/kozí mléko.', rada: 'Sleduj sodík — feta je slaná. V salátu OK.', typ: 'protein', emoji: '🧀' },
                     'edamam': { name: 'Edamame', info: 'Rostlinný protein + vláknina + železo. Nízký glykemický index. Výborná volba!', rada: null, typ: 'protein', emoji: '🌱' },
                     'čočk': { name: 'Čočka', info: 'Rostlinný protein + vláknina + železo. Pomalé uvolňování energie, žádný inzulínový spike.', rada: null, typ: 'protein', emoji: '🫘' },
                     'fazol': { name: 'Fazole', info: 'Rostlinný protein + komplexní sacharidy + vláknina. Nízký glykemický index.', rada: null, typ: 'protein', emoji: '🫘' },
@@ -992,8 +998,12 @@
                     'banán': { name: 'Banán', info: 'Rychlé sacharidy + draslík. Vyšší glykemický index — rychlejší inzulínová odpověď. Zralý banán = vyšší cukr.', rada: 'Ideálně dopoledne nebo před pohybem. Večer raději jahody nebo borůvky.', typ: 'sacharid', emoji: '🍌' },
                     'jablk': { name: 'Jablko', info: 'Vláknina + přirozený cukr. Pektin zpomaluje vstřebávání.', rada: null, typ: 'ovoce', emoji: '🍎' },
                     'borůvk': { name: 'Borůvky', info: 'Nejlepší ovoce pro hubnutí — nízký glyk. index, antioxidanty, zlepšují citlivost na inzulín.', rada: null, typ: 'ovoce', emoji: '🫐' },
-                    'rozink': { name: 'Rozinky', info: 'Koncentrovaný cukr — vysoká kalorická hustota, rychlý glykemický index.', rada: 'Jen malé množství — jsou jako přírodní bonbóny.', typ: 'sladkost', emoji: '🍇' },
+                    'rozink|klikv|brusink': { name: 'Rozinky/klikvy', info: 'Koncentrovaný cukr — vysoká kalorická hustota, rychlý glykemický index.', rada: 'Jen malé množství — jsou jako přírodní bonbóny.', typ: 'sladkost', emoji: '🍇' },
                     // Tuky
+                    'mandle|mandlí|mandlemi': { name: 'Mandle', info: 'Zdravé mononenasycené tuky + vitamín E + hořčík. Kaloricky husté — hrst = ~160 kcal.', rada: 'Max. hrst denně. Výborná svačina — sytí na dlouho.', typ: 'orech', emoji: '🥜' },
+                    'vlašský ořech|vlašské ořechy|vlašsk': { name: 'Vlašské ořechy', info: 'Omega-3 mastné kyseliny + antioxidanty. Nejzdravější ořech.', rada: 'Max. hrst (4-5 půlků). Výborné k jogurtu nebo salátům.', typ: 'orech', emoji: '🥜' },
+                    'pistáci': { name: 'Pistácie', info: 'Zdravé tuky + protein + vláknina. Nižší kalorie než jiné ořechy.', rada: 'Max. hrst denně.', typ: 'orech', emoji: '🥜' },
+                    'para ořech|para oříšk': { name: 'Para ořechy', info: 'Bohaté na selen — 1-2 para ořechy pokryjí denní potřebu selenu.', rada: 'Max. 2-3 kusy — velmi kalorické.', typ: 'orech', emoji: '🥜' },
                     'kešu|kesu|kešů|kasu': { name: 'Kešu', info: 'Zdravé tuky (mononenasycené), hořčík, zinek. Ale kaloricky husté — hrst = ~160kcal.', rada: 'Max. hrst denně — jinak přebytečné kalorie.', typ: 'tuk', emoji: '🥜' },
                     'arašíd': { name: 'Arašídy', info: 'Protein + zdravé tuky. Pozor na solené — sodík zadržuje vodu.', rada: 'Volb nesolenou variantu. Max. hrst.', typ: 'tuk', emoji: '🥜' },
                     'smetana na var|smetana na vaření': { name: 'Smetana na vaření (15%)', info: 'Nižší tuk než smetana na šlehání. V kombinaci se sacharidy blokuje spalování tuků.', rada: 'Kombinuj raději se zeleninou nebo bílkovinou než se sacharidy.', typ: 'tuk', emoji: '🥛' },
@@ -1009,7 +1019,7 @@
                     'tagliate|tagliatelle': { name: 'Tagliatelle', info: 'Sacharidy z mouky — glykogen váže ~3g vody na 1g. Večer zbytečná zátěž pro metabolismus.', rada: 'Raději na oběd, menší porce. Kombinuj s bílkovinou ne s tučnou omáčkou.', typ: 'sacharid', emoji: '🍝' },
                     'hliva|hlívou|hlívy|hlíve|hlívy|hlívě': { name: 'Hlíva', info: 'Výborná — nízkokalorická, bohatá na vitamín D a bílkoviny. Podporuje imunitu.', rada: null, typ: 'zelenina', emoji: '🍄' },
                     'zmrzlin': { name: 'Zmrzlina', info: 'Cukr + tuk — inzulínový spike + nasycené tuky. Točená zmrzlina bývá méně kalorická než kopečková.', rada: 'Příležitostně OK — preferuj malou porci. Nahraď třeba zmraženým ovocem.', typ: 'sladkost', emoji: '🍦' },
-                    'paloucek|palůček': { name: 'Palůček', info: 'Tučný tavený sýr — vysoký obsah nasycených tuků a sodíku.', rada: 'V malém množství OK — sleduj sodík.', typ: 'tuk', emoji: '🧀' },
+                    'paloucek|palůček|palůčku|paloucku': { name: 'Palůček', info: 'Tvarohový sýr — dobrý zdroj proteinu a vápníku. Nižší tuk než tavené nebo tučné sýry.', rada: 'Výborná volba — protein bez přebytku tuku.', typ: 'protein', emoji: '🧀' },
                     'rybiz|rybíz': { name: 'Rybíz', info: 'Nízký glykemický index, vitamín C, antioxidanty. Výborná volba!', rada: null, typ: 'ovoce', emoji: '🫐' },
                     'tortilla|tortila|nachos': { name: 'Tortilla chipsy', info: 'Kukuřičné chipsy — sacharid + tuk ze smažení. Kaloricky husté, vysoký sodík.', rada: 'Příležitostně OK — malá porce. Kombinuj s guacamole (zdravý tuk) ne se smetanou.', typ: 'tuk', emoji: '🌽' },
                     'bramborov.*chips|chips.*brambor|brambůrky': { name: 'Bramborové chipsy', info: 'Sacharid + tuk ze smažení + vysoký sodík = zadržování vody a inzulínový spike.', rada: 'Nahraď oříšky nebo zeleninou s hummusem.', typ: 'tuk', emoji: '🥔' },
@@ -1112,12 +1122,32 @@
                         info: 'Šetrný způsob přípravy — bez přidaného tuku.',
                         rada: null, typ: 'zelenina', velka: false
                     },
+                    // Sušené ovoce — vyšší cukr než čerstvé
+                    'sušené ovoce|sušen.*mango|sušen.*meruňk|sušen.*švestk|sušen.*brusink|sušen.*klikv|sušen.*ananas|sušen.*papaj|sušen.*banán|sušen.*rozink': {
+                        name: 'Sušené ovoce', emoji: '🍇',
+                        info: 'Koncentrovaný cukr — 5x více cukru než čerstvé ovoce. Rychlý glykemický spike i přes vlákninu.',
+                        rada: 'Max. hrst denně. Lepší čerstvé ovoce. V kombinaci s ořechy zpomaluje vstřebávání.',
+                        typ: 'sladkost', velka: false
+                    },
                     // Gyros v pitě = sacharid navíc
                     'gyros.*pit|pita.*gyros': {
                         name: 'Gyros v pitě', emoji: '🥙',
                         info: 'Maso + pita (sacharid) + omáčka (tuk) = komplexní kombinace. Kaloricky husté.',
                         rada: 'Bez pity je gyros výborný. S pitou = sacharid navíc — raději na oběd.',
                         typ: 'sacharid', velka: false
+                    },
+
+                    // Čerstvá mozzarella — protein
+                    'čerstvá mozzarella|cerstva mozzarella|mozzarella cerstvá': {
+                        name: 'Čerstvá mozzarella', emoji: '🧀',
+                        info: 'Měkká mozzarella v nálevu — nižší tuk, dobrý protein a vápník.',
+                        rada: null, typ: 'protein', velka: false
+                    },
+                    // Tavený sýr — tuk + sodík
+                    'tavený sýr|taveny syr|taveného sýra|laughing|veselá kráva': {
+                        name: 'Tavený sýr', emoji: '🧀',
+                        info: 'Zpracovaný sýr — additiva, vyšší sodík. Nižší nutriční hodnota než přírodní sýr.',
+                        rada: 'Nahraď přírodním sýrem nebo tvarohem.', typ: 'tuk', velka: false
                     },
                     // Míchaná vajíčka — protein + tuk, neutrální
                     'michana vajicka|michane vejce|vajicka na masle|vejce na masle': {
@@ -1210,7 +1240,10 @@
                     const textN = normalize2(text);
                     const blockedSimple = [];
 
-                    // 1. NEJDŘÍV složené výrazy (mají prioritu)
+                    // 0. Detekuj "sušené ovoce" kontext — pokud je "sušené" v textu, překlasifikuj ovoce
+                var maSusenoOvoce = /sušen/i.test(text);
+
+                // 1. NEJDŘÍV složené výrazy (mají prioritu)
                     Object.entries(slozeneDB).forEach(function(entry) {
                         var key = entry[0], food = entry[1];
                         var pats = key.split('|');
@@ -1239,10 +1272,16 @@
                         var matchedPat = pats.find(function(p){ return textN.match(new RegExp(normalize2(p))); });
                         if (matchedPat) {
                             if (!found.find(function(f){ return f.name===food.name; })) {
-                                // Kontroluj malé množství POUZE v kontextu této potraviny (±40 znaků)
                                 var kontext = getKontext(text, matchedPat);
                                 var male = isMaleQ(kontext);
-                                found.push(Object.assign({}, food, { male: male }));
+                                var foodCopy = Object.assign({}, food, { male: male });
+                                // Pokud je "sušené" v textu a potravina je ovoce → překlasifikuj
+                                if (maSusenoOvoce && food.typ === 'ovoce') {
+                                    foodCopy.typ = 'sladkost';
+                                    foodCopy.info = 'Sušené — 5x více cukru než čerstvé. ' + food.info;
+                                    foodCopy.name = 'Sušené ' + food.name.toLowerCase();
+                                }
+                                found.push(foodCopy);
                             }
                         }
                     });
@@ -1382,7 +1421,7 @@
                     if (!foods || foods.length === 0) return;
                     html += '<div style="font-size:11px;font-weight:700;color:var(--light);margin:8px 0 4px;">'+label+'</div>';
                     foods.forEach(function(food) {
-                        var bc = food.typ==='protein'||food.typ==='zelenina'||food.typ==='ovoce'||food.typ==='cokolada' ? '#4ecdc4' :
+                        var bc = food.typ==='protein'||food.typ==='zelenina'||food.typ==='ovoce'||food.typ==='cokolada'||food.typ==='orech' ? '#4ecdc4' :
                                  food.typ==='sladkost'||food.typ==='uzenina' ? '#ff6b5b' : '#f39c12';
                         var maleNote = food.male ? ' <span style="color:var(--light);font-weight:400;">(malé množství — nevýznamné)</span>' : '';
                         html += '<div style="font-size:12px;padding:6px 8px;margin-bottom:6px;border-left:3px solid '+bc+';line-height:1.5;">'
@@ -1548,7 +1587,7 @@
             html += `</div>`;
 
             html += `<div style="font-size:15px;font-weight:700;color:var(--primary);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--primary);">📊 Celková analýza</div>`;
-            html += `<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px;"><div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:8px;">📈 Trend váhy</div><div id="analysisChart" style="height:180px;margin:4px 0;"></div></div>`;
+
 
             const allMeals = appState.meals || [];
             const allLog = [...appState.logbook].sort((a,b) => new Date(a.date)-new Date(b.date));
@@ -1582,48 +1621,7 @@
             }
             html += `</div>`;
 
-            // Trend + Predikce (current rate + overall rate)
-            const posledniVaha = lastW ? lastW.weight : 0;
-            const zbyvaKg = posledniVaha && appState.goalWeight ? posledniVaha - appState.goalWeight : 0;
-            const weeklyGoalKg = parseFloat(localStorage.getItem('weeklyGoal')) || 0.25;
 
-            // Overall rate
-            const overallRateDay = avgDailyChange;
-            const overallRateWeek = overallRateDay * 7;
-
-            // Current rate (posledních 7 dní)
-            const last7e = daysUpToCurrent.slice(-7).filter(function(e){return e.diff!==0;});
-            const currentRateDay = last7e.length > 0
-                ? last7e.reduce(function(s,e){return s+(e.diff||0);},0) / last7e.length
-                : overallRateDay;
-            const currentRateWeek = currentRateDay * 7;
-
-            const daysOverall = zbyvaKg > 0 && overallRateDay < 0 ? Math.round(zbyvaKg / Math.abs(overallRateDay)) : null;
-            const daysCurrent = zbyvaKg > 0 && currentRateDay < 0 ? Math.round(zbyvaKg / Math.abs(currentRateDay)) : null;
-            const addDaysDate = function(d, n) { const r = new Date(d); r.setDate(r.getDate()+n); return r.toLocaleDateString('cs-CZ',{day:'numeric',month:'numeric',year:'numeric'}); };
-
-            const crColor = currentRateWeek < 0 ? '#4ecdc4' : '#ff6b5b';
-            const orColor = overallRateWeek < 0 ? '#4ecdc4' : '#ff6b5b';
-
-            html += '<div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px;">'
-                + '<div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:10px;">📈 Trend a predikce</div>'
-                + '<div style="font-size:12px;padding:4px 0;">Celková změna: <b style="color:' + (totalChange<=0?'#4ecdc4':'#ff6b5b') + '">' + totalChange.toFixed(2) + ' kg</b> za ' + totalDaysWithW + ' dní</div>'
-                + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;">'
-                + '<div style="background:white;padding:10px;border-radius:8px;text-align:center;">'
-                + '<div style="font-size:10px;color:var(--light);">CURRENT RATE (posl. 7 dní)</div>'
-                + '<div style="font-size:18px;font-weight:700;color:' + crColor + ';">' + (currentRateWeek>0?'+':'') + currentRateWeek.toFixed(2) + ' kg</div>'
-                + '<div style="font-size:10px;color:var(--light);">za týden</div>'
-                + (daysCurrent ? '<div style="font-size:11px;margin-top:4px;">Cíl za <b style="color:#4ecdc4">' + daysCurrent + ' dní</b><br>(' + addDaysDate(currentDate, daysCurrent) + ')</div>' : '')
-                + '</div>'
-                + '<div style="background:white;padding:10px;border-radius:8px;text-align:center;">'
-                + '<div style="font-size:10px;color:var(--light);">OVERALL RATE (průměr)</div>'
-                + '<div style="font-size:18px;font-weight:700;color:' + orColor + ';">' + (overallRateWeek>0?'+':'') + overallRateWeek.toFixed(2) + ' kg</div>'
-                + '<div style="font-size:10px;color:var(--light);">za týden</div>'
-                + (daysOverall ? '<div style="font-size:11px;margin-top:4px;">Cíl za <b style="color:#2d5a7b">' + daysOverall + ' dní</b><br>(' + addDaysDate(currentDate, daysOverall) + ')</div>' : '')
-                + '</div>'
-                + '</div>'
-                + (zbyvaKg > 0 ? '<div style="font-size:12px;padding:4px 0;">Do cíle zbývá: <b style="color:#f39c12">' + zbyvaKg.toFixed(2) + ' kg</b></div>' : '')
-                + '</div>';
 
             // === TYDENNI SHRNUTI (Pondeli -> Nedele) ===
             var getMonday = function(d) {
@@ -1717,7 +1715,6 @@
             // Aktuální týden zobrazit až v pondělí jako minulý týden
 
             div.innerHTML = html;
-            drawTrendChart(sorted);
         }
 
         function addWeight() {
@@ -2152,20 +2149,67 @@
             const daysSinceHigh = Math.round((new Date(todayStr) - new Date(highEntry.date)) / 86400000);
             const daysSinceLow = Math.round((new Date(todayStr) - new Date(lowEntry.date)) / 86400000);
 
-            // Trend (exponenciální klouzavý průměr)
-            var ema = allLog[0].weight;
-            allLog.forEach(function(e){ ema = 0.1 * e.weight + 0.9 * ema; });
-            var trendW = parseFloat(ema.toFixed(2));
+            // Adaptivní EMA (Happy Scale styl)
+            // Dynamicky mění koeficient podle odchylky od trendu
+            var adaptEma = allLog[0].weight;
+            var adaptVar = 0;
+            allLog.forEach(function(e, i) {
+                if (i === 0) { adaptEma = e.weight; adaptVar = 0.5; return; }
+                var diff = Math.abs(e.weight - adaptEma);
+                // Adaptivní koeficient — větší odchylka = menší vliv (ignoruj výkyvy)
+                var alpha = Math.max(0.05, Math.min(0.3, 0.15 / (1 + diff * 2)));
+                adaptEma = alpha * e.weight + (1 - alpha) * adaptEma;
+                adaptVar = alpha * diff + (1 - alpha) * adaptVar;
+            });
+            var trendW = parseFloat(adaptEma.toFixed(2));
 
-            // Lost in periods
+            // Weight Trends nastavení
+            var wtSettings = JSON.parse(localStorage.getItem('weightTrendsSettings') || '{}');
+            var wtColorLose = wtSettings.colorLose || '#27ae60';
+            var wtColorGain = wtSettings.colorGain || '#ff6b5b';
+            var wtMethod7 = wtSettings.method7 || 'avg';
+            var wtMethod30 = wtSettings.method30 || 'avg';
+            var wtMethod90 = wtSettings.method90 || 'avg';
+            var wtMethodAll = wtSettings.methodAll || 'latest';
+
+            // Pomocné funkce
+            var movAvg = function(entries) {
+                if(entries.length === 0) return 0;
+                return entries.reduce(function(s,e){return s+e.weight;},0)/entries.length;
+            };
+            var minWeight = function(entries) {
+                if(entries.length === 0) return 0;
+                return Math.min.apply(null, entries.map(function(e){return e.weight;}));
+            };
+
             const now = new Date(todayStr);
-            const get7ago = allLog.filter(function(e){ return (now - new Date(e.date)) / 86400000 <= 7; });
-            const get30ago = allLog.filter(function(e){ return (now - new Date(e.date)) / 86400000 <= 30; });
-            const get90ago = allLog.filter(function(e){ return (now - new Date(e.date)) / 86400000 <= 90; });
-            const lost7 = get7ago.length > 1 ? parseFloat((get7ago[0].weight - get7ago[get7ago.length-1].weight).toFixed(2)) : 0;
-            const lost30 = get30ago.length > 1 ? parseFloat((get30ago[0].weight - get30ago[get30ago.length-1].weight).toFixed(2)) : 0;
-            const lost90 = get90ago.length > 1 ? parseFloat((get90ago[0].weight - get90ago[get90ago.length-1].weight).toFixed(2)) : 0;
-            const lostAll = parseFloat((allLog[0].weight - allLog[allLog.length-1].weight).toFixed(2));
+            const get7 = allLog.filter(function(e){ return (now - new Date(e.date)) / 86400000 <= 7; });
+            const get7prev = allLog.filter(function(e){ var d=(now-new Date(e.date))/86400000; return d>7&&d<=14; });
+            const get30 = allLog.filter(function(e){ return (now - new Date(e.date)) / 86400000 <= 30; });
+            const get30prev = allLog.filter(function(e){ var d=(now-new Date(e.date))/86400000; return d>30&&d<=60; });
+            const get90 = allLog.filter(function(e){ return (now - new Date(e.date)) / 86400000 <= 90; });
+            const get90prev = allLog.filter(function(e){ var d=(now-new Date(e.date))/86400000; return d>90&&d<=180; });
+
+            // Výpočet podle metody
+            var calcLost = function(curr, prev, method, fallbackStart) {
+                if(curr.length === 0) return 0;
+                // Pokud nemáme předchozí období, použij nejstarší dostupný záznam
+                var prevData = prev.length > 0 ? prev : (fallbackStart ? [fallbackStart] : []);
+                if(prevData.length === 0) return 0;
+                if(method === 'avg') {
+                    return parseFloat((movAvg(prevData) - movAvg(curr)).toFixed(2));
+                } else {
+                    return parseFloat((minWeight(prevData) - minWeight(curr)).toFixed(2));
+                }
+            };
+
+            var oldest = allLog[0];
+            const lost7 = calcLost(get7, get7prev, wtMethod7, oldest);
+            const lost30 = calcLost(get30, get30prev, wtMethod30, oldest);
+            const lost90 = calcLost(get90, get90prev, wtMethod90, oldest);
+            const lostAll = wtMethodAll === 'latest'
+                ? parseFloat((allLog[0].weight - allLog[allLog.length-1].weight).toFixed(2))
+                : parseFloat((minWeight(allLog.slice(0, Math.max(1, allLog.length-10))) - minWeight(allLog.slice(-10))).toFixed(2));
 
             var selectedRate = localStorage.getItem('summaryRate') || 'commit';
 
@@ -2175,7 +2219,7 @@
             html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
                 + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
                 + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Recent Stats</div>'
-                + '<span style="color:var(--light);font-size:18px;cursor:pointer;" onclick="showInfo(1)">⚙️</span>'
+                + '<span style="color:var(--light);font-size:18px;cursor:pointer;" onclick="openRecentStatsSettings()">⚙️</span>'
                 + '</div>'
                 + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
                 + '<div style="background:#f8f0ff;padding:10px;border-radius:8px;text-align:center;">'
@@ -2255,57 +2299,127 @@
             html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
                 + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
                 + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Weight Trends</div>'
-                + '<span style="color:var(--light);font-size:18px;cursor:pointer;" onclick="showInfo(3)">⚙️</span>'
+                + '<span style="color:var(--light);font-size:18px;cursor:pointer;" onclick="openWeightTrendsSettings()">⚙️</span>'
                 + '</div>'
                 + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;">'
-                + ['<b>'+lost7.toFixed(2)+'</b><br><span>LOST<br>IN 7 DAYS</span>',
-                   '<b>'+lost30.toFixed(2)+'</b><br><span>LOST<br>IN 30 DAYS</span>',
-                   '<b>'+lost90.toFixed(2)+'</b><br><span>LOST<br>IN 90 DAYS</span>',
-                   '<b>'+lostAll.toFixed(2)+'</b><br><span>LOST<br>ALL TIME</span>'].map(function(t){
-                    return '<div style="background:#e8fff8;padding:8px;border-radius:8px;text-align:center;font-size:11px;color:#27ae60;">'+t+'</div>';
+                + [
+                    {v:lost7, label:'LOST<br>IN 7 DAYS'},
+                    {v:lost30, label:'LOST<br>IN 30 DAYS'},
+                    {v:lost90, label:'LOST<br>IN 90 DAYS'},
+                    {v:lostAll, label:'LOST<br>ALL TIME'}
+                ].map(function(item){
+                    var col = item.v >= 0 ? wtColorLose : wtColorGain;
+                    var bg = item.v >= 0 ? col+'22' : wtColorGain+'22';
+                    return '<div style="background:'+bg+';padding:8px;border-radius:8px;text-align:center;font-size:11px;color:'+col+';"><b>'+item.v.toFixed(2)+'</b><br><span>'+item.label+'</span></div>';
                 }).join('')
                 + '</div></div>';
+
+            // DO CÍLE ZBÝVÁ
+            var zbyvaKgS = parseFloat((latest.weight - goalW).toFixed(2));
+            var daysToGoalS = daysCommit ? daysCommit : (daysOverall ? daysOverall : null);
+            var goalDateS = daysToGoalS ? addDaysToDate(todayStr, daysToGoalS) : '—';
+            if (zbyvaKgS > 0) {
+                html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
+                    + '<div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px;">🎯 Do cíle zbývá</div>'
+                    + '<div style="display:flex;justify-content:space-between;align-items:center;">'
+                    + '<div style="text-align:center;flex:1;">'
+                    + '<div style="font-size:28px;font-weight:700;color:#f39c12;">'+zbyvaKgS.toFixed(2)+'</div>'
+                    + '<div style="font-size:11px;color:#888;">kg</div>'
+                    + '</div>'
+                    + '<div style="text-align:center;flex:1;">'
+                    + '<div style="font-size:28px;font-weight:700;color:var(--primary);">'+(daysToGoalS||'—')+'</div>'
+                    + '<div style="font-size:11px;color:#888;">dní</div>'
+                    + '</div>'
+                    + '<div style="text-align:center;flex:1;">'
+                    + '<div style="font-size:14px;font-weight:600;color:#555;">'+goalDateS+'</div>'
+                    + '<div style="font-size:11px;color:#888;">datum</div>'
+                    + '</div>'
+                    + '</div>'
+                    + '</div>';
+            }
+
+            // WEIGHT CHART
+            html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
+                + '<div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px;">Weight Chart</div>'
+                + '<div id="summaryChart" style="height:180px;"></div>'
+                + '</div>';
 
             // PREDICTIONS
             html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
                 + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
                 + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Predictions</div>'
-                + '<span style="color:var(--light);font-size:18px;cursor:pointer;" onclick="showInfo(4)">⚙️</span>'
+                + '<span style="color:var(--light);font-size:18px;cursor:pointer;" onclick="openPredictionsSettings()">⚙️</span>'
                 + '</div>'
                 // Rate buttons
                 + '<div style="display:flex;gap:8px;margin-bottom:12px;">'
                 + ['commit','current','overall'].map(function(r){
                     var active = selectedRate === r;
                     var label = r==='commit' ? 'COMMITMENT<br>'+weeklyGoalKg.toFixed(2) : r==='current' ? 'CURRENT RATE<br>'+currentRateWeek.toFixed(2) : 'OVERALL RATE<br>'+overallRateWeek.toFixed(2);
-                    var onclick2 = 'selectSummaryRate(\"'+r+'\")';
-                    return '<div onclick="'+onclick2+'" style="flex:1;padding:10px 6px;border-radius:8px;text-align:center;cursor:pointer;border:2px solid '+(active?'var(--primary)':'#ddd')+';background:'+(active?'#eef6ff':'white')+';">'
+                    return '<div onclick="selectSummaryRate(this.dataset.rate)" data-rate="'+r+'" style="flex:1;padding:10px 6px;border-radius:8px;text-align:center;cursor:pointer;border:2px solid '+(active?'var(--primary)':'#ddd')+';background:'+(active?'#eef6ff':'white')+';">'
                         + '<div style="font-size:9px;font-weight:700;color:'+(active?'var(--primary)':'#888')+';">'+label+'</div></div>';
                 }).join('')
                 + '</div>';
 
-            // Milníky pro vybranou variantu
-            var days = selectedRate === 'commit' ? daysCommit : selectedRate === 'current' ? daysCurrent : daysOverall;
+            var predSettings = JSON.parse(localStorage.getItem('predictionsSettings') || '{"nextMilestone":true,"finalGoal":true,"in7days":true,"in30days":true,"nextMonth":false,"customWeights":[],"customDates":[]}');
             var rateKg = selectedRate === 'commit' ? weeklyGoalKg : selectedRate === 'current' ? currentRateWeek : overallRateWeek;
             var rateDay = rateKg / 7;
-            if (days && rateDay > 0) {
-                html += '<div style="font-size:12px;color:#3498db;text-align:center;margin-bottom:8px;">At '+rateKg.toFixed(2)+' kg per week, you will reach</div>';
-                // Zobraz next milestone + 7 days + 30 days + cíl
-                var items = [];
-                // Příští milník
-                var daysToNextM = rateDay > 0 ? Math.round((latest.weight - nextMilestone) / rateDay) : null;
-                if (daysToNextM && daysToNextM > 0) items.push({ label: 'Milestone '+(completedMilestones+1), days: daysToNextM });
-                // 7, 30 dní
-                [7,30].forEach(function(d){
-                    var projected = parseFloat((latest.weight - rateDay * d).toFixed(2));
-                    if (projected > goalW) items.push({ label: projected+' kg', days: d });
-                });
-                // Cíl
-                if (days > 0) items.push({ label: 'Final Goal', days: days });
+            var days = selectedRate === 'commit' ? daysCommit : selectedRate === 'current' ? daysCurrent : daysOverall;
 
-                items.forEach(function(item){
+            var predItems = [];
+
+            if (rateDay > 0) {
+                html += '<div style="font-size:12px;color:#3498db;text-align:center;margin-bottom:8px;">At '+rateKg.toFixed(2)+' kg per week, you will reach</div>';
+
+                // Příští milník
+                if (predSettings.nextMilestone) {
+                    var daysToNextM = Math.round((latest.weight - nextMilestone) / rateDay);
+                    if (daysToNextM > 0) predItems.push({ label: 'Milestone '+(completedMilestones+1), days: daysToNextM, color: '#9b59b6' });
+                }
+                // Váha za 7 dní
+                if (predSettings.in7days) {
+                    var w7 = parseFloat((latest.weight - rateDay * 7).toFixed(2));
+                    if (w7 > goalW) predItems.push({ label: w7+' kg', days: 7, color: '#3498db' });
+                }
+                // Váha za 30 dní
+                if (predSettings.in30days) {
+                    var w30 = parseFloat((latest.weight - rateDay * 30).toFixed(2));
+                    if (w30 > goalW) predItems.push({ label: w30+' kg', days: 30, color: '#3498db' });
+                }
+                // Příští měsíc
+                if (predSettings.nextMonth) {
+                    var nextM = new Date(todayStr);
+                    nextM.setMonth(nextM.getMonth()+1); nextM.setDate(1);
+                    var daysNM = Math.round((nextM - new Date(todayStr))/86400000);
+                    var wNM = parseFloat((latest.weight - rateDay * daysNM).toFixed(2));
+                    if (wNM > goalW) predItems.push({ label: wNM+' kg', days: daysNM, color: '#3498db' });
+                }
+                // Vlastní váhy
+                (predSettings.customWeights || []).forEach(function(w) {
+                    if (w < latest.weight) {
+                        var d = Math.round((latest.weight - w) / rateDay);
+                        predItems.push({ label: w.toFixed(2)+' kg', days: d, color: '#27ae60' });
+                    }
+                });
+                // Vlastní data
+                (predSettings.customDates || []).forEach(function(dateStr) {
+                    var d = Math.round((new Date(dateStr) - new Date(todayStr))/86400000);
+                    if (d > 0) {
+                        var wD = parseFloat((latest.weight - rateDay * d).toFixed(2));
+                        predItems.push({ label: wD > goalW ? wD.toFixed(2)+' kg' : 'Cíl dosažen!', days: d, color: '#f39c12', dateLabel: dateStr });
+                    }
+                });
+                // Finální cíl
+                if (predSettings.finalGoal && days > 0) {
+                    predItems.push({ label: 'Final Goal', days: days, color: '#3498db' });
+                }
+
+                // Seřaď podle dnů
+                predItems.sort(function(a,b){ return a.days - b.days; });
+
+                predItems.forEach(function(item){
                     var dStr = item.days > 60 ? Math.round(item.days/30)+' měsíců' : item.days > 14 ? Math.round(item.days/7)+' týdnů' : item.days+' dní';
-                    html += '<div style="display:flex;justify-content:space-between;padding:8px 10px;background:#f0f8ff;border-radius:6px;margin-bottom:4px;font-size:12px;">'
-                        + '<span style="color:#3498db;font-weight:600;">'+item.label+'</span>'
+                    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#f0f8ff;border-radius:6px;margin-bottom:4px;font-size:12px;">'
+                        + '<span style="color:'+item.color+';font-weight:600;">'+item.label+'</span>'
                         + '<span style="color:#555;">'+addDaysToDate(todayStr, item.days)+'</span>'
                         + '<span style="color:#888;font-size:11px;">IN '+dStr.toUpperCase()+'</span>'
                         + '</div>';
@@ -2318,12 +2432,135 @@
             div.innerHTML = html;
         }
 
+        function openPredictionsSettings() {
+            var s = JSON.parse(localStorage.getItem('predictionsSettings') || '{"nextMilestone":true,"finalGoal":true,"in7days":true,"in30days":true,"nextMonth":false,"customWeights":[],"customDates":[]}');
+            document.getElementById('predNextMilestone').checked = s.nextMilestone !== false;
+            document.getElementById('predFinalGoal').checked = s.finalGoal !== false;
+            document.getElementById('predIn7days').checked = s.in7days !== false;
+            document.getElementById('predIn30days').checked = s.in30days !== false;
+            document.getElementById('predNextMonth').checked = s.nextMonth === true;
+            // Zobraz vlastní váhy
+            var cwList = document.getElementById('predCustomWeightsList');
+            cwList.innerHTML = (s.customWeights||[]).map(function(w,i){
+                return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;">'
+                    +'<span>'+w.toFixed(2)+' kg</span>'
+                    +'<button onclick="predRemoveWeight('+i+')" style="background:none;border:none;color:#e74c3c;font-size:18px;cursor:pointer;">×</button>'
+                    +'</div>';
+            }).join('') || '<div style="color:#888;font-size:13px;padding:8px 0;">Žádné vlastní váhy</div>';
+            // Zobraz vlastní data
+            var cdList = document.getElementById('predCustomDatesList');
+            cdList.innerHTML = (s.customDates||[]).map(function(d,i){
+                return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;">'
+                    +'<span>'+d+'</span>'
+                    +'<button onclick="predRemoveDate('+i+')" style="background:none;border:none;color:#e74c3c;font-size:18px;cursor:pointer;">×</button>'
+                    +'</div>';
+            }).join('') || '<div style="color:#888;font-size:13px;padding:8px 0;">Žádná vlastní data</div>';
+            document.getElementById('predictionsSettingsPopup').style.display = 'flex';
+        }
+
+        function savePredictionsSettings() {
+            var s = JSON.parse(localStorage.getItem('predictionsSettings') || '{}');
+            s.nextMilestone = document.getElementById('predNextMilestone').checked;
+            s.finalGoal = document.getElementById('predFinalGoal').checked;
+            s.in7days = document.getElementById('predIn7days').checked;
+            s.in30days = document.getElementById('predIn30days').checked;
+            s.nextMonth = document.getElementById('predNextMonth').checked;
+            localStorage.setItem('predictionsSettings', JSON.stringify(s));
+            document.getElementById('predictionsSettingsPopup').style.display = 'none';
+            renderSummary();
+        }
+
+        function predAddWeight() {
+            var val = parseFloat(document.getElementById('predNewWeight').value);
+            if (!val || val <= 0 || val >= 150) return;
+            var s = JSON.parse(localStorage.getItem('predictionsSettings') || '{}');
+            s.customWeights = s.customWeights || [];
+            if (!s.customWeights.includes(val)) { s.customWeights.push(val); s.customWeights.sort(function(a,b){return a-b;}); }
+            localStorage.setItem('predictionsSettings', JSON.stringify(s));
+            document.getElementById('predNewWeight').value = '';
+            openPredictionsSettings();
+        }
+
+        function predRemoveWeight(idx) {
+            var s = JSON.parse(localStorage.getItem('predictionsSettings') || '{}');
+            s.customWeights = s.customWeights || [];
+            s.customWeights.splice(idx, 1);
+            localStorage.setItem('predictionsSettings', JSON.stringify(s));
+            openPredictionsSettings();
+        }
+
+        function predAddDate() {
+            var val = document.getElementById('predNewDate').value;
+            if (!val) return;
+            var s = JSON.parse(localStorage.getItem('predictionsSettings') || '{}');
+            s.customDates = s.customDates || [];
+            if (!s.customDates.includes(val)) { s.customDates.push(val); s.customDates.sort(); }
+            localStorage.setItem('predictionsSettings', JSON.stringify(s));
+            document.getElementById('predNewDate').value = '';
+            openPredictionsSettings();
+        }
+
+        function predRemoveDate(idx) {
+            var s = JSON.parse(localStorage.getItem('predictionsSettings') || '{}');
+            s.customDates = s.customDates || [];
+            s.customDates.splice(idx, 1);
+            localStorage.setItem('predictionsSettings', JSON.stringify(s));
+            openPredictionsSettings();
+        }
+
+        function openWeightTrendsSettings() {
+            var s = JSON.parse(localStorage.getItem('weightTrendsSettings') || '{}');
+            document.getElementById('wtColorLose').value = s.colorLose || '#27ae60';
+            document.getElementById('wtColorGain').value = s.colorGain || '#ff6b5b';
+            document.getElementById('wtMethod7').value = s.method7 || 'avg';
+            document.getElementById('wtMethod30').value = s.method30 || 'avg';
+            document.getElementById('wtMethod90').value = s.method90 || 'avg';
+            document.getElementById('wtMethodAll').value = s.methodAll || 'latest';
+            document.getElementById('weightTrendsPopup').style.display = 'flex';
+        }
+
+        function saveWeightTrendsSettings() {
+            var s = {
+                colorLose: document.getElementById('wtColorLose').value,
+                colorGain: document.getElementById('wtColorGain').value,
+                method7: document.getElementById('wtMethod7').value,
+                method30: document.getElementById('wtMethod30').value,
+                method90: document.getElementById('wtMethod90').value,
+                methodAll: document.getElementById('wtMethodAll').value
+            };
+            localStorage.setItem('weightTrendsSettings', JSON.stringify(s));
+            document.getElementById('weightTrendsPopup').style.display = 'none';
+            renderSummary();
+        }
+
+        function openRecentStatsSettings() {
+            var s = JSON.parse(localStorage.getItem('recentStatsSettings') || '{"high":true,"latest":true,"trend":true,"low":true}');
+            document.getElementById('rsHigh').checked = s.high !== false;
+            document.getElementById('rsLatest').checked = s.latest !== false;
+            document.getElementById('rsTrend').checked = s.trend !== false;
+            document.getElementById('rsLow').checked = s.low !== false;
+            document.getElementById('recentStatsPopup').style.display = 'flex';
+        }
+
+        function saveRecentStatsSettings() {
+            var s = {
+                high: document.getElementById('rsHigh').checked,
+                latest: document.getElementById('rsLatest').checked,
+                trend: document.getElementById('rsTrend').checked,
+                low: document.getElementById('rsLow').checked
+            };
+            localStorage.setItem('recentStatsSettings', JSON.stringify(s));
+            document.getElementById('recentStatsPopup').style.display = 'none';
+            renderSummary();
+        }
+
         function showInfo(n) {
             var msgs = {1:'Zobrazuje high/low/trend za posledních 14 dní', 3:'Zobrazuje úbytek za různá časová období', 4:'Přepínej mezi variantami předpovědi - Commitment/Current/Overall'};
             alert(msgs[n] || '');
         }
 
         function selectSummaryRate(rate) {
+            if (!rate) return;
             localStorage.setItem('summaryRate', rate);
             renderSummary();
         }
@@ -2545,13 +2782,22 @@
             if (!log12) { appState.logbook.push({ date: '2026-05-12', weight: 65.5, diff: 0, window: 6, meal: '', water: 0 }); }
             else { log12.weight = 65.5; log12.window = 6; }
             const log13 = appState.logbook.find(function(e){return e.date==='2026-05-13';});
-            if (!log13) { appState.logbook.push({ date: '2026-05-13', weight: 65.4, diff: 0, window: '', meal: '', water: 0 }); }
-            else { log13.weight = 65.4; }
+            if (!log13) { appState.logbook.push({ date: '2026-05-13', weight: 65.4, diff: 0, window: 2, meal: '', water: 0 }); }
+            else { log13.weight = 65.4; if(!log13.window||log13.window==='') log13.window = 2; }
+            // 14.5
+            var log14 = appState.logbook.find(function(e){return e.date==='2026-05-14';});
+            if (!log14) { appState.logbook.push({ date: '2026-05-14', weight: 65.5, diff: 0, window: '', meal: '', water: 0 }); }
+            else { log14.weight = 65.5; }
             recalculateAllDiffs();
             const meal12 = appState.meals.find(function(m){return m.date==='2026-05-12';});
             const note12 = 'Oběd: 200g jogurt 10%, 4 jahody, půl banánu, hrst kešu\nVečeře: 100g hermelín, míchaná vajíčka na másle 3ks, 5 cherry rajčátek\nDezert: 1/8 tiramisu';
             if (!meal12) { appState.meals.push({ date: '2026-05-12', note: note12, water: 1.5 }); }
             else { meal12.note = note12; meal12.water = 1.5; }
+            // 13.5
+            const meal13 = appState.meals.find(function(m){return m.date==='2026-05-13';});
+            const note13 = 'Svačina: Mix mandle a sušené ovoce mango, klikva, rozinky, banán\nVečeře: Těstoviny se smetanovou omáčkou se žampiony a brokolicí, kabanos, eidam';
+            if (!meal13) { appState.meals.push({ date: '2026-05-13', note: note13, water: 1.5 }); }
+            else { meal13.note = note13; meal13.water = 1.5; }
             recalculateAllDiffs();
 
             document.getElementById('fastLength').value = localStorage.getItem('fastLength') || 19;
@@ -2733,6 +2979,152 @@
             <button onclick="exportPopupExport()" style="width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px;">📤 Exportovat teď</button>
             <button onclick="exportPopupLater()" style="width:100%;padding:12px;background:#f0f0f0;color:#333;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-bottom:8px;">⏰ Připomenout za 2h</button>
             <button onclick="exportPopupClose()" style="width:100%;padding:12px;background:white;color:#999;border:1px solid #ddd;border-radius:8px;font-size:14px;cursor:pointer;">✕ Zavřít</button>
+        </div>
+    </div>
+
+    <!-- POPUP: Predictions nastavení -->
+    <div id="predictionsSettingsPopup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:flex-end;justify-content:center;">
+        <div style="background:#f2f2f7;border-radius:16px 16px 0 0;width:100%;max-width:500px;box-sizing:border-box;padding:20px;max-height:90vh;overflow-y:auto;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <button onclick="document.getElementById('predictionsSettingsPopup').style.display='none'" style="background:none;border:none;color:#007aff;font-size:16px;cursor:pointer;">Zrušit</button>
+                <div style="font-size:17px;font-weight:700;">Predictions</div>
+                <button onclick="savePredictionsSettings()" style="background:none;border:none;color:#007aff;font-size:16px;font-weight:700;cursor:pointer;">Hotovo</button>
+            </div>
+
+            <div style="font-size:12px;color:#888;margin-bottom:8px;text-transform:uppercase;">Co predikovat</div>
+            <div style="background:white;border-radius:12px;overflow:hidden;margin-bottom:16px;">
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;">
+                    <span style="font-size:15px;">Kdy dosáhnu příštího milníku</span>
+                    <input type="checkbox" id="predNextMilestone" style="width:20px;height:20px;accent-color:#007aff;">
+                </label>
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;">
+                    <span style="font-size:15px;">Kdy dosáhnu finálního cíle</span>
+                    <input type="checkbox" id="predFinalGoal" style="width:20px;height:20px;accent-color:#007aff;">
+                </label>
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;">
+                    <span style="font-size:15px;">Váha za 7 dní</span>
+                    <input type="checkbox" id="predIn7days" style="width:20px;height:20px;accent-color:#007aff;">
+                </label>
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;">
+                    <span style="font-size:15px;">Váha za 30 dní</span>
+                    <input type="checkbox" id="predIn30days" style="width:20px;height:20px;accent-color:#007aff;">
+                </label>
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;">
+                    <span style="font-size:15px;">Váha příští měsíc</span>
+                    <input type="checkbox" id="predNextMonth" style="width:20px;height:20px;accent-color:#007aff;">
+                </label>
+            </div>
+
+            <div style="font-size:12px;color:#888;margin-bottom:8px;text-transform:uppercase;">Kdy dosáhnu váhy</div>
+            <div style="background:white;border-radius:12px;overflow:hidden;margin-bottom:8px;padding:8px 16px;">
+                <div id="predCustomWeightsList"></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:16px;">
+                <input id="predNewWeight" type="number" step="0.1" placeholder="Přidat váhu (kg)" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+                <button onclick="predAddWeight()" style="padding:10px 16px;background:#007aff;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Přidat</button>
+            </div>
+
+            <div style="font-size:12px;color:#888;margin-bottom:8px;text-transform:uppercase;">Prediction Dates</div>
+            <div style="background:white;border-radius:12px;overflow:hidden;margin-bottom:8px;padding:8px 16px;">
+                <div id="predCustomDatesList"></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:16px;">
+                <input id="predNewDate" type="date" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+                <button onclick="predAddDate()" style="padding:10px 16px;background:#007aff;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Přidat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP: Weight Trends nastavení -->
+    <div id="weightTrendsPopup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:flex-end;justify-content:center;">
+        <div style="background:#f2f2f7;border-radius:16px 16px 0 0;width:100%;max-width:500px;box-sizing:border-box;padding:20px;max-height:90vh;overflow-y:auto;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <button onclick="document.getElementById('weightTrendsPopup').style.display='none'" style="background:none;border:none;color:#007aff;font-size:16px;cursor:pointer;padding:0;">Zrušit</button>
+                <div style="font-size:17px;font-weight:700;">Trend Settings</div>
+                <button onclick="saveWeightTrendsSettings()" style="background:none;border:none;color:#007aff;font-size:16px;font-weight:700;cursor:pointer;padding:0;">Hotovo</button>
+            </div>
+
+            <div style="background:white;border-radius:12px;overflow:hidden;margin-bottom:16px;">
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f0f0f0;">
+                    <span style="font-size:15px;color:#333;">Barva při poklesu</span>
+                    <select id="wtColorLose" style="border:none;font-size:14px;font-weight:600;outline:none;background:transparent;">
+                        <option value="#27ae60">Zelená</option>
+                        <option value="#e74c3c">Červená</option>
+                        <option value="#3498db">Modrá</option>
+                    </select>
+                </label>
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;">
+                    <span style="font-size:15px;color:#333;">Barva při nárůstu</span>
+                    <select id="wtColorGain" style="border:none;font-size:14px;font-weight:600;outline:none;background:transparent;">
+                        <option value="#e74c3c">Červená</option>
+                        <option value="#27ae60">Zelená</option>
+                        <option value="#3498db">Modrá</option>
+                    </select>
+                </label>
+            </div>
+
+            <div style="font-size:12px;color:#888;margin-bottom:8px;text-transform:uppercase;">Způsob porovnání</div>
+            <div style="background:white;border-radius:12px;overflow:hidden;margin-bottom:16px;">
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f0f0f0;">
+                    <span style="font-size:15px;color:#333;">7 dní</span>
+                    <select id="wtMethod7" style="border:none;font-size:13px;outline:none;background:transparent;color:#007aff;">
+                        <option value="avg">Klouzavý průměr</option>
+                        <option value="min">7denní minimum</option>
+                    </select>
+                </label>
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f0f0f0;">
+                    <span style="font-size:15px;color:#333;">30 dní</span>
+                    <select id="wtMethod30" style="border:none;font-size:13px;outline:none;background:transparent;color:#007aff;">
+                        <option value="avg">Klouzavý průměr</option>
+                        <option value="min">10denní minimum</option>
+                    </select>
+                </label>
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f0f0f0;">
+                    <span style="font-size:15px;color:#333;">90 dní</span>
+                    <select id="wtMethod90" style="border:none;font-size:13px;outline:none;background:transparent;color:#007aff;">
+                        <option value="avg">Klouzavý průměr</option>
+                        <option value="min">10denní minimum</option>
+                    </select>
+                </label>
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;">
+                    <span style="font-size:15px;color:#333;">All Time</span>
+                    <select id="wtMethodAll" style="border:none;font-size:13px;outline:none;background:transparent;color:#007aff;">
+                        <option value="avg">Klouzavý průměr</option>
+                        <option value="min">10denní minimum</option>
+                        <option value="latest">Porovnat s nejnovějším</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP: Recent Stats nastavení -->
+    <div id="recentStatsPopup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:flex-end;justify-content:center;">
+        <div style="background:#f2f2f7;border-radius:16px 16px 0 0;width:100%;max-width:500px;box-sizing:border-box;padding:20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <button onclick="document.getElementById('recentStatsPopup').style.display='none'" style="background:none;border:none;color:#007aff;font-size:16px;cursor:pointer;padding:0;">Zrušit</button>
+                <div style="font-size:17px;font-weight:700;">Recent Stats</div>
+                <button onclick="saveRecentStatsSettings()" style="background:none;border:none;color:#007aff;font-size:16px;font-weight:700;cursor:pointer;padding:0;">Hotovo</button>
+            </div>
+            <div style="font-size:12px;color:#888;margin-bottom:8px;text-transform:uppercase;">Zobrazit statistiky</div>
+            <div style="background:white;border-radius:12px;overflow:hidden;">
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;">
+                    <span style="font-size:16px;color:#9b59b6;">● High</span>
+                    <input type="checkbox" id="rsHigh" style="width:20px;height:20px;accent-color:#007aff;">
+                </label>
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;">
+                    <span style="font-size:16px;color:#555;">● Latest</span>
+                    <input type="checkbox" id="rsLatest" style="width:20px;height:20px;accent-color:#007aff;">
+                </label>
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;">
+                    <span style="font-size:16px;color:#3498db;">● Trend</span>
+                    <input type="checkbox" id="rsTrend" style="width:20px;height:20px;accent-color:#007aff;">
+                </label>
+                <label style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;">
+                    <span style="font-size:16px;color:#27ae60;">● Low</span>
+                    <input type="checkbox" id="rsLow" style="width:20px;height:20px;accent-color:#007aff;">
+                </label>
+            </div>
         </div>
     </div>
 
