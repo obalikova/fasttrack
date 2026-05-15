@@ -76,8 +76,8 @@
         <button class="tab active" onclick="switchTab(0)">⏰ Fasting</button>
         <button class="tab" onclick="switchTab(1)">📊 Analýza</button>
         <button class="tab" onclick="switchTab(2)">🍽️ Jídlo</button>
-        <button class="tab" onclick="switchTab(3)">⚖️ Váha</button>
-        <button class="tab" onclick="switchTab(4)">📈 Summary</button>
+        <button class="tab" onclick="switchTab(3)">📈 Summary</button>
+        <button class="tab" onclick="switchTab(4)">⚖️ Váha</button>
         <button class="tab" onclick="switchTab(5)">⚙️ Nastavení</button>
     </div>
 
@@ -182,7 +182,7 @@
     </div>
 
     <!-- TAB 3: VÁHA -->
-    <div id="tab3" class="page">
+    <div id="tab4" class="page">
         <div class="card">
             <div class="card-title">Přidat váhu</div>
             <label>Váha (kg)</label>
@@ -241,7 +241,7 @@
 
 
     <!-- TAB 4: SUMMARY -->
-    <div id="tab4" class="page">
+    <div id="tab3" class="page">
         <div id="summaryContent"></div>
     </div>
 
@@ -426,8 +426,8 @@
             document.getElementById('tab' + idx).classList.add('active');
             document.querySelectorAll('.tab')[idx].classList.add('active');
             if (idx === 1) renderAnalysis();
-            if (idx === 3) { renderLogbook(); loadFaktory(); }
-            if (idx === 4) { try { renderSummary(); } catch(e) { console.error('Summary error:', e.message, e.stack); } }
+            if (idx === 3) { try { renderSummary(); } catch(e) { console.error('Summary error:', e.message, e.lineNumber || '', e.stack || ''); } }
+            if (idx === 4) { renderLogbook(); loadFaktory(); }
             // Datum se NEMĚNÍ při přepínání tabů - zachová vybrané datum
             updateMealFields();
             updateWeightFields();
@@ -1902,11 +1902,28 @@
             renderStats();
         }
 
-        function drawTrendChart(logbook) {
-            const sorted = logbook.filter(e => e.weight > 0).slice(0, 7).reverse();
-            const weights = sorted.map(e => e.weight);
-            const dates = sorted.map(e => new Date(e.date).getDate());
-            const canvas = document.getElementById('analysisChart');
+        function drawTrendChart(logbook, chartId) {
+            var period = localStorage.getItem('summaryChartPeriod') || '30';
+            var now = new Date();
+            var allFiltered = logbook.filter(function(e){ return e.weight > 0; })
+                .sort(function(a,b){ return a.date.localeCompare(b.date); });
+            var filtered;
+            if (period === 'all') {
+                filtered = allFiltered;
+            } else if (period === '7') {
+                // Posledních 7 záznamů (ne nutně 7 dní)
+                filtered = allFiltered.slice(-7);
+            } else if (period === '30') {
+                filtered = allFiltered.slice(-30);
+            } else if (period === '90') {
+                filtered = allFiltered.slice(-90);
+            } else {
+                filtered = allFiltered;
+            }
+            const sorted = filtered;
+            const weights = sorted.map(function(e){ return e.weight; });
+            const dates = sorted.map(function(e){ return new Date(e.date).getDate(); });
+            const canvas = document.getElementById(chartId || 'analysisChart');
             if (!canvas || weights.length < 2) return;
 
             const goal = appState.goalWeight || null;
@@ -1995,10 +2012,15 @@
                     exportTo: now.toISOString(),
                     meals: newMeals,
                     logbook: newLogbook,
-                    goalWeight: appState.goalWeight
+                    goalWeight: appState.goalWeight,
+                    userFoodDB: JSON.parse(localStorage.getItem('userFoodDB') || '{}'),
+                    ignorovanaSlova: JSON.parse(localStorage.getItem('ignorovanaSlova') || '[]')
                 };
             } else {
-                exportData = appState;
+                exportData = Object.assign({}, appState, {
+                    userFoodDB: JSON.parse(localStorage.getItem('userFoodDB') || '{}'),
+                    ignorovanaSlova: JSON.parse(localStorage.getItem('ignorovanaSlova') || '[]')
+                });
             }
 
             localStorage.setItem('lastExportDate', now.toISOString());
@@ -2021,7 +2043,28 @@
                 if (!text) return showToast('❌ Schránka je prázdná!', '#ff6b5b');
                 try {
                     const data = JSON.parse(text);
-                    appState = data;
+                    // Načti vlastní databázi potravin a ignorovaná slova
+                    if (data.userFoodDB && Object.keys(data.userFoodDB).length > 0) {
+                        localStorage.setItem('userFoodDB', JSON.stringify(data.userFoodDB));
+                    }
+                    if (data.ignorovanaSlova && data.ignorovanaSlova.length > 0) {
+                        localStorage.setItem('ignorovanaSlova', JSON.stringify(data.ignorovanaSlova));
+                    }
+                    // Načti hlavní data
+                    if (data.meals || data.logbook) {
+                        // Přírůstkový import
+                        if (data.meals) data.meals.forEach(function(m) {
+                            var idx = appState.meals.findIndex(function(x){ return x.date === m.date; });
+                            if (idx >= 0) appState.meals[idx] = m; else appState.meals.push(m);
+                        });
+                        if (data.logbook) data.logbook.forEach(function(e) {
+                            var idx = appState.logbook.findIndex(function(x){ return x.date === e.date; });
+                            if (idx >= 0) appState.logbook[idx] = e; else appState.logbook.push(e);
+                        });
+                        if (data.goalWeight) appState.goalWeight = data.goalWeight;
+                    } else {
+                        appState = data;
+                    }
                     if (!appState.meals) appState.meals = [];
                     if (!appState.weights) appState.weights = [];
                     if (!appState.logbook) appState.logbook = [];
@@ -2030,7 +2073,8 @@
                     renderLogbook();
                     renderMeals();
                     updateCurrentDate();
-                    showToast('✅ Data importována!', '#27ae60');
+                    var dbCount = Object.keys(JSON.parse(localStorage.getItem('userFoodDB')||'{}')).length;
+                    showToast('✅ Data importována! Vlastní DB: '+dbCount+' potravin', '#27ae60');
                 } catch(e) {
                     showToast('❌ Neplatná data!', '#ff6b5b');
                 }
@@ -2126,10 +2170,20 @@
 
             // Rates
             const last7 = allLog.slice(-7);
-            const currentRateDay = last7.length > 1 ? (last7[0].weight - last7[last7.length-1].weight) / (last7.length-1) : 0;
-            const currentRateWeek = currentRateDay * 7;
-            const overallRateDay = allLog.length > 1 ? (allLog[0].weight - allLog[allLog.length-1].weight) / (allLog.length-1) : 0;
-            const overallRateWeek = overallRateDay * 7;
+            // Current rate = průměr denních změn za posledních 7 dní
+            var last7diffs = last7.filter(function(e){ return e.diff !== 0 && e.diff !== undefined; });
+            var currentRateDay = last7diffs.length > 0 
+                ? last7diffs.reduce(function(s,e){ return s + (e.diff||0); }, 0) / last7diffs.length
+                : 0;
+            // Převeď na pokles (záporný diff = pokles = pozitivní rate)
+            currentRateDay = -currentRateDay;
+            const currentRateWeek = parseFloat((currentRateDay * 7).toFixed(2));
+            // Celkové tempo = pokles za celkový počet DNÍ (ne záznamů)
+            var overallDays = allLog.length > 1 
+                ? Math.max(1, Math.round((new Date(allLog[allLog.length-1].date) - new Date(allLog[0].date)) / 86400000))
+                : 1;
+            const overallRateDay = allLog.length > 1 ? (allLog[0].weight - allLog[allLog.length-1].weight) / overallDays : 0;
+            const overallRateWeek = parseFloat((overallRateDay * 7).toFixed(2));
             const zbyvaKg = latest.weight - goalW;
 
             const addDaysToDate = function(d, n) {
@@ -2138,9 +2192,9 @@
             };
             var todayStr = getDateString(currentDate);
 
-            const daysCommit = weeklyGoalKg > 0 ? Math.round(zbyvaKg / weeklyGoalKg * 7) : null;
-            const daysCurrent = currentRateWeek > 0.01 ? Math.round(zbyvaKg / currentRateWeek * 7) : null;
-            const daysOverall = overallRateWeek > 0.01 ? Math.round(zbyvaKg / overallRateWeek * 7) : null;
+            const daysCommit = weeklyGoalKg > 0 && zbyvaKg > 0 ? Math.round(zbyvaKg / weeklyGoalKg * 7) : null;
+            const daysCurrent = Math.abs(currentRateWeek) > 0.01 && zbyvaKg > 0 ? Math.round(zbyvaKg / Math.abs(currentRateWeek) * 7) : null;
+            const daysOverall = Math.abs(overallRateWeek) > 0.01 && zbyvaKg > 0 ? Math.round(zbyvaKg / Math.abs(overallRateWeek) * 7) : null;
 
             // Recent stats
             const last14 = allLog.slice(-14);
@@ -2218,16 +2272,16 @@
             // RECENT STATS
             html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
                 + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
-                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Recent Stats</div>'
+                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Aktuální statistika</div>'
                 + '<span style="color:var(--light);font-size:18px;cursor:pointer;" onclick="openRecentStatsSettings()">⚙️</span>'
                 + '</div>'
                 + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
                 + '<div style="background:#f8f0ff;padding:10px;border-radius:8px;text-align:center;">'
-                + '<div style="font-size:10px;font-weight:700;color:#9b59b6;">• HIGH</div>'
+                + '<div style="font-size:10px;font-weight:700;color:#9b59b6;">• MAXIMUM</div>'
                 + '<div style="font-size:22px;font-weight:700;color:#9b59b6;">'+highEntry.weight.toFixed(2)+'</div>'
                 + '<div style="font-size:11px;color:#9b59b6;">'+daysSinceHigh+' dní zpět</div></div>'
                 + '<div style="background:#f5f5f5;padding:10px;border-radius:8px;text-align:center;">'
-                + '<div style="font-size:10px;font-weight:700;color:#555;">• LATEST</div>'
+                + '<div style="font-size:10px;font-weight:700;color:#555;">• POSLEDNÍ</div>'
                 + '<div style="font-size:22px;font-weight:700;color:#333;">'+latest.weight.toFixed(2)+'</div>'
                 + '<div style="font-size:11px;color:#555;">dnes</div></div>'
                 + '<div style="background:#e8f4fd;padding:10px;border-radius:8px;text-align:center;">'
@@ -2235,7 +2289,7 @@
                 + '<div style="font-size:22px;font-weight:700;color:#3498db;">'+trendW.toFixed(2)+'</div>'
                 + '<div style="font-size:11px;color:#3498db;">průměr</div></div>'
                 + '<div style="background:#e8fff8;padding:10px;border-radius:8px;text-align:center;">'
-                + '<div style="font-size:10px;font-weight:700;color:#27ae60;">• LOW</div>'
+                + '<div style="font-size:10px;font-weight:700;color:#27ae60;">• MINIMUM</div>'
                 + '<div style="font-size:22px;font-weight:700;color:#27ae60;">'+lowEntry.weight.toFixed(2)+'</div>'
                 + '<div style="font-size:11px;color:#27ae60;">'+daysSinceLow+' dní zpět</div></div>'
                 + '</div></div>';
@@ -2245,7 +2299,7 @@
             const gaugeAngle = 180 * gaugePercent / 100;
             html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
                 + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
-                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Weight Loss Progress</div>'
+                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Úspěch hubnutí</div>'
                 + '<span style="color:var(--light);font-size:18px;cursor:pointer;" onclick="openMilestoneSettings()">⚙️</span>'
                 + '</div>'
                 // Gauge
@@ -2260,9 +2314,9 @@
                 + '</div>'
                 + '</div>'
                 + '<div style="text-align:center;margin-bottom:8px;">'
-                + '<div style="font-size:13px;color:#555;">'+latest.weight.toFixed(2)+' TODAY</div>'
-                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">'+milestonePercent+'% COMPLETE</div>'
-                + '<div style="font-size:13px;color:#888;">'+parseFloat(Math.max(0,(latest.weight - nextMilestone)).toFixed(2))+' TO GO</div>'
+                + '<div style="font-size:13px;color:#555;">'+latest.weight.toFixed(2)+' DNES</div>'
+                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">'+milestonePercent+'% SPLNĚNO</div>'
+                + '<div style="font-size:13px;color:#888;">'+parseFloat(Math.max(0,(latest.weight - nextMilestone)).toFixed(2))+' ZBÝVÁ</div>'
                 + '</div>'
                 // Progress bar milníků
                 + '<div style="display:flex;align-items:center;gap:4px;margin:10px 0;">'
@@ -2283,7 +2337,7 @@
                 var num = i + 1;
                 var done = latest.weight <= m + 0.001;
                 var isCurrent = num === completedMilestones + 1;
-                var label = num === milestoneCount ? 'Goal Weight' : 'Milestone ' + num;
+                var label = num === milestoneCount ? 'Cílová váha' : 'Milník ' + num;
                 var toGo = isCurrent ? parseFloat((latest.weight - m).toFixed(2)) : null;
                 var col = done ? '#27ae60' : isCurrent ? 'var(--primary)' : '#888';
                 var fw = isCurrent ? '700' : '400';
@@ -2298,15 +2352,15 @@
             // WEIGHT TRENDS
             html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
                 + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
-                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Weight Trends</div>'
+                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Změna váhy</div>'
                 + '<span style="color:var(--light);font-size:18px;cursor:pointer;" onclick="openWeightTrendsSettings()">⚙️</span>'
                 + '</div>'
                 + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;">'
                 + [
-                    {v:lost7, label:'LOST<br>IN 7 DAYS'},
-                    {v:lost30, label:'LOST<br>IN 30 DAYS'},
-                    {v:lost90, label:'LOST<br>IN 90 DAYS'},
-                    {v:lostAll, label:'LOST<br>ALL TIME'}
+                    {v:lost7, label:'POKLES<br>ZA 7 DNÍ'},
+                    {v:lost30, label:'POKLES<br>ZA 30 DNÍ'},
+                    {v:lost90, label:'POKLES<br>ZA 90 DNÍ'},
+                    {v:lostAll, label:'CELKOVÝ<br>POKLES'}
                 ].map(function(item){
                     var col = item.v >= 0 ? wtColorLose : wtColorGain;
                     var bg = item.v >= 0 ? col+'22' : wtColorGain+'22';
@@ -2314,56 +2368,50 @@
                 }).join('')
                 + '</div></div>';
 
-            // DO CÍLE ZBÝVÁ
-            var zbyvaKgS = parseFloat((latest.weight - goalW).toFixed(2));
-            var daysToGoalS = daysCommit ? daysCommit : (daysOverall ? daysOverall : null);
-            var goalDateS = daysToGoalS ? addDaysToDate(todayStr, daysToGoalS) : '—';
-            if (zbyvaKgS > 0) {
-                html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
-                    + '<div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px;">🎯 Do cíle zbývá</div>'
-                    + '<div style="display:flex;justify-content:space-between;align-items:center;">'
-                    + '<div style="text-align:center;flex:1;">'
-                    + '<div style="font-size:28px;font-weight:700;color:#f39c12;">'+zbyvaKgS.toFixed(2)+'</div>'
-                    + '<div style="font-size:11px;color:#888;">kg</div>'
-                    + '</div>'
-                    + '<div style="text-align:center;flex:1;">'
-                    + '<div style="font-size:28px;font-weight:700;color:var(--primary);">'+(daysToGoalS||'—')+'</div>'
-                    + '<div style="font-size:11px;color:#888;">dní</div>'
-                    + '</div>'
-                    + '<div style="text-align:center;flex:1;">'
-                    + '<div style="font-size:14px;font-weight:600;color:#555;">'+goalDateS+'</div>'
-                    + '<div style="font-size:11px;color:#888;">datum</div>'
-                    + '</div>'
-                    + '</div>'
-                    + '</div>';
-            }
-
-            // WEIGHT CHART
+            // GRAF VÁHY
+            var chartPeriod = localStorage.getItem('summaryChartPeriod') || '30';
+            var chartPeriods = ['7','30','90','all'];
+            window._chartPeriodsList = chartPeriods;
             html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
-                + '<div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px;">Weight Chart</div>'
+                + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Graf váhy</div>'
+                + '<span onclick="openChartSettings()" style="color:var(--light);font-size:18px;cursor:pointer;">⚙️</span>'
+                + '</div>'
+                + '<div style="display:flex;gap:6px;margin-bottom:10px;">'
+                + chartPeriods.map(function(p){
+                    var active = chartPeriod === p;
+                    var label = p === 'all' ? 'Vše' : p+' dní';
+                    var pIdx = chartPeriods.indexOf(p);
+                    return '<div onclick="selectChartPeriod(window._chartPeriodsList['+pIdx+'])" style="padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;cursor:pointer;background:'+(active?'var(--primary)':'#f0f0f0')+';color:'+(active?'white':'#555')+';transition:all 0.2s;">'+label+'</div>';
+                }).join('')
+                + '</div>'
                 + '<div id="summaryChart" style="height:180px;"></div>'
                 + '</div>';
 
             // PREDICTIONS
             html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
                 + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
-                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Predictions</div>'
+                + '<div style="font-size:13px;font-weight:700;color:var(--primary);">Odhad váhy</div>'
                 + '<span style="color:var(--light);font-size:18px;cursor:pointer;" onclick="openPredictionsSettings()">⚙️</span>'
                 + '</div>'
                 // Rate buttons
                 + '<div style="display:flex;gap:8px;margin-bottom:12px;">'
-                + ['commit','current','overall'].map(function(r){
+                ;
+                window._rateList = ['commit','current','overall'];
+                html += '<div style="display:flex;gap:8px;margin-bottom:12px;">'
+                + window._rateList.map(function(r, ri){
                     var active = selectedRate === r;
-                    var label = r==='commit' ? 'COMMITMENT<br>'+weeklyGoalKg.toFixed(2) : r==='current' ? 'CURRENT RATE<br>'+currentRateWeek.toFixed(2) : 'OVERALL RATE<br>'+overallRateWeek.toFixed(2);
-                    return '<div onclick="selectSummaryRate(this.dataset.rate)" data-rate="'+r+'" style="flex:1;padding:10px 6px;border-radius:8px;text-align:center;cursor:pointer;border:2px solid '+(active?'var(--primary)':'#ddd')+';background:'+(active?'#eef6ff':'white')+';">'
-                        + '<div style="font-size:9px;font-weight:700;color:'+(active?'var(--primary)':'#888')+';">'+label+'</div></div>';
+                    var label = r==='commit' ? 'ZÁVAZEK<br>'+weeklyGoalKg.toFixed(2) : r==='current' ? 'AKTUÁLNÍ TEMPO<br>'+currentRateWeek.toFixed(2) : 'CELKOVÉ TEMPO<br>'+overallRateWeek.toFixed(2);
+                    return '<div onclick="selectSummaryRate(window._rateList['+ri+'])" style="flex:1;padding:10px 6px;border-radius:8px;text-align:center;cursor:pointer;border:2px solid '+(active?'var(--primary)':'#ddd')+';background:'+(active?'#eef6ff':'white')+';"><div style="font-size:9px;font-weight:700;color:'+(active?'var(--primary)':'#888')+';">'+label+'</div></div>';
                 }).join('')
+                + '</div>';
+                html += ''
                 + '</div>';
 
             var predSettings = JSON.parse(localStorage.getItem('predictionsSettings') || '{"nextMilestone":true,"finalGoal":true,"in7days":true,"in30days":true,"nextMonth":false,"customWeights":[],"customDates":[]}');
             var rateKg = selectedRate === 'commit' ? weeklyGoalKg : selectedRate === 'current' ? currentRateWeek : overallRateWeek;
             var rateDay = rateKg / 7;
-            var days = selectedRate === 'commit' ? daysCommit : selectedRate === 'current' ? daysCurrent : daysOverall;
+            var days = selectedRate === 'commit' ? daysCommit : selectedRate === 'current' ? (daysCurrent || daysCommit) : (daysOverall || daysCommit);
 
             var predItems = [];
 
@@ -2373,7 +2421,7 @@
                 // Příští milník
                 if (predSettings.nextMilestone) {
                     var daysToNextM = Math.round((latest.weight - nextMilestone) / rateDay);
-                    if (daysToNextM > 0) predItems.push({ label: 'Milestone '+(completedMilestones+1), days: daysToNextM, color: '#9b59b6' });
+                    if (daysToNextM > 0) predItems.push({ label: 'Milník '+(completedMilestones+1), days: daysToNextM, color: '#9b59b6' });
                 }
                 // Váha za 7 dní
                 if (predSettings.in7days) {
@@ -2410,14 +2458,14 @@
                 });
                 // Finální cíl
                 if (predSettings.finalGoal && days > 0) {
-                    predItems.push({ label: 'Final Goal', days: days, color: '#3498db' });
+                    predItems.push({ label: 'Finální cíl', days: days, color: '#3498db' });
                 }
 
                 // Seřaď podle dnů
                 predItems.sort(function(a,b){ return a.days - b.days; });
 
                 predItems.forEach(function(item){
-                    var dStr = item.days > 60 ? Math.round(item.days/30)+' měsíců' : item.days > 14 ? Math.round(item.days/7)+' týdnů' : item.days+' dní';
+                    var dStr = item.days > 60 ? Math.round(item.days/30)+' měs.' : item.days > 14 ? Math.round(item.days/7)+' týd.' : item.days+' dní';
                     html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#f0f8ff;border-radius:6px;margin-bottom:4px;font-size:12px;">'
                         + '<span style="color:'+item.color+';font-weight:600;">'+item.label+'</span>'
                         + '<span style="color:#555;">'+addDaysToDate(todayStr, item.days)+'</span>'
@@ -2429,7 +2477,50 @@
             }
             html += '</div>';
 
+            // DO CÍLE ZBÝVÁ - propojeno s vybraným rate
+            var zbyvaKgS = parseFloat((latest.weight - goalW).toFixed(2));
+            var daysToGoalS = days;
+            var goalDateS = daysToGoalS ? addDaysToDate(todayStr, daysToGoalS) : '—';
+            if (zbyvaKgS > 0) {
+                html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:12px;">'
+                    + '<div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:12px;">🎯 Do cíle zbývá</div>'
+                    + '<div style="display:flex;justify-content:space-between;align-items:center;">'
+                    + '<div style="text-align:center;flex:1;">'
+                    + '<div style="font-size:32px;font-weight:700;color:#f39c12;">'+zbyvaKgS.toFixed(2)+'</div>'
+                    + '<div style="font-size:11px;color:#888;">kg</div>'
+                    + '</div>'
+                    + '<div style="text-align:center;flex:1;">'
+                    + '<div style="font-size:32px;font-weight:700;color:var(--primary);">'+(daysToGoalS||'—')+'</div>'
+                    + '<div style="font-size:11px;color:#888;">dní</div>'
+                    + '</div>'
+                    + '<div style="text-align:center;flex:1;">'
+                    + '<div style="font-size:14px;font-weight:600;color:#555;">'+goalDateS+'</div>'
+                    + '<div style="font-size:11px;color:#888;">datum</div>'
+                    + '</div>'
+                    + '</div>'
+                    + '</div>';
+            }
+
             div.innerHTML = html;
+
+            // Vykresli graf po renderování DOM
+            setTimeout(function() {
+                try {
+                    var sorted2 = appState.logbook.filter(function(e){ return e.weight > 0; }).sort(function(a,b){ return a.date.localeCompare(b.date); });
+                    drawTrendChart(sorted2, 'summaryChart');
+                } catch(e) { console.error('Chart error:', e.message); }
+            }, 100);
+        }
+
+        function selectChartPeriod(period) {
+            if (!period) return;
+            localStorage.setItem('summaryChartPeriod', period);
+            renderSummary();
+        }
+
+        function openChartSettings() {
+            // Jednoduché — přepínání je přímo v grafu přes tlačítka
+            showToast('Vyber období pomocí tlačítek pod nadpisem', '#3498db');
         }
 
         function openPredictionsSettings() {
@@ -2786,14 +2877,23 @@
             else { log13.weight = 65.4; if(!log13.window||log13.window==='') log13.window = 2; }
             // 14.5
             var log14 = appState.logbook.find(function(e){return e.date==='2026-05-14';});
-            if (!log14) { appState.logbook.push({ date: '2026-05-14', weight: 65.5, diff: 0, window: '', meal: '', water: 0 }); }
-            else { log14.weight = 65.5; }
+            if (!log14) { appState.logbook.push({ date: '2026-05-14', weight: 65.5, diff: 0, window: 5.9, meal: '', water: 0 }); }
+            else { log14.weight = 65.5; log14.window = 5.9; }
+            var log15 = appState.logbook.find(function(e){return e.date==='2026-05-15';});
+            if (!log15) { appState.logbook.push({ date: '2026-05-15', weight: 65.3, diff: 0, window: '', meal: '', water: 0 }); }
+            else { log15.weight = 65.3; }
             recalculateAllDiffs();
             const meal12 = appState.meals.find(function(m){return m.date==='2026-05-12';});
             const note12 = 'Oběd: 200g jogurt 10%, 4 jahody, půl banánu, hrst kešu\nVečeře: 100g hermelín, míchaná vajíčka na másle 3ks, 5 cherry rajčátek\nDezert: 1/8 tiramisu';
             if (!meal12) { appState.meals.push({ date: '2026-05-12', note: note12, water: 1.5 }); }
             else { meal12.note = note12; meal12.water = 1.5; }
             // 13.5
+            // 14.5 jídlo
+            const meal14 = appState.meals.find(function(m){return m.date==='2026-05-14';});
+            const note14 = 'Oběd: Jogurt 200g, 3 jahody, půl banánu\nSvačina: Mandle, sušené ovoce\nVečeře: Grilovaná řepa, feta sýr, sázené vejce, vepřová panenka\nSladkosti: Čokoláda';
+            if (!meal14) { appState.meals.push({ date: '2026-05-14', note: note14, water: 1.5 }); }
+            else { meal14.note = note14; meal14.water = 1.5; }
+
             const meal13 = appState.meals.find(function(m){return m.date==='2026-05-13';});
             const note13 = 'Svačina: Mix mandle a sušené ovoce mango, klikva, rozinky, banán\nVečeře: Těstoviny se smetanovou omáčkou se žampiony a brokolicí, kabanos, eidam';
             if (!meal13) { appState.meals.push({ date: '2026-05-13', note: note13, water: 1.5 }); }
@@ -2967,7 +3067,7 @@
             }, { passive: true });
         }
 
-        init();
+        try { init(); } catch(e) { console.error('UNCAUGHT INIT:', e.message, e.stack); }
     </script>
 
     <!-- POPUP: Export připomínka -->
@@ -2987,7 +3087,7 @@
         <div style="background:#f2f2f7;border-radius:16px 16px 0 0;width:100%;max-width:500px;box-sizing:border-box;padding:20px;max-height:90vh;overflow-y:auto;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
                 <button onclick="document.getElementById('predictionsSettingsPopup').style.display='none'" style="background:none;border:none;color:#007aff;font-size:16px;cursor:pointer;">Zrušit</button>
-                <div style="font-size:17px;font-weight:700;">Predictions</div>
+                <div style="font-size:17px;font-weight:700;">Odhad váhy</div>
                 <button onclick="savePredictionsSettings()" style="background:none;border:none;color:#007aff;font-size:16px;font-weight:700;cursor:pointer;">Hotovo</button>
             </div>
 
@@ -3103,7 +3203,7 @@
         <div style="background:#f2f2f7;border-radius:16px 16px 0 0;width:100%;max-width:500px;box-sizing:border-box;padding:20px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
                 <button onclick="document.getElementById('recentStatsPopup').style.display='none'" style="background:none;border:none;color:#007aff;font-size:16px;cursor:pointer;padding:0;">Zrušit</button>
-                <div style="font-size:17px;font-weight:700;">Recent Stats</div>
+                <div style="font-size:17px;font-weight:700;">Aktuální statistika</div>
                 <button onclick="saveRecentStatsSettings()" style="background:none;border:none;color:#007aff;font-size:16px;font-weight:700;cursor:pointer;padding:0;">Hotovo</button>
             </div>
             <div style="font-size:12px;color:#888;margin-bottom:8px;text-transform:uppercase;">Zobrazit statistiky</div>
