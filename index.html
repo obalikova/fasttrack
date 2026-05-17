@@ -21,7 +21,9 @@
         .date-nav { display: flex; gap: 8px; align-items: center; }
         .date-nav button { width: 32px; height: 32px; border: none; border-radius: 6px; background: var(--border); cursor: pointer; }
         .current-date { font-size: 20px; font-weight: 700; color: var(--primary); background: var(--bg); padding: 12px 20px; border-radius: 12px; border: 2px solid var(--primary); text-align: center; min-width: 180px; }
-        .refresh-btn { width: 32px; height: 32px; border: none; border-radius: 6px; background: var(--primary); color: white; cursor: pointer; }
+        .refresh-btn { width: 32px; height: 32px; border: none; border-radius: 6px; background: var(--primary); color: white; cursor: pointer; transition: transform 0.3s, width 0.3s, height 0.3s; }
+        .refresh-btn.loading { animation: spin 0.8s linear infinite; transform-origin: center; width: 40px; height: 40px; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .tabs { display: flex; background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 44px; z-index: 99; }
         .tab { flex: 1; padding: 12px; text-align: center; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--light); border-bottom: 3px solid transparent; }
         .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
@@ -69,7 +71,7 @@
             <div class="current-date" id="currentDate"></div>
             <button onclick="changeDate(1)">→</button>
         </div>
-        <button class="refresh-btn" onclick="location.reload()">🔄</button>
+        <button id="refreshBtn" class="refresh-btn" onclick="location.reload()">🔄</button>
     </div>
 
     <div class="tabs">
@@ -3067,6 +3069,13 @@
                 if (defIgn.indexOf(s) < 0) defIgn.push(s);
             });
             localStorage.setItem('ignorovanaSlova', JSON.stringify(defIgn));
+
+            // Animace refresh tlačítka při načítání
+            var rb = document.getElementById('refreshBtn');
+            if (rb) {
+                rb.classList.add('loading');
+                setTimeout(function() { rb.classList.remove('loading'); }, 800);
+            }
 
             // Zkontroluj export popup (pondělí 9:00)
             checkExportPopup();
