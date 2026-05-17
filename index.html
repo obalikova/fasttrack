@@ -1782,13 +1782,14 @@
             
             if (logIdx >= 0) {
                 appState.logbook[logIdx].window = window;
-                save();
-                renderLogbook();
-                updateWeightFields(); // toto samo nastaví isEditMode správně
-                alert('Okno upraveno!');
             } else {
-                alert('Pro toto datum nemáš záznam. Přidej váhu nejdřív.');
+                // Vytvoř záznam bez váhy
+                appState.logbook.push({ date: date, weight: 0, diff: 0, window: window, meal: '', water: 0 });
             }
+            save();
+            renderLogbook();
+            updateWeightFields();
+            showToast('✅ Okno uloženo!', '#4ecdc4');
         }
 
         function formatWindow(w) {
@@ -2880,8 +2881,12 @@
             if (!log14) { appState.logbook.push({ date: '2026-05-14', weight: 65.5, diff: 0, window: 5.9, meal: '', water: 0 }); }
             else { log14.weight = 65.5; log14.window = 5.9; }
             var log15 = appState.logbook.find(function(e){return e.date==='2026-05-15';});
-            if (!log15) { appState.logbook.push({ date: '2026-05-15', weight: 65.3, diff: 0, window: '', meal: '', water: 0 }); }
-            else { log15.weight = 65.3; }
+            if (!log15) { appState.logbook.push({ date: '2026-05-15', weight: 65.3, diff: 0, window: 8, meal: '', water: 0 }); }
+            else { log15.weight = 65.3; log15.window = 8; }
+            // 16.5 - okno 6h, bez váhy
+            var log16 = appState.logbook.find(function(e){return e.date==='2026-05-16';});
+            if (!log16) { appState.logbook.push({ date: '2026-05-16', weight: 0, diff: 0, window: 6, meal: '', water: 0 }); }
+            else { log16.window = 6; }
             recalculateAllDiffs();
             const meal12 = appState.meals.find(function(m){return m.date==='2026-05-12';});
             const note12 = 'Oběd: 200g jogurt 10%, 4 jahody, půl banánu, hrst kešu\nVečeře: 100g hermelín, míchaná vajíčka na másle 3ks, 5 cherry rajčátek\nDezert: 1/8 tiramisu';
@@ -2893,6 +2898,16 @@
             const note14 = 'Oběd: Jogurt 200g, 3 jahody, půl banánu\nSvačina: Mandle, sušené ovoce\nVečeře: Grilovaná řepa, feta sýr, sázené vejce, vepřová panenka\nSladkosti: Čokoláda';
             if (!meal14) { appState.meals.push({ date: '2026-05-14', note: note14, water: 1.5 }); }
             else { meal14.note = note14; meal14.water = 1.5; }
+            // 15.5 jídlo
+            const meal15 = appState.meals.find(function(m){return m.date==='2026-05-15';});
+            const note15 = 'Oběd: 100g plísňový sýr, paprika\nVečeře: Vepřové maso, omáčka z masa, rýže\nAlkohol: Sekt';
+            if (!meal15) { appState.meals.push({ date: '2026-05-15', note: note15, water: 1.5 }); }
+            else { meal15.note = note15; meal15.water = 1.5; }
+            // 16.5 jídlo
+            const meal16 = appState.meals.find(function(m){return m.date==='2026-05-16';});
+            const note16 = 'Oběd: Polévka s vaječnými noky, hráškem, jogurt\nVečeře: Vepřové maso, omáčka, těstoviny';
+            if (!meal16) { appState.meals.push({ date: '2026-05-16', note: note16, water: 1.0 }); }
+            else { meal16.note = note16; meal16.water = 1.0; }
 
             const meal13 = appState.meals.find(function(m){return m.date==='2026-05-13';});
             const note13 = 'Svačina: Mix mandle a sušené ovoce mango, klikva, rozinky, banán\nVečeře: Těstoviny se smetanovou omáčkou se žampiony a brokolicí, kabanos, eidam';
@@ -2928,7 +2943,13 @@
         }
 
         function getUserFoodDB() {
-            try { return JSON.parse(localStorage.getItem('userFoodDB') || '{}'); }
+            try {
+                var db = JSON.parse(localStorage.getItem('userFoodDB') || '{}');
+                // Přidej potraviny z exportu pokud nejsou
+                var exportDB = {'řepa':{'name':'Řepa','info':'Zelenina — vitamíny, vláknina, minimum kalorií.','rada':null,'typ':'zelenina','emoji':'🥦','custom':true},'vepřová panenka':{'name':'Vepřová panenka','info':'Libové vepřové maso — dobrý zdroj proteinu s nízkým tukem.','rada':null,'typ':'protein','emoji':'🍗','custom':true}};
+                Object.keys(exportDB).forEach(function(k){ if(!db[k]) db[k]=exportDB[k]; });
+                return db;
+            }
             catch(e) { return {}; }
         }
 
