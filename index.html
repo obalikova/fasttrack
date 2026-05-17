@@ -2004,6 +2004,33 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
+        function getSettings() {
+            return {
+                weeklyGoal: localStorage.getItem('weeklyGoal'),
+                fastLength: localStorage.getItem('fastLength'),
+                windowLength: localStorage.getItem('windowLength'),
+                summaryChartPeriod: localStorage.getItem('summaryChartPeriod'),
+                summaryStartWeight: localStorage.getItem('summaryStartWeight'),
+                summaryStartDate: localStorage.getItem('summaryStartDate'),
+                summaryRate: localStorage.getItem('summaryRate'),
+                milestoneCount: localStorage.getItem('milestoneCount'),
+                weightObjective: localStorage.getItem('weightObjective'),
+                msSplit: localStorage.getItem('msSplit'),
+                weightTrendsSettings: JSON.parse(localStorage.getItem('weightTrendsSettings') || '{}'),
+                predictionsSettings: JSON.parse(localStorage.getItem('predictionsSettings') || '{}'),
+                recentStatsSettings: JSON.parse(localStorage.getItem('recentStatsSettings') || '{}')
+            };
+        }
+
+        function restoreSettings(s) {
+            if (!s) return;
+            var keys = ['weeklyGoal','fastLength','windowLength','summaryChartPeriod','summaryStartWeight','summaryStartDate','summaryRate','milestoneCount','weightObjective','msSplit'];
+            keys.forEach(function(k){ if (s[k] != null) localStorage.setItem(k, s[k]); });
+            if (s.weightTrendsSettings) localStorage.setItem('weightTrendsSettings', JSON.stringify(s.weightTrendsSettings));
+            if (s.predictionsSettings) localStorage.setItem('predictionsSettings', JSON.stringify(s.predictionsSettings));
+            if (s.recentStatsSettings) localStorage.setItem('recentStatsSettings', JSON.stringify(s.recentStatsSettings));
+        }
+
         function _doExport(data, msg) {
             const now = new Date();
             localStorage.setItem('lastExportDate', now.toISOString());
@@ -2022,7 +2049,8 @@
                 exportFrom: null,
                 exportTo: now.toISOString(),
                 userFoodDB: JSON.parse(localStorage.getItem('userFoodDB') || '{}'),
-                ignorovanaSlova: JSON.parse(localStorage.getItem('ignorovanaSlova') || '[]')
+                ignorovanaSlova: JSON.parse(localStorage.getItem('ignorovanaSlova') || '[]'),
+                settings: getSettings()
             });
             _doExport(data, '✅ Export — všechna data');
         }
@@ -2041,7 +2069,8 @@
                 logbook: newLogbook,
                 goalWeight: appState.goalWeight,
                 userFoodDB: JSON.parse(localStorage.getItem('userFoodDB') || '{}'),
-                ignorovanaSlova: JSON.parse(localStorage.getItem('ignorovanaSlova') || '[]')
+                ignorovanaSlova: JSON.parse(localStorage.getItem('ignorovanaSlova') || '[]'),
+                settings: getSettings()
             };
             _doExport(data, `✅ Export od ${from.toLocaleDateString('cs-CZ')}`);
         }
@@ -2078,6 +2107,7 @@
                     if (!appState.meals) appState.meals = [];
                     if (!appState.weights) appState.weights = [];
                     if (!appState.logbook) appState.logbook = [];
+                    if (data.settings) restoreSettings(data.settings);
                     recalculateAllDiffs();
                     save();
                     renderLogbook();
