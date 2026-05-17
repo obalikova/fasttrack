@@ -304,7 +304,7 @@
         }
 
         function calculateStreak() {
-            // Série poklesu váhy - kolik dní v řadě váha klesala
+            // Série poklesu váhy - pokles přidá, stejná váha zachová, nárůst nuluje
             const entries = [...appState.logbook]
                 .filter(e => e.weight > 0)
                 .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -312,7 +312,8 @@
             let streak = 0;
             for (const entry of entries) {
                 if (entry.diff < -0.05) streak++;
-                else break;
+                else if (entry.diff > 0.05) break;
+                // stejná váha (diff ~ 0) → zachová streak, nepřidá
             }
             return streak;
         }
@@ -990,7 +991,7 @@
                     'kaše|kaši|kaší|kasi': { name: 'Kaše', info: 'Sacharidy — záleží na druhu. Bramborová kaše = rychlé sacharidy.', rada: 'Na oběd, menší porce.', typ: 'sacharid', emoji: '🥣' },
                     // Zelenina
                     'zelenin': { name: 'Zelenina', info: 'Vitamíny, vláknina, minimum kalorií. Zpomaluje vstřebávání ostatních živin.', rada: null, typ: 'zelenina', emoji: '🥦' },
-                    'rukol|ledový salát|polníček': { name: 'Listový salát', info: 'Minimum kalorií, vitamíny, vláknina. Zpomaluje vstřebávání ostatních živin.', rada: 'Přidej ke každému jídlu!', typ: 'zelenina', emoji: '🥗' },
+                    'rukol|ledový salát|polníček|hlávkový salát|hlávkový|římský salát|rimsky salat': { name: 'Listový salát', info: 'Minimum kalorií, vitamíny, vláknina. Zpomaluje vstřebávání ostatních živin.', rada: 'Přidej ke každému jídlu!', typ: 'zelenina', emoji: '🥗' },
                     'rajč|cherry|rajčátk': { name: 'Rajčata', info: 'Vitamín C, lykopen — antioxidant. Nízkokalorická, hydratující.', rada: null, typ: 'zelenina', emoji: '🍅' },
                     'okur': { name: 'Okurka', info: '95% voda — hydratuje, nulové kalorie, lehká pro trávení.', rada: null, typ: 'zelenina', emoji: '🥒' },
                     'paprik': { name: 'Paprika', info: 'Vitamín C (více než citron!), antioxidanty, vláknina.', rada: null, typ: 'zelenina', emoji: '🫑' },
@@ -1041,6 +1042,11 @@
                     'vepřov|vepř|vepřin': { name: 'Vepřové maso', info: 'Střední obsah tuku záleží na části — panenka je libová, bůček tučný.', rada: 'Volb libové části (panenka, kýta). Omezt smažení.', typ: 'protein', emoji: '🥩' },
                     'jehněč|jehne|jehnec': { name: 'Jehněčí maso', info: 'Libové maso bohaté na omega-3 a železo. Výborná volba.', rada: null, typ: 'protein', emoji: '🥩' },
                     'tatarka|tatarsk|tatarkou': { name: 'Tatarská omáčka', info: 'Majonézový základ — vysoký obsah tuku. V kombinaci s masem = tuk + protein OK, ale kaloricky husté.', rada: 'Malé množství OK. Nahraď jogurtovou omáčkou pro méně kalorií.', typ: 'tuk', emoji: '🥫' },
+                    'škvarkovou pomazánkou|škvarkova pomazanka|škvarkové pomazánky|skvarková pomazanka': { name: 'Škvarkovou pomazánka', info: 'Tučná pomazánka ze škvarků, cibule a hořčice — vysoký obsah nasycených tuků.', rada: 'Malé množství na pečivo OK, ale kaloricky husté.', typ: 'tuk', emoji: '🥓' },
+                    'vajíčková pomazánka|vajíčkova pomazanka|vajickova pomazanka|vajíčkovou pomazánkou': { name: 'Vajíčková pomazánka', info: 'Vejce + cibule + hořčice + tatarka — dobrý protein, ale majonézový základ přidává tuk.', rada: 'Lehčí volba než škvarkovou — protein převažuje.', typ: 'protein', emoji: '🥚' },
+                    'omáčka|omáčkou|omáčky|omacka|omackou': { name: 'Omáčka', info: 'Základ je tuk — výpek, máslo nebo smetana. Smetanové omáčky kaloricky husté, výpekové lehčí.', rada: 'Výpek lehčí volba než smetanová omáčka. Sleduj množství.', typ: 'tuk', emoji: '🥘' },
+                    'nálev|nálevu|nálevem|nalev|marináda|marinádě|marinádou': { name: 'Nálev/marináda', info: 'Ocet, voda, sůl, malé množství cukru — ocet pomáhá vyrovnávat glykemický index. Minimální kalorická zátěž.', rada: 'Nakládaná zelenina v nálevu je dobrá volba — ocet zpomaluje vstřebávání cukrů.', typ: 'zelenina', emoji: '🥒' },
+                    'rozinky v čokoládě|rozinky v cokolade|ořechy v čokoládě|orechy v cokolade|ovoce v čokoládě|ovoce v cokolade': { name: 'Ovoce/ořechy v čokoládě', info: 'Kombinace cukru z čokolády + přírodní cukry z ovoce nebo tuk z ořechů — sladkost s vyšší kalorickou hustotou.', rada: 'Malé množství OK, ale kaloricky husté. Nahraď čerstvým ovocem.', typ: 'sladkost', emoji: '🍫' },
                     'krajíc|krajic': { name: 'Krajíc chleba', info: 'Sacharidy — záleží na druhu chleba. Celozrnný lepší než bílý.', rada: 'Raději dopoledne. Kombinuj s proteinem ne s máslem a uzeninou zároveň.', typ: 'sacharid', emoji: '🍞' },
                     'víno|vino|wine': { name: 'Víno', info: 'Alkohol — játra zpracovávají ethanol místo tuků. Spalování zastaveno 24-48h.', rada: 'Pij 2l vody po konzumaci. Červené víno má antioxidanty ale alkohol převažuje.', typ: 'alkohol2', emoji: '🍷' },
                     'polevk|polívk|polévk': { name: 'Polévka', info: 'Záleží na druhu — zeleninová výborná. S nudlemi/noky = sacharidy navíc.', rada: 'Zeleninová polévka je ideální lehká večeře.', typ: 'ostatni', emoji: '🍲' },
@@ -2949,6 +2955,11 @@
             if (!log17) { appState.logbook.push({ date: '2026-05-17', weight: 65.3, diff: 0, window: 0, meal: '', water: 0 }); }
             else { log17.weight = 65.3; }
             recalculateAllDiffs();
+            // 17.5 jídlo
+            var meal17 = appState.meals.find(function(m){return m.date==='2026-05-17';});
+            var note17 = 'Oběd: Ledový salát, 2 vejce, cottage, banán, houska se škvarkovou pomazánkou\nVečeře: Smažené filé s bramborovou kaší, hlávkový salát v nálevu\nSladkosti: Rozinky v čokoládě, ořechy v čokoládě';
+            if (!meal17) { appState.meals.push({ date: '2026-05-17', note: note17, water: 0 }); }
+            else { meal17.note = note17; }
 
             document.getElementById('fastLength').value = localStorage.getItem('fastLength') || 19;
             document.getElementById('windowLength').value = localStorage.getItem('windowLength') || 5;
