@@ -24,7 +24,7 @@
         .refresh-btn { width: 32px; height: 32px; border: none; border-radius: 6px; background: var(--primary); color: white; cursor: pointer; transition: transform 0.3s, width 0.3s, height 0.3s; }
         .refresh-btn.loading { animation: spin 0.8s linear infinite; transform-origin: center; width: 40px; height: 40px; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .tabs { display: flex; background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 44px; z-index: 99; }
+        .tabs { display: flex; background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 68px; z-index: 99; }
         .tab { flex: 1; padding: 12px; text-align: center; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--light); border-bottom: 3px solid transparent; }
         .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
         .page { max-width: 500px; margin: 0 auto; padding: 16px; display: none; }
@@ -267,9 +267,13 @@
         </div>
         <div class="card">
             <div class="card-title">📦 Záloha dat</div>
-            <p style="font-size:12px;color:var(--light);margin-bottom:12px;">Export zkopíruje data do schránky. Import načte data ze schránky.</p>
-            <button class="btn-primary" onclick="exportData()" style="margin-bottom:4px;">⬆️ Exportovat (kopírovat)</button>
-            <div id="lastExportInfo" style="font-size:11px;color:var(--light);margin-bottom:10px;"></div>
+            <div id="lastExportInfo" style="font-size:12px;color:var(--light);margin-bottom:10px;">Poslední export: —</div>
+            <label style="font-size:12px;margin-bottom:4px;">Exportovat od data:</label>
+            <input type="date" id="exportFromDate" style="margin-bottom:8px;">
+            <div style="display:flex;gap:8px;margin-bottom:12px;">
+                <button class="btn-primary" onclick="exportFromDateFn()" style="margin-bottom:0;">⬆️ Od data</button>
+                <button class="btn-primary" onclick="exportAll()" style="margin-bottom:0;background:#2d7b5a;">📦 Exportuj vše</button>
+            </div>
             <button class="btn-primary" onclick="importData()" style="background:#4ecdc4;">⬇️ Importovat (vložit ze schránky)</button>
         </div>
     </div>
@@ -2000,46 +2004,49 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
-        function exportData() {
-            const lastExport = localStorage.getItem('lastExportDate');
+        function _doExport(data, msg) {
             const now = new Date();
-            const lastDateTime = lastExport ? new Date(lastExport) : null;
-
-            let exportData;
-            if (lastDateTime) {
-                // Přesný timestamp - od přesného času posledního exportu
-                const newMeals = appState.meals.filter(m => new Date(m.date + 'T23:59:59') >= lastDateTime);
-                const newLogbook = appState.logbook.filter(e => new Date(e.date + 'T23:59:59') >= lastDateTime);
-                exportData = {
-                    exportFrom: lastExport,
-                    exportTo: now.toISOString(),
-                    meals: newMeals,
-                    logbook: newLogbook,
-                    goalWeight: appState.goalWeight,
-                    userFoodDB: JSON.parse(localStorage.getItem('userFoodDB') || '{}'),
-                    ignorovanaSlova: JSON.parse(localStorage.getItem('ignorovanaSlova') || '[]')
-                };
-            } else {
-                exportData = Object.assign({}, appState, {
-                    userFoodDB: JSON.parse(localStorage.getItem('userFoodDB') || '{}'),
-                    ignorovanaSlova: JSON.parse(localStorage.getItem('ignorovanaSlova') || '[]')
-                });
-            }
-
             localStorage.setItem('lastExportDate', now.toISOString());
-            const msg = lastDateTime
-                ? `✅ Export od ${lastDateTime.toLocaleDateString('cs-CZ')} ${lastDateTime.toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit'})}`
-                : '✅ První export — všechna data';
-
-            navigator.clipboard.writeText(JSON.stringify(exportData)).then(() => {
-                showToast(msg, '#27ae60');
-            }).catch(() => {
-                prompt('Zkopíruj data:', JSON.stringify(exportData));
-            });
-
             const exportInfo = document.getElementById('lastExportInfo');
             if (exportInfo) exportInfo.textContent = `Poslední export: ${now.toLocaleDateString('cs-CZ')} ${now.toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit'})}`;
+            navigator.clipboard.writeText(JSON.stringify(data)).then(() => {
+                showToast(msg, '#27ae60');
+            }).catch(() => {
+                prompt('Zkopíruj data:', JSON.stringify(data));
+            });
         }
+
+        function exportAll() {
+            const now = new Date();
+            const data = Object.assign({}, appState, {
+                exportFrom: null,
+                exportTo: now.toISOString(),
+                userFoodDB: JSON.parse(localStorage.getItem('userFoodDB') || '{}'),
+                ignorovanaSlova: JSON.parse(localStorage.getItem('ignorovanaSlova') || '[]')
+            });
+            _doExport(data, '✅ Export — všechna data');
+        }
+
+        function exportFromDateFn() {
+            const dateInput = document.getElementById('exportFromDate').value;
+            if (!dateInput) { showToast('Vyber datum exportu', '#e74c3c'); return; }
+            const from = new Date(dateInput + 'T00:00:00');
+            const now = new Date();
+            const newMeals = appState.meals.filter(m => new Date(m.date) >= from);
+            const newLogbook = appState.logbook.filter(e => new Date(e.date) >= from);
+            const data = {
+                exportFrom: from.toISOString(),
+                exportTo: now.toISOString(),
+                meals: newMeals,
+                logbook: newLogbook,
+                goalWeight: appState.goalWeight,
+                userFoodDB: JSON.parse(localStorage.getItem('userFoodDB') || '{}'),
+                ignorovanaSlova: JSON.parse(localStorage.getItem('ignorovanaSlova') || '[]')
+            };
+            _doExport(data, `✅ Export od ${from.toLocaleDateString('cs-CZ')}`);
+        }
+
+        function exportData() { exportAll(); }
 
         function importData() {
             navigator.clipboard.readText().then(text => {
@@ -2172,14 +2179,13 @@
             var overallPercent = Math.round((startW - latest.weight) / totalDiff * 100);
 
             // Rates
-            const last7 = allLog.slice(-7);
-            // Current rate = průměr denních změn za posledních 7 dní
-            var last7diffs = last7.filter(function(e){ return e.diff !== 0 && e.diff !== undefined; });
-            var currentRateDay = last7diffs.length > 0 
-                ? last7diffs.reduce(function(s,e){ return s + (e.diff||0); }, 0) / last7diffs.length
+            // Current rate = průměr denních diffů za posledních 7 kalendářních dní
+            var _today7 = getDateString(currentDate);
+            var _cutoff7 = new Date(_today7); _cutoff7.setDate(_cutoff7.getDate() - 7);
+            var last7days = allLog.filter(function(e){ return new Date(e.date) >= _cutoff7 && e.diff !== 0 && e.diff !== undefined; });
+            var currentRateDay = last7days.length > 0
+                ? -(last7days.reduce(function(s,e){ return s + (e.diff||0); }, 0) / last7days.length)
                 : 0;
-            // Převeď na pokles (záporný diff = pokles = pozitivní rate)
-            currentRateDay = -currentRateDay;
             const currentRateWeek = parseFloat((currentRateDay * 7).toFixed(2));
             // Celkové tempo = pokles za celkový počet DNÍ (ne záznamů)
             var overallDays = allLog.length > 1 
@@ -2248,25 +2254,17 @@
             const get90prev = allLog.filter(function(e){ var d=(now-new Date(e.date))/86400000; return d>90&&d<=180; });
 
             // Výpočet podle metody
-            var calcLost = function(curr, prev, method, fallbackStart) {
-                if(curr.length === 0) return 0;
-                // Pokud nemáme předchozí období, použij nejstarší dostupný záznam
-                var prevData = prev.length > 0 ? prev : (fallbackStart ? [fallbackStart] : []);
-                if(prevData.length === 0) return 0;
-                if(method === 'avg') {
-                    return parseFloat((movAvg(prevData) - movAvg(curr)).toFixed(2));
-                } else {
-                    return parseFloat((minWeight(prevData) - minWeight(curr)).toFixed(2));
-                }
+            // Pokles = první váha v období minus poslední váha v období
+            var calcLost = function(entries) {
+                var withW = entries.filter(function(e){ return e.weight > 0; });
+                if(withW.length < 1) return 0;
+                return parseFloat((withW[0].weight - withW[withW.length-1].weight).toFixed(2));
             };
 
-            var oldest = allLog[0];
-            const lost7 = calcLost(get7, get7prev, wtMethod7, oldest);
-            const lost30 = calcLost(get30, get30prev, wtMethod30, oldest);
-            const lost90 = calcLost(get90, get90prev, wtMethod90, oldest);
-            const lostAll = wtMethodAll === 'latest'
-                ? parseFloat((allLog[0].weight - allLog[allLog.length-1].weight).toFixed(2))
-                : parseFloat((minWeight(allLog.slice(0, Math.max(1, allLog.length-10))) - minWeight(allLog.slice(-10))).toFixed(2));
+            const lost7 = calcLost(get7);
+            const lost30 = calcLost(get30);
+            const lost90 = calcLost(get90);
+            const lostAll = calcLost(allLog);
 
             var selectedRate = localStorage.getItem('summaryRate') || 'commit';
 
@@ -2414,26 +2412,27 @@
             var predSettings = JSON.parse(localStorage.getItem('predictionsSettings') || '{"nextMilestone":true,"finalGoal":true,"in7days":true,"in30days":true,"nextMonth":false,"customWeights":[],"customDates":[]}');
             var rateKg = selectedRate === 'commit' ? weeklyGoalKg : selectedRate === 'current' ? currentRateWeek : overallRateWeek;
             var rateDay = rateKg / 7;
-            var days = selectedRate === 'commit' ? daysCommit : selectedRate === 'current' ? (daysCurrent || daysCommit) : (daysOverall || daysCommit);
+            var days = selectedRate === 'commit' ? daysCommit : selectedRate === 'current' ? (daysCurrent || daysOverall || daysCommit) : (daysOverall || daysCommit);
 
             var predItems = [];
 
-            if (rateDay > 0) {
+            var absRateDay = Math.abs(rateDay);
+            if (absRateDay > 0) {
                 html += '<div style="font-size:12px;color:#3498db;text-align:center;margin-bottom:8px;">At '+rateKg.toFixed(2)+' kg per week, you will reach</div>';
 
                 // Příští milník
                 if (predSettings.nextMilestone) {
-                    var daysToNextM = Math.round((latest.weight - nextMilestone) / rateDay);
+                    var daysToNextM = absRateDay > 0 ? Math.round((latest.weight - nextMilestone) / absRateDay) : null;
                     if (daysToNextM > 0) predItems.push({ label: 'Milník '+(completedMilestones+1), days: daysToNextM, color: '#9b59b6' });
                 }
                 // Váha za 7 dní
                 if (predSettings.in7days) {
-                    var w7 = parseFloat((latest.weight - rateDay * 7).toFixed(2));
+                    var w7 = parseFloat((latest.weight - absRateDay * 7).toFixed(2));
                     if (w7 > goalW) predItems.push({ label: w7+' kg', days: 7, color: '#3498db' });
                 }
                 // Váha za 30 dní
                 if (predSettings.in30days) {
-                    var w30 = parseFloat((latest.weight - rateDay * 30).toFixed(2));
+                    var w30 = parseFloat((latest.weight - absRateDay * 30).toFixed(2));
                     if (w30 > goalW) predItems.push({ label: w30+' kg', days: 30, color: '#3498db' });
                 }
                 // Příští měsíc
@@ -2915,6 +2914,10 @@
             const note13 = 'Svačina: Mix mandle a sušené ovoce mango, klikva, rozinky, banán\nVečeře: Těstoviny se smetanovou omáčkou se žampiony a brokolicí, kabanos, eidam';
             if (!meal13) { appState.meals.push({ date: '2026-05-13', note: note13, water: 1.5 }); }
             else { meal13.note = note13; meal13.water = 1.5; }
+            // 17.5 váha
+            var log17 = appState.logbook.find(function(e){return e.date==='2026-05-17';});
+            if (!log17) { appState.logbook.push({ date: '2026-05-17', weight: 65.3, diff: 0, window: 0, meal: '', water: 0 }); }
+            else { log17.weight = 65.3; }
             recalculateAllDiffs();
 
             document.getElementById('fastLength').value = localStorage.getItem('fastLength') || 19;
@@ -3043,13 +3046,21 @@
                     }
                 }
                 updateCurrentDate();
-                // Zobraz info o posledním exportu
+                // Zobraz info o posledním exportu + nastav date picker
                 const lastExport = localStorage.getItem('lastExportDate');
                 const exportInfo = document.getElementById('lastExportInfo');
+                const exportDateInput = document.getElementById('exportFromDate');
                 if (exportInfo) {
                     exportInfo.textContent = lastExport 
-                        ? `Poslední export: ${new Date(lastExport).toLocaleDateString('cs-CZ')} — příští export bude jen nová data`
+                        ? `Poslední export: ${new Date(lastExport).toLocaleDateString('cs-CZ')} ${new Date(lastExport).toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit'})}`
                         : 'Zatím nebyl proveden export';
+                }
+                if (exportDateInput) {
+                    if (lastExport) {
+                        exportDateInput.value = new Date(lastExport).toISOString().slice(0,10);
+                    } else {
+                        exportDateInput.value = new Date().toISOString().slice(0,10);
+                    }
                 }
                 renderMeals();
                 renderLogbook();
