@@ -965,7 +965,7 @@
                     'kuřec|kuřecí|kurecí|kuřecím|kurecim|kuře|kuřete|kuřetem|kuřata|kuřat': { name: 'Kuřecí', info: 'Lean protein — tělo na jeho trávení spotřebuje ~30% kalorií. Podporuje spalování tuků.', rada: null, typ: 'protein', emoji: '🍗' },
                     'hovězí|hovezi|hovezim|steak': { name: 'Hovězí/steak', info: 'Kompletní protein + železo + zinek, ale obsahuje nasycené tuky. Červené maso příležitostně OK.', rada: 'Lépe na oběd. Vyber libové kusy — svíčková, roštěná.', typ: 'protein', emoji: '🥩' },
                     'játr': { name: 'Játra', info: 'Výjimečně bohatá na železo, vitamín B12 a A. Vysoká nutriční hodnota.', rada: 'Max. 1-2x týdně — vysoký obsah vitamínu A.', typ: 'protein', emoji: '🥩' },
-                    'ryba |tunak|sardin': { name: 'Ryba/tuňák', info: 'Omega-3 mastné kyseliny snižují zánět a podporují spalování tuků. Lehce stravitelný protein.', rada: null, typ: 'protein', emoji: '🐟' },
+                    'ryba|tunak|sardin|filé|file|treska|kapr|candát': { name: 'Ryba/tuňák', info: 'Omega-3 mastné kyseliny snižují zánět a podporují spalování tuků. Lehce stravitelný protein.', rada: null, typ: 'protein', emoji: '🐟' },
                     'rybiz|rybíz': { name: 'Rybíz', info: 'Nízký glykemický index, vitamín C, antioxidanty. Výborná volba!', rada: null, typ: 'ovoce', emoji: '🫐' },
                     'kabanos|kabanosi|kabanosy': { name: 'Kabanos', info: 'Uzená uzenina — vysoký sodík a nasycené tuky. Zadržování vody + konzervant.', rada: 'Max. příležitostně — 1-2 ks. Nahraď čerstvým masem.', typ: 'uzenina', emoji: '🌭' },
                     'salám|salami|salámu': { name: 'Salám', info: 'Zpracované maso — vysoký sodík, nasycené tuky, konzervany. Zadržování vody.', rada: 'Nahraď čerstvým masem nebo tuňákem.', typ: 'uzenina', emoji: '🥩' },
@@ -985,7 +985,7 @@
                     'špaget|těstovín|nudl': { name: 'Těstoviny/nudle', info: 'Sacharidy — ukládají se jako glykogen (každý gram váže ~3g vody). Při přejezení zvyšují váhu.', rada: 'Ideálně na oběd, menší porce. Večer raději vynech nebo vyber celozrnné.', typ: 'sacharid', emoji: '🍝' },
                     'rýž': { name: 'Rýže Basmati', info: 'Nižší glykemický index než bílá rýže — pomalejší vstřebávání cukrů. Přesto glykogen váže vodu.', rada: 'Na oběd v rozumném množství (3-4 lžíce). Večer raději vynech.', typ: 'sacharid', emoji: '🍚' },
                     'knedl': { name: 'Knedlíky', info: 'Rychlé sacharidy — vysoký glykemický index, velký inzulínový spike. Glykogen váže ~3g vody na 1g.', rada: 'Jen na oběd, menší porce. Kombinuj s bílkovinou ne s tukem.', typ: 'sacharid', emoji: '🥟' },
-                    'chleb|rohlík': { name: 'Chleba/rohlík', info: 'Sacharidy + lepek — zadržování vody. Bílý chleba = rychlý cukr.', rada: 'Celozrnný chleba je lepší. Raději dopoledne než večer.', typ: 'sacharid', emoji: '🍞' },
+                    'chleb|rohlík|houska|housk|pecivo|pečivo': { name: 'Chleba/rohlík', info: 'Sacharidy + lepek — zadržování vody. Bílý chleba = rychlý cukr.', rada: 'Celozrnný chleba je lepší. Raději dopoledne než večer.', typ: 'sacharid', emoji: '🍞' },
                     'brambor': { name: 'Brambory', info: 'Sacharidy ale dobrý zdroj draslíku. Vařené lepší než smažené.', rada: 'Na oběd — večer raději zeleninu místo brambor.', typ: 'sacharid', emoji: '🥔' },
                     'nok': { name: 'Noky', info: 'Sacharidy z mouky a brambor — dvojitý zdroj glykogenu.', rada: 'Na oběd v malé porci. Večer jsou zbytečnou zátěží pro metabolismus.', typ: 'sacharid', emoji: '🥟' },
                     'kaše|kaši|kaší|kasi': { name: 'Kaše', info: 'Sacharidy — záleží na druhu. Bramborová kaše = rychlé sacharidy.', rada: 'Na oběd, menší porce.', typ: 'sacharid', emoji: '🥣' },
@@ -2952,15 +2952,35 @@
             else { meal13.note = note13; meal13.water = 1.5; }
             // 17.5 váha
             var log17 = appState.logbook.find(function(e){return e.date==='2026-05-17';});
-            if (!log17) { appState.logbook.push({ date: '2026-05-17', weight: 65.3, diff: 0, window: 0, meal: '', water: 0 }); }
-            else { log17.weight = 65.3; }
+            if (!log17) { appState.logbook.push({ date: '2026-05-17', weight: 65.3, diff: 0, window: 7.2, meal: '', water: 0, fastingCompleted: true }); }
+            else { log17.weight = 65.3; log17.window = 7.2; log17.fastingCompleted = true; }
             recalculateAllDiffs();
             // 17.5 jídlo
             var meal17 = appState.meals.find(function(m){return m.date==='2026-05-17';});
-            var note17 = 'Oběd: Ledový salát, 2 vejce, cottage, banán, houska se škvarkovou pomazánkou\nVečeře: Smažené filé s bramborovou kaší, hlávkový salát v nálevu\nSladkosti: Rozinky v čokoládě, ořechy v čokoládě';
-            if (!meal17) { appState.meals.push({ date: '2026-05-17', note: note17, water: 0 }); }
-            else { meal17.note = note17; }
+            var note17 = 'Oběd: Ledový salát, 2 vejce, cottage, banán, houska se škvarkovou pomazánkou\nVečeře: Smažené filé s bramborovou kaší, hlávkový salát v nálevu\nDezert: Buchta\nSladkosti: Rozinky v čokoládě, ořechy v čokoládě';
+            if (!meal17) { appState.meals.push({ date: '2026-05-17', note: note17, water: 1.5 }); }
+            else { meal17.note = note17; meal17.water = 1.5; }
+            // 18.5
+            var log18 = appState.logbook.find(function(e){return e.date==='2026-05-18';});
+            if (!log18) { appState.logbook.push({ date: '2026-05-18', weight: 66.7, diff: 0, window: 6, meal: '', water: 1.5 }); }
+            else { log18.weight = 66.7; log18.window = 6; log18.water = 1.5; }
+            var meal18 = appState.meals.find(function(m){return m.date==='2026-05-18';});
+            var note18 = 'Oběd: Jogurt, banán, kešu, jahody\nSvačina: Kešu\nVečeře: Rohlík, škvarkovou pomazánka';
+            if (!meal18) { appState.meals.push({ date: '2026-05-18', note: note18, water: 1.5 }); }
+            else { meal18.note = note18; meal18.water = 1.5; }
+            // 19.5
+            var log19 = appState.logbook.find(function(e){return e.date==='2026-05-19';});
+            if (!log19) { appState.logbook.push({ date: '2026-05-19', weight: 65.7, diff: 0, window: 0, meal: '', water: 0 }); }
+            else { log19.weight = 65.7; }
 
+            // Zapečená nastavení z exportu
+            if (!localStorage.getItem('summaryChartPeriod')) localStorage.setItem('summaryChartPeriod', '30');
+            if (!localStorage.getItem('summaryStartWeight')) localStorage.setItem('summaryStartWeight', '66.1');
+            if (!localStorage.getItem('summaryStartDate')) localStorage.setItem('summaryStartDate', '2026-04-28');
+            if (!localStorage.getItem('summaryRate')) localStorage.setItem('summaryRate', 'current');
+            if (!localStorage.getItem('milestoneCount')) localStorage.setItem('milestoneCount', '5');
+            if (!localStorage.getItem('weightObjective')) localStorage.setItem('weightObjective', 'lose');
+            if (!localStorage.getItem('msSplit')) localStorage.setItem('msSplit', 'equal');
             document.getElementById('fastLength').value = localStorage.getItem('fastLength') || 19;
             document.getElementById('windowLength').value = localStorage.getItem('windowLength') || 5;
             if(document.getElementById('goalWeight')) document.getElementById('goalWeight').value = appState.goalWeight || '';
@@ -2992,7 +3012,7 @@
             try {
                 var db = JSON.parse(localStorage.getItem('userFoodDB') || '{}');
                 // Přidej potraviny z exportu pokud nejsou
-                var exportDB = {'řepa':{'name':'Řepa','info':'Zelenina — vitamíny, vláknina, minimum kalorií.','rada':null,'typ':'zelenina','emoji':'🥦','custom':true},'vepřová panenka':{'name':'Vepřová panenka','info':'Libové vepřové maso — dobrý zdroj proteinu s nízkým tukem.','rada':null,'typ':'protein','emoji':'🍗','custom':true}};
+                var exportDB = {'řepa':{'name':'Řepa','info':'Zelenina — vitamíny, vláknina, minimum kalorií.','rada':null,'typ':'zelenina','emoji':'🥦','custom':true},'vepřová panenka':{'name':'Vepřová panenka','info':'Libové vepřové maso — dobrý zdroj proteinu s nízkým tukem.','rada':null,'typ':'protein','emoji':'🍗','custom':true},'omáčka':{'name':'Omáčka','info':'Základ je tuk — výpek, máslo nebo smetana.','rada':'Výpek lehčí volba než smetanová omáčka.','typ':'tuk','emoji':'🥘','custom':true},'buchta':{'name':'Buchta','info':'Sladké pečivo — sacharidy + cukr, inzulínový spike.','rada':'Příležitostně OK, raději na oběd.','typ':'sladkost','emoji':'🧁','custom':true},'ryba':{'name':'Filé','info':'Libová ryba — výborný protein, nízký tuk.','rada':null,'typ':'protein','emoji':'🐟','custom':true},'pečivo':{'name':'Houska','info':'Sacharidy — sleduj množství a načasování.','rada':'Raději celozrnné.','typ':'sacharid','emoji':'🥖','custom':true}};
                 Object.keys(exportDB).forEach(function(k){ if(!db[k]) db[k]=exportDB[k]; });
                 return db;
             }
@@ -3016,6 +3036,10 @@
             localStorage.setItem('userFoodDB', JSON.stringify(db));
             document.getElementById('addFoodPopup').style.display = 'none';
             showToast('✅ '+name+' přidáno do databáze!', '#4ecdc4');
+            // Odstraň z nerozpoznaných
+            if (window._nerozpoznane) {
+                window._nerozpoznane = window._nerozpoznane.filter(function(s){ return s.toLowerCase() !== key.toLowerCase() && s.toLowerCase() !== name.toLowerCase(); });
+            }
             renderAnalysis();
         }
 
