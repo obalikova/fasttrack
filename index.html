@@ -2080,13 +2080,7 @@
                     newFoodDB[k] = item;
                 }
             });
-            // Jen nová ignorovaná slova od data (uložená s datem)
-            var allIgn = JSON.parse(localStorage.getItem('ignorovanaSlova') || '[]');
-            var allIgnDates = JSON.parse(localStorage.getItem('ignorovanaSlovaDates') || '{}');
-            var newIgn = allIgn.filter(function(s) {
-                var d = allIgnDates[s];
-                return !d || new Date(d) >= from;
-            });
+
             const data = {
                 exportFrom: from.toISOString(),
                 exportTo: now.toISOString(),
@@ -2094,7 +2088,7 @@
                 logbook: newLogbook,
                 goalWeight: appState.goalWeight,
                 userFoodDB: newFoodDB,
-                ignorovanaSlova: newIgn,
+
                 settings: getSettings()
             };
             _doExport(data, `✅ Export od ${from.toLocaleDateString('cs-CZ')}`);
@@ -2991,11 +2985,25 @@
             else { meal18.note = note18; meal18.water = 1.5; }
             // 19.5
             var log19 = appState.logbook.find(function(e){return e.date==='2026-05-19';});
-            if (!log19) { appState.logbook.push({ date: '2026-05-19', weight: 65.7, diff: 0, window: 0, meal: '', water: 0 }); }
-            else { log19.weight = 65.7; }
+            if (!log19) { appState.logbook.push({ date: '2026-05-19', weight: 65.7, diff: 0, window: 7.7, meal: '', water: 0, fastingCompleted: true }); }
+            else { log19.weight = 65.7; log19.window = 7.7; log19.fastingCompleted = true; }
+            var meal19 = appState.meals.find(function(m){return m.date==='2026-05-19';});
+            var note19 = 'Oběd: Játra, slanina, brambory, tatarka, kešu\nVečeře: Játra, omáčka, rýže\nDezert: Buchta';
+            if (!meal19) { appState.meals.push({ date: '2026-05-19', note: note19, water: 1.5 }); }
+            else { meal19.note = note19; meal19.water = 1.5; }
+            // 20.5
+            var log20 = appState.logbook.find(function(e){return e.date==='2026-05-20';});
+            if (!log20) { appState.logbook.push({ date: '2026-05-20', weight: 65.7, diff: 0, window: 0, meal: '', water: 0 }); }
+            else { log20.weight = 65.7; }
+            // 20.5
+            var log20 = appState.logbook.find(function(e){return e.date==='2026-05-20';});
+            if (!log20) { appState.logbook.push({ date: '2026-05-20', weight: 65.7, diff: 0, window: 0, meal: '', water: 0 }); }
+            else { log20.weight = 65.7; }
 
             // Zapečená nastavení z exportu
             if (!localStorage.getItem('summaryChartPeriod')) localStorage.setItem('summaryChartPeriod', '30');
+            if (!localStorage.getItem('predictionsSettings')) localStorage.setItem('predictionsSettings', JSON.stringify({customWeights:[60],nextMilestone:true,finalGoal:true,in7days:true,in30days:true,nextMonth:false}));
+            if (!localStorage.getItem('predictionsSettings')) localStorage.setItem('predictionsSettings', JSON.stringify({customWeights:[60],nextMilestone:true,finalGoal:true,in7days:true,in30days:true,nextMonth:false}));
             if (!localStorage.getItem('summaryStartWeight')) localStorage.setItem('summaryStartWeight', '66.1');
             if (!localStorage.getItem('summaryStartDate')) localStorage.setItem('summaryStartDate', '2026-04-28');
             if (!localStorage.getItem('summaryRate')) localStorage.setItem('summaryRate', 'current');
@@ -3058,6 +3066,7 @@
                     : typ==='ovoce' ? 'Ovoce — přirozené cukry s vlákninou, pomalé vstřebávání.'
                     : 'Sladkost — rychlý cukr, inzulínový spike, sleduj množství.';
                 db[key] = { name: name, info: info || defaultInfo, rada: null, typ: typ, emoji: typ==='zelenina'?'🥦':typ==='protein'?'🍗':typ==='sacharid'?'🍝':typ==='tuk'?'🧈':typ==='ovoce'?'🍓':'🍬', custom: true };
+            db[key].addedDate = new Date().toISOString().slice(0,10);
             localStorage.setItem('userFoodDB', JSON.stringify(db));
             document.getElementById('addFoodPopup').style.display = 'none';
             showToast('✅ '+name+' přidáno do databáze!', '#4ecdc4');
