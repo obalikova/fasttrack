@@ -2068,14 +2068,33 @@
             const now = new Date();
             const newMeals = appState.meals.filter(m => new Date(m.date) >= from);
             const newLogbook = appState.logbook.filter(e => new Date(e.date) >= from);
+            // Jen nové custom položky v userFoodDB (přidané od data)
+            var allFoodDB = JSON.parse(localStorage.getItem('userFoodDB') || '{}');
+            var newFoodDB = {};
+            Object.keys(allFoodDB).forEach(function(k) {
+                var item = allFoodDB[k];
+                if (item.custom && item.addedDate && new Date(item.addedDate) >= from) {
+                    newFoodDB[k] = item;
+                } else if (item.custom && !item.addedDate) {
+                    // Bez data přidání — zahrň vždy (nevíme kdy přidáno)
+                    newFoodDB[k] = item;
+                }
+            });
+            // Jen nová ignorovaná slova od data (uložená s datem)
+            var allIgn = JSON.parse(localStorage.getItem('ignorovanaSlova') || '[]');
+            var allIgnDates = JSON.parse(localStorage.getItem('ignorovanaSlovaDates') || '{}');
+            var newIgn = allIgn.filter(function(s) {
+                var d = allIgnDates[s];
+                return !d || new Date(d) >= from;
+            });
             const data = {
                 exportFrom: from.toISOString(),
                 exportTo: now.toISOString(),
                 meals: newMeals,
                 logbook: newLogbook,
                 goalWeight: appState.goalWeight,
-                userFoodDB: JSON.parse(localStorage.getItem('userFoodDB') || '{}'),
-                ignorovanaSlova: JSON.parse(localStorage.getItem('ignorovanaSlova') || '[]'),
+                userFoodDB: newFoodDB,
+                ignorovanaSlova: newIgn,
                 settings: getSettings()
             };
             _doExport(data, `✅ Export od ${from.toLocaleDateString('cs-CZ')}`);
@@ -2394,14 +2413,16 @@
                 + '</div>'
                 + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;">'
                 + [
-                    {v:lost7, label:'POKLES<br>ZA 7 DNÍ'},
-                    {v:lost30, label:'POKLES<br>ZA 30 DNÍ'},
-                    {v:lost90, label:'POKLES<br>ZA 90 DNÍ'},
-                    {v:lostAll, label:'CELKOVÝ<br>POKLES'}
+                    {v:lost7, period:'ZA 7 DNÍ'},
+                    {v:lost30, period:'ZA 30 DNÍ'},
+                    {v:lost90, period:'ZA 90 DNÍ'},
+                    {v:lostAll, period:'CELKOVÝ'}
                 ].map(function(item){
-                    var col = item.v >= 0 ? wtColorLose : wtColorGain;
-                    var bg = item.v >= 0 ? col+'22' : wtColorGain+'22';
-                    return '<div style="background:'+bg+';padding:8px;border-radius:8px;text-align:center;font-size:11px;color:'+col+';"><b>'+item.v.toFixed(2)+'</b><br><span>'+item.label+'</span></div>';
+                    var isLoss = item.v >= 0;
+                    var col = isLoss ? wtColorLose : wtColorGain;
+                    var bg = col+'22';
+                    var label = (isLoss ? 'POKLES' : 'NÁRŮST') + '<br>' + item.period;
+                    return '<div style="background:'+bg+';padding:8px;border-radius:8px;text-align:center;font-size:11px;color:'+col+';"><b>'+Math.abs(item.v).toFixed(2)+'</b><br><span>'+label+'</span></div>';
                 }).join('')
                 + '</div></div>';
 
@@ -2479,11 +2500,11 @@
                     var wNM = parseFloat((latest.weight - rateDay * daysNM).toFixed(2));
                     if (wNM > goalW) predItems.push({ label: wNM+' kg', days: daysNM, color: '#3498db' });
                 }
-                // Vlastní váhy
+                // Vlastní váhy - jen nižší než aktuální a kladné dny
                 (predSettings.customWeights || []).forEach(function(w) {
-                    if (w < latest.weight) {
-                        var d = Math.round((latest.weight - w) / rateDay);
-                        predItems.push({ label: w.toFixed(2)+' kg', days: d, color: '#27ae60' });
+                    if (w < latest.weight && absRateDay > 0) {
+                        var d = Math.round((latest.weight - w) / absRateDay);
+                        if (d > 0) predItems.push({ label: w.toFixed(2)+' kg', days: d, color: '#27ae60' });
                     }
                 });
                 // Vlastní data
@@ -3004,6 +3025,10 @@
             var seznam = getIgnorovane();
             if (seznam.indexOf(slovo) < 0) seznam.push(slovo);
             localStorage.setItem('ignorovanaSlova', JSON.stringify(seznam));
+            // Ulož datum přidání
+            var dates = JSON.parse(localStorage.getItem('ignorovanaSlovaDates') || '{}');
+            dates[slovo] = new Date().toISOString().slice(0,10);
+            localStorage.setItem('ignorovanaSlovaDates', JSON.stringify(dates));
             showToast(slovo+' bude ignorováno', '#7f8c8d');
             renderAnalysis();
         }
