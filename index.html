@@ -1041,6 +1041,11 @@
                     'kachní|kachna|kachn': { name: 'Kachní maso', info: 'Tučnější drůbež — vyšší obsah nasycených tuků. Výborná chuť, příležitostně.', rada: 'Odstraň kůži — tam je většina tuku.', typ: 'protein', emoji: '🦆' },
                     'vepřov|vepř|vepřin': { name: 'Vepřové maso', info: 'Střední obsah tuku záleží na části — panenka je libová, bůček tučný.', rada: 'Volb libové části (panenka, kýta). Omezt smažení.', typ: 'protein', emoji: '🥩' },
                     'jehněč|jehne|jehnec': { name: 'Jehněčí maso', info: 'Libové maso bohaté na omega-3 a železo. Výborná volba.', rada: null, typ: 'protein', emoji: '🥩' },
+                    'hrozny|hrozno|hrozen|hroznové víno': { name: 'Hrozny', info: 'Ovoce — rychlé cukry, vitamíny. Vyšší glykemický index než bobule.', rada: 'Raději dopoledne nebo před pohybem. Menší porce.', typ: 'ovoce', emoji: '🍇' },
+                    'vifon|instantní polévka|instantni polevka|ramen': { name: 'Instantní polévka', info: 'Vysoký obsah sodíku + jednoduché sacharidy = zadržování vody a rychlý inzulínový spike.', rada: 'Příležitostně OK, ale sodík způsobuje zadržení vody.', typ: 'sacharid', emoji: '🍜' },
+                    'znojemská omáčka|znojemska omacka|znojemskou': { name: 'Znojemská omáčka', info: 'Výpek + mouka + okurky — sacharidový základ z mouky, kyselost z okurek vyrovnává glykemický index.', rada: 'Lehčí omáčka než smetanová — mouka přidává sacharidy.', typ: 'sacharid', emoji: '🥒' },
+                    'fazole|fazolky|fazoli|fazolek': { name: 'Fazole', info: 'Luštěnina — výborný protein + komplexní sacharidy + vláknina. Sytí dlouho.', rada: 'Skvělá volba — kombinuj s zeleninou nebo masem.', typ: 'protein', emoji: '🫘' },
+                    'edamame': { name: 'Edamame', info: 'Zelené sójové boby — protein + vláknina + zdravé tuky. Nízký glykemický index.', rada: 'Výborný snack nebo příloha — velmi výživné.', typ: 'protein', emoji: '🫘' },
                     'tatarka|tatarsk|tatarkou': { name: 'Tatarská omáčka', info: 'Majonézový základ — vysoký obsah tuku. V kombinaci s masem = tuk + protein OK, ale kaloricky husté.', rada: 'Malé množství OK. Nahraď jogurtovou omáčkou pro méně kalorií.', typ: 'tuk', emoji: '🥫' },
                     'škvarkovou pomazánkou|škvarkova pomazanka|škvarkové pomazánky|skvarková pomazanka': { name: 'Škvarkovou pomazánka', info: 'Tučná pomazánka ze škvarků, cibule a hořčice — vysoký obsah nasycených tuků.', rada: 'Malé množství na pečivo OK, ale kaloricky husté.', typ: 'tuk', emoji: '🥓' },
                     'vajíčková pomazánka|vajíčkova pomazanka|vajickova pomazanka|vajíčkovou pomazánkou': { name: 'Vajíčková pomazánka', info: 'Vejce + cibule + hořčice + tatarka — dobrý protein, ale majonézový základ přidává tuk.', rada: 'Lehčí volba než škvarkovou — protein převažuje.', typ: 'protein', emoji: '🥚' },
@@ -1428,6 +1433,14 @@
                     html += '<div style="font-size:12px;padding:4px 0;color:'+winColor+';">⏰ Jídelní okno včera: <b>'+win+'h</b>'+(shortWindow?' ✅ — výborné!':(longWindow?' — příliš dlouhé, zkrať na 5h':' — mírně nad optimem'))+'</div>';
                 }
 
+                // Shrnutí dne — přesunuto nahoru
+                html += '<div style="padding:10px;background:white;border-radius:8px;margin:8px 0;border-left:4px solid '+hodnoceniColor2+';">'
+                    +'<div style="font-size:13px;font-weight:700;color:'+hodnoceniColor2+';margin-bottom:6px;">'
+                    +(diff>0.05&&negFaktory.length>0?'❌ ':diff<-0.05?'✅ ':bezVahy?'🔮 ':'→ ')
+                    +hodnoceniText+'</div>'
+                    +(posFaktory.length>0?'<div style="font-size:11px;color:#27ae60;margin-top:4px;">✅ Co fungovalo: '+posFaktory.map(function(f){return f.label;}).join(' · ')+'</div>':'')
+                    +'</div>';
+
                 // === POTRAVINY PO CHODECH ===
                 var renderChod2 = function(label, foods) {
                     if (!foods || foods.length === 0) return;
@@ -1519,7 +1532,7 @@
                 }
 
                 // === KOMPLEXNÍ VYHODNOCENÍ ===
-                var hodnoceniColor2, hodnoceniText;
+                var hodnoceniColor2 = '#7f8c8d', hodnoceniText = 'Dobrý den — žádné výrazné negativní faktory.';
                 if (!bezVahy && diff > 0.05) {
                     if (negFaktory.length === 0) {
                         hodnoceniColor2 = '#f39c12';
@@ -1543,19 +1556,16 @@
                         : 'Stabilní váha — vše v normě.';
                 } else {
                     hodnoceniColor2 = totalScore >= 7 ? '#e74c3c' : totalScore >= 4 ? '#f39c12' : '#27ae60';
-                    hodnoceniText = totalScore >= 7
-                        ? 'Náročný den ('+negFaktory.slice(0,2).map(function(f){return f.label;}).join(' + ')+') — zítra očekávej zadržení vody.'
-                        : totalScore >= 4 ? 'Průměrný den — mírné riziko. Hlavní faktory: '+negFaktory.slice(0,2).map(function(f){return f.label;}).join(', ')+'.'
-                        : totalScore <= 0 ? 'Lehký den — dobrá volba jídel. Zítra pravděpodobně pokles.'
-                        : 'Mírné faktory: '+negFaktory.map(function(f){return f.label;}).join(', ')+'.';
+                    if (totalScore >= 7) {
+                        hodnoceniText = 'Náročný den (' + negFaktory.slice(0,2).map(function(f){return f.label;}).join(' + ') + ') — zítra očekávej zadržení vody.';
+                    } else if (totalScore >= 4) {
+                        hodnoceniText = 'Průměrný den — mírné riziko. Hlavní faktory: ' + negFaktory.slice(0,2).map(function(f){return f.label;}).join(', ') + '.';
+                    } else if (totalScore <= 0) {
+                        hodnoceniText = 'Lehký den — dobrá volba jídel. Zítra pravděpodobně pokles.';
+                    } else {
+                        hodnoceniText = negFaktory.length > 0 ? 'Mírné faktory: ' + negFaktory.map(function(f){return f.label;}).join(', ') + '.' : 'Dobrý den — žádné výrazné negativní faktory.';
+                    }
                 }
-
-                html += '<div style="padding:10px;background:white;border-radius:8px;margin-top:10px;border-left:4px solid '+hodnoceniColor2+';">'
-                    +'<div style="font-size:13px;font-weight:700;color:'+hodnoceniColor2+';margin-bottom:6px;">'
-                    +(diff>0.05&&negFaktory.length>0?'❌ ':diff<-0.05?'✅ ':bezVahy?'🔮 ':'→ ')
-                    +hodnoceniText+'</div>'
-                    +(posFaktory.length>0?'<div style="font-size:11px;color:#27ae60;margin-top:4px;">✅ Co fungovalo: '+posFaktory.map(function(f){return f.label;}).join(' · ')+'</div>':'')
-                    +'</div>';
 
                 // === DOPORUČENÍ — JÍDELNÍ KOMBINACE NA DNES ===
                 var tipy = [];
@@ -1673,14 +1683,19 @@
 
                 var body = (wDob*2)-(wSp*1)-(wAlk*1.5)-(wSl*0.5);
                 var hod, col;
-                // Pokud váha celkově klesla, nemůže být "náročný týden"
-                if (wChange !== null && wChange < -0.3) {
+                // Váha je hlavní kritérium
+                if (wChange !== null && wChange > 0.2) {
+                    hod='😓 Náročný týden — váha stoupla'; col='#e74c3c';
+                } else if (wChange !== null && wChange > 0) {
+                    hod='👎 Průměrný týden — mírný nárůst'; col='#f39c12';
+                } else if (wChange !== null && wChange < -0.3) {
                     hod='🏆 Výborný týden!'; col='#27ae60';
                 } else if (wChange !== null && wChange < 0) {
-                    hod = body >= 0 ? '🏆 Výborný týden!' : '👍 Dobrý týden — váha klesla!';
-                    col = '#27ae60';
-                } else if (body>=3){hod='🏆 Výborný týden!';col='#27ae60';}
-                else if(body>=0){hod='👍 Dobrý týden';col='#f39c12';}
+                    hod='👍 Dobrý týden — váha klesla'; col='#27ae60';
+                } else if (wChange !== null && Math.abs(wChange) <= 0.2) {
+                    hod = body >= 0 ? '👍 Stabilní týden' : '👎 Stabilní váha — prostor pro zlepšení'; col='#f39c12';
+                } else if (body>=3){hod='👍 Dobrý týden';col='#27ae60';}
+                else if(body>=0){hod='👎 Průměrný týden';col='#f39c12';}
                 else{hod='😓 Náročný týden';col='#e74c3c';}
 
                 var zlep=[];
@@ -1702,8 +1717,6 @@
 
                 return '<div style="background:var(--bg);padding:12px;border-radius:8px;margin-top:12px;">'
                     +'<div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:6px;">'+label+'</div>'
-                    +'<div style="font-size:13px;font-weight:700;color:'+col+';margin-bottom:8px;">'+hod+'</div>'
-                    +(cilText?'<div style="font-size:12px;padding:6px 8px;border-radius:6px;margin-bottom:8px;background:white;color:'+(cilSplnen?'#27ae60':'#e74c3c')+';">'+cilText+'</div>':'')
                     +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;">'
                     +'<div style="background:white;padding:8px;border-radius:6px;text-align:center;"><div style="font-size:18px;font-weight:700;color:#4ecdc4;">'+wDob+'</div><div style="font-size:10px;color:var(--light);">Poklesů</div></div>'
                     +'<div style="background:white;padding:8px;border-radius:6px;text-align:center;"><div style="font-size:18px;font-weight:700;color:#ff6b5b;">'+wSp+'</div><div style="font-size:10px;color:var(--light);">Nárůstů</div></div>'
@@ -2231,10 +2244,15 @@
             // Current rate = průměr denních diffů za posledních 7 kalendářních dní
             var _today7 = getDateString(currentDate);
             var _cutoff7 = new Date(_today7); _cutoff7.setDate(_cutoff7.getDate() - 7);
-            var last7days = allLog.filter(function(e){ return new Date(e.date) >= _cutoff7 && e.diff !== 0 && e.diff !== undefined; });
-            var currentRateDay = last7days.length > 0
-                ? -(last7days.reduce(function(s,e){ return s + (e.diff||0); }, 0) / last7days.length)
-                : 0;
+            // Pouze záznamy s váhou za posledních 7 dní
+            var last7days = allLog.filter(function(e){ return new Date(e.date) >= _cutoff7 && e.weight > 0; });
+            var currentRateDay = 0;
+            if (last7days.length >= 2) {
+                var _first = last7days[0];
+                var _last = last7days[last7days.length - 1];
+                var _days = Math.max(1, Math.round((new Date(_last.date) - new Date(_first.date)) / 86400000));
+                currentRateDay = (_first.weight - _last.weight) / _days;
+            }
             const currentRateWeek = parseFloat((currentRateDay * 7).toFixed(2));
             // Celkové tempo = pokles za celkový počet DNÍ (ne záznamů)
             var overallDays = allLog.length > 1 
@@ -2453,7 +2471,10 @@
                 html += '<div style="display:flex;gap:8px;margin-bottom:12px;">'
                 + window._rateList.map(function(r, ri){
                     var active = selectedRate === r;
-                    var label = r==='commit' ? 'ZÁVAZEK<br>'+weeklyGoalKg.toFixed(2) : r==='current' ? 'AKTUÁLNÍ TEMPO<br>'+currentRateWeek.toFixed(2) : 'CELKOVÉ TEMPO<br>'+overallRateWeek.toFixed(2);
+                    var _commitStr = (weeklyGoalKg > 0 ? '-' : '') + weeklyGoalKg.toFixed(2);
+                    var _currentStr = (currentRateWeek > 0 ? '-' : currentRateWeek < 0 ? '+' : '') + Math.abs(currentRateWeek).toFixed(2);
+                    var _overallStr = (overallRateWeek > 0 ? '-' : overallRateWeek < 0 ? '+' : '') + Math.abs(overallRateWeek).toFixed(2);
+                    var label = r==='commit' ? 'ZÁVAZEK<br>'+_commitStr : r==='current' ? 'AKTUÁLNÍ TEMPO<br>'+_currentStr : 'CELKOVÉ TEMPO<br>'+_overallStr;
                     return '<div onclick="selectSummaryRate(window._rateList['+ri+'])" style="flex:1;padding:10px 6px;border-radius:8px;text-align:center;cursor:pointer;border:2px solid '+(active?'var(--primary)':'#ddd')+';background:'+(active?'#eef6ff':'white')+';"><div style="font-size:9px;font-weight:700;color:'+(active?'var(--primary)':'#888')+';">'+label+'</div></div>';
                 }).join('')
                 + '</div>';
@@ -2993,12 +3014,108 @@
             else { meal19.note = note19; meal19.water = 1.5; }
             // 20.5
             var log20 = appState.logbook.find(function(e){return e.date==='2026-05-20';});
-            if (!log20) { appState.logbook.push({ date: '2026-05-20', weight: 65.7, diff: 0, window: 0, meal: '', water: 0 }); }
-            else { log20.weight = 65.7; }
+            if (!log20) { appState.logbook.push({ date: '2026-05-20', weight: 65.7, diff: 0, window: 5.2, meal: '', water: 0, fastingCompleted: true }); }
+            else { log20.weight = 65.7; log20.window = 5.2; log20.fastingCompleted = true; }
+            var meal20 = appState.meals.find(function(m){return m.date==='2026-05-20';});
+            var note20 = 'Oběd: 300g edamame\nSladkosti: Bonbóny, čokoláda\nAlkohol: 1 pivo';
+            if (!meal20) { appState.meals.push({ date: '2026-05-20', note: note20, water: 1 }); }
+            else { meal20.note = note20; meal20.water = 1; }
+            // 21.5
+            var log21 = appState.logbook.find(function(e){return e.date==='2026-05-21';});
+            if (!log21) { appState.logbook.push({ date: '2026-05-21', weight: 65.6, diff: 0, window: 5, meal: '', water: 0 }); }
+            else { log21.weight = 65.6; log21.window = 5; }
+            var meal21 = appState.meals.find(function(m){return m.date==='2026-05-21';});
+            var note21 = 'Oběd: Fazole, jogurt, kešu\nVečeře: Salát, cottage, vejce, houska, škvarkovou pomazánka\nDezert: Buchta';
+            if (!meal21) { appState.meals.push({ date: '2026-05-21', note: note21, water: 1.5 }); }
+            else { meal21.note = note21; meal21.water = 1.5; }
+            // 22.5
+            var log22 = appState.logbook.find(function(e){return e.date==='2026-05-22';});
+            if (!log22) { appState.logbook.push({ date: '2026-05-22', weight: 65.1, diff: 0, window: 9, meal: '', water: 0 }); }
+            else { log22.weight = 65.1; log22.window = 9; }
+            var meal22 = appState.meals.find(function(m){return m.date==='2026-05-22';});
+            var note22 = 'Oběd: Jogurt, banán, kešu\nVečeře: Hermelín, zelenina, bramburky\nAlkohol: Víno';
+            if (!meal22) { appState.meals.push({ date: '2026-05-22', note: note22, water: 1.5 }); }
+            else { meal22.note = note22; meal22.water = 1.5; }
+            // 23.5
+            var log23 = appState.logbook.find(function(e){return e.date==='2026-05-23';});
+            if (!log23) { appState.logbook.push({ date: '2026-05-23', weight: 0, diff: 0, window: 6.5, meal: '', water: 0 }); }
+            else { log23.window = 6.5; }
+            var meal23 = appState.meals.find(function(m){return m.date==='2026-05-23';});
+            var note23 = 'Oběd: Houska s máslem a šunkou, vifon instantní polévka\nVečeře: Grilované kuře, grilovaná zelenina\nAlkohol: Víno, pivo';
+            if (!meal23) { appState.meals.push({ date: '2026-05-23', note: note23, water: 2 }); }
+            else { meal23.note = note23; meal23.water = 2; }
+            // 24.5
+            var log24 = appState.logbook.find(function(e){return e.date==='2026-05-24';});
+            if (!log24) { appState.logbook.push({ date: '2026-05-24', weight: 0, diff: 0, window: 7.4, meal: '', water: 0, fastingCompleted: true }); }
+            else { log24.window = 7.4; log24.fastingCompleted = true; }
+            var meal24 = appState.meals.find(function(m){return m.date==='2026-05-24';});
+            var note24 = 'Oběd: Kuře s hrozny, kešu, tatarka, vejce\nVečeře: Kuře, hrozny, tatarka, ředkvičky, jogurt, smetanová omáčka, žampiony, kopr, vepřové maso, těstoviny';
+            if (!meal24) { appState.meals.push({ date: '2026-05-24', note: note24, water: 2 }); }
+            else { meal24.note = note24; meal24.water = 2; }
+            // 25.5
+            var log25 = appState.logbook.find(function(e){return e.date==='2026-05-25';});
+            if (!log25) { appState.logbook.push({ date: '2026-05-25', weight: 0, diff: 0, window: 5.8, meal: '', water: 0, fastingCompleted: true }); }
+            else { log25.weight = 65.9; log25.window = 5.8; log25.fastingCompleted = true; }
+            var meal25 = appState.meals.find(function(m){return m.date==='2026-05-25';});
+            var note25 = 'Oběd: Rybí filé, bramborová kaše\nVečeře: Znojemská omáčka, těstoviny';
+            if (!meal25) { appState.meals.push({ date: '2026-05-25', note: note25, water: 1.5 }); }
+            else { meal25.note = note25; meal25.water = 1.5; }
+            // 26.5
+            var log26 = appState.logbook.find(function(e){return e.date==='2026-05-26';});
+            if (!log26) { appState.logbook.push({ date: '2026-05-26', weight: 65.9, diff: 0, window: 0, meal: '', water: 0 }); }
+            else { log26.weight = 65.9; }
             // 20.5
             var log20 = appState.logbook.find(function(e){return e.date==='2026-05-20';});
-            if (!log20) { appState.logbook.push({ date: '2026-05-20', weight: 65.7, diff: 0, window: 0, meal: '', water: 0 }); }
-            else { log20.weight = 65.7; }
+            if (!log20) { appState.logbook.push({ date: '2026-05-20', weight: 65.7, diff: 0, window: 5.2, meal: '', water: 0, fastingCompleted: true }); }
+            else { log20.weight = 65.7; log20.window = 5.2; log20.fastingCompleted = true; }
+            var meal20 = appState.meals.find(function(m){return m.date==='2026-05-20';});
+            var note20 = 'Oběd: 300g edamame\nSladkosti: Bonbóny, čokoláda\nAlkohol: 1 pivo';
+            if (!meal20) { appState.meals.push({ date: '2026-05-20', note: note20, water: 1 }); }
+            else { meal20.note = note20; meal20.water = 1; }
+            // 21.5
+            var log21 = appState.logbook.find(function(e){return e.date==='2026-05-21';});
+            if (!log21) { appState.logbook.push({ date: '2026-05-21', weight: 65.6, diff: 0, window: 5, meal: '', water: 0 }); }
+            else { log21.weight = 65.6; log21.window = 5; }
+            var meal21 = appState.meals.find(function(m){return m.date==='2026-05-21';});
+            var note21 = 'Oběd: Fazole, jogurt, kešu\nVečeře: Salát, cottage, vejce, houska, škvarkovou pomazánka\nDezert: Buchta';
+            if (!meal21) { appState.meals.push({ date: '2026-05-21', note: note21, water: 1.5 }); }
+            else { meal21.note = note21; meal21.water = 1.5; }
+            // 22.5
+            var log22 = appState.logbook.find(function(e){return e.date==='2026-05-22';});
+            if (!log22) { appState.logbook.push({ date: '2026-05-22', weight: 65.1, diff: 0, window: 9, meal: '', water: 0 }); }
+            else { log22.weight = 65.1; log22.window = 9; }
+            var meal22 = appState.meals.find(function(m){return m.date==='2026-05-22';});
+            var note22 = 'Oběd: Jogurt, banán, kešu\nVečeře: Hermelín, zelenina, bramburky\nAlkohol: Víno';
+            if (!meal22) { appState.meals.push({ date: '2026-05-22', note: note22, water: 1.5 }); }
+            else { meal22.note = note22; meal22.water = 1.5; }
+            // 23.5
+            var log23 = appState.logbook.find(function(e){return e.date==='2026-05-23';});
+            if (!log23) { appState.logbook.push({ date: '2026-05-23', weight: 0, diff: 0, window: 6.5, meal: '', water: 0 }); }
+            else { log23.window = 6.5; }
+            var meal23 = appState.meals.find(function(m){return m.date==='2026-05-23';});
+            var note23 = 'Oběd: Houska s máslem a šunkou, vifon instantní polévka\nVečeře: Grilované kuře, grilovaná zelenina\nAlkohol: Víno, pivo';
+            if (!meal23) { appState.meals.push({ date: '2026-05-23', note: note23, water: 2 }); }
+            else { meal23.note = note23; meal23.water = 2; }
+            // 24.5
+            var log24 = appState.logbook.find(function(e){return e.date==='2026-05-24';});
+            if (!log24) { appState.logbook.push({ date: '2026-05-24', weight: 0, diff: 0, window: 7.4, meal: '', water: 0, fastingCompleted: true }); }
+            else { log24.window = 7.4; log24.fastingCompleted = true; }
+            var meal24 = appState.meals.find(function(m){return m.date==='2026-05-24';});
+            var note24 = 'Oběd: Kuře s hrozny, kešu, tatarka, vejce\nVečeře: Kuře, hrozny, tatarka, ředkvičky, jogurt, smetanová omáčka, žampiony, kopr, vepřové maso, těstoviny';
+            if (!meal24) { appState.meals.push({ date: '2026-05-24', note: note24, water: 2 }); }
+            else { meal24.note = note24; meal24.water = 2; }
+            // 25.5
+            var log25 = appState.logbook.find(function(e){return e.date==='2026-05-25';});
+            if (!log25) { appState.logbook.push({ date: '2026-05-25', weight: 0, diff: 0, window: 5.8, meal: '', water: 0, fastingCompleted: true }); }
+            else { log25.weight = 65.9; log25.window = 5.8; log25.fastingCompleted = true; }
+            var meal25 = appState.meals.find(function(m){return m.date==='2026-05-25';});
+            var note25 = 'Oběd: Rybí filé, bramborová kaše\nVečeře: Znojemská omáčka, těstoviny';
+            if (!meal25) { appState.meals.push({ date: '2026-05-25', note: note25, water: 1.5 }); }
+            else { meal25.note = note25; meal25.water = 1.5; }
+            // 26.5
+            var log26 = appState.logbook.find(function(e){return e.date==='2026-05-26';});
+            if (!log26) { appState.logbook.push({ date: '2026-05-26', weight: 65.9, diff: 0, window: 0, meal: '', water: 0 }); }
+            else { log26.weight = 65.9; }
 
             // Zapečená nastavení z exportu
             if (!localStorage.getItem('summaryChartPeriod')) localStorage.setItem('summaryChartPeriod', '30');
